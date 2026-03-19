@@ -1,0 +1,14 @@
+root = true
+
+[composeApp/build/generated/**]
+ktlint = disabled
+
+[*.{kt,kts}]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+ij_kotlin_imports_layout = *
+ktlint_standard_trailing-comma-on-call-site = disabled
+ktlint_standard_trailing-comma-on-declaration-site = disabled
+# Package name contains underscore (com.example.books_kmp) — matches applicationId, renaming is a broad refactor
+ktlint_standard_package-name = disabled

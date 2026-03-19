@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -15,7 +14,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -25,7 +24,7 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -97,3 +96,10 @@ dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
 
+afterEvaluate {
+    tasks.matching { it.name.startsWith("ktlint") }.configureEach {
+        (this as? org.gradle.api.tasks.SourceTask)?.exclude {
+            it.file.path.contains("/build/")
+        }
+    }
+}
