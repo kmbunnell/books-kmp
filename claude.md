@@ -18,7 +18,6 @@ For detailed specs, see:
 ### Test-Driven Development (TDD)
 
 - **Red → Green → Refactor.** Write a failing test first, implement the minimum code to pass it, then refactor. No production code without a corresponding test.
-- Tests are not an afterthought — they are the **first artifact** of every feature or bug fix.
 - Every public function in a use case or repository must have at least one unit test.
 - When fixing a bug, write a test that reproduces the bug **before** writing the fix.
 - Keep tests fast, isolated, and deterministic. Mock external dependencies at the repository boundary.
@@ -26,6 +25,7 @@ For detailed specs, see:
 - Use descriptive test names: `` `invoke returns error when ISBN is duplicate` ``.
 - Each test should test one behavior. Prefer many small tests over few large ones.
 - Test files mirror production structure: `domain/usecase/AddBookUseCaseTest.kt` alongside `domain/usecase/AddBookUseCase.kt`.
+- Frameworks: `kotlin.test` + `kotlinx-coroutines-test` for domain/data; `Turbine` for Flow testing in ViewModels; `supabase start` for integration tests.
 
 ### Clean Architecture
 
@@ -37,26 +37,21 @@ Presentation → Domain ← Data
 
 - **Domain layer** (`shared/commonMain/.../domain/`): Pure Kotlin. Domain models, repository interfaces, and use cases. Zero platform or framework imports.
 - **Data layer** (`shared/commonMain/.../data/` + platform source sets): Repository implementations, data sources, DTOs, and mappers. Depends on domain interfaces.
-- **Presentation layer** (`composeApp/commonMain/`): Compose screens, ViewModels, and UI state. ViewModels depend on use cases only.
+- **Presentation layer** (`composeApp/commonMain/`): Compose screens, ViewModels, and UI state. ViewModels depend on use cases only — no business logic in ViewModels.
 
 **Rules:**
-- Domain models and DTOs are always separate classes. Map between them explicitly.
+- Domain models and DTOs are always separate classes. Map between them explicitly. Do not leak DTO annotations (`@Serializable`, column names) into domain models.
 - Repository interfaces live in the domain layer. Implementations live in the data layer.
 - Use cases are single-responsibility: one public `operator fun invoke(...)` or `suspend operator fun invoke(...)`.
-- ViewModels expose UI state via `StateFlow` and accept user intents as function calls. No business logic in ViewModels.
-
-### DRY (Don't Repeat Yourself)
-
-- Extract shared logic into use cases or utility functions. If you write the same logic twice, refactor it.
-- Reuse Compose components: shared UI elements belong in a common `components` package.
-- Centralize constants (tag names, API URLs, error messages) in a single config object.
+- ViewModels expose UI state via `StateFlow` and accept user intents as function calls.
 - Koin modules are the single place for dependency wiring. Never manually construct dependencies outside DI.
+- Shared UI elements belong in a common `components` package. Centralize constants in a single config object.
 
 ---
 
 ## Target Project Structure
 
-> **Note:** This is the intended architecture, not the current state of the repo. Create packages and directories incrementally as features are built. Use this as a guide for **where new code should go** — do not scaffold empty directories upfront.
+> **Note:** This is the intended architecture, not the current state of the repo. Create packages and directories incrementally as features are built — do not scaffold empty directories upfront. Always confirm the package name, location, and purpose before adding to the project structure.
 
 ```
 books-kmp/
@@ -87,7 +82,6 @@ books-kmp/
 ├── androidApp/                   ← Android application shell
 ├── iosApp/                       ← Xcode project / iOS shell
 └── docs/
-    └── SPECS.md                  ← Detailed specs & reference
 ```
 
 The actual package name (shown as `...`) will be determined by the Gradle config. What matters is the **layer separation** (domain / data / ui), not exact paths.
@@ -110,18 +104,6 @@ The actual package name (shown as `...`) will be determined by the Gradle config
 
 ---
 
-## Testing Strategy
-
-| Layer | Framework |
-|---|---|
-| Domain & Data | `kotlin.test` + `kotlinx-coroutines-test` |
-| ViewModels | `kotlin.test` + `Turbine` (Flow testing) |
-| UI (Compose) | Compose UI testing (multiplatform) |
-| Integration | Supabase local dev (`supabase start`) |
-| Platform | JUnit (Android) / XCTest (iOS) |
-
----
-
 ## Code Style & Conventions
 
 - Kotlin coding conventions with consistent formatting.
@@ -140,14 +122,8 @@ The actual package name (shown as `...`) will be determined by the Gradle config
 
 ---
 
-## Common Pitfalls to Avoid
+## Common Pitfalls
 
-- **Do not** create new packages or directories without asking first. Always confirm the package name, location, and purpose with the developer before adding to the project structure.
-- **Do not** put business logic in ViewModels. Delegate to use cases.
+- **Do not** create new packages or directories without asking first.
 - **Do not** reference data-layer classes (DTOs, Supabase client) from the presentation layer.
-- **Do not** skip writing the test first. If you are writing production code without a failing test, stop and write the test.
-- **Do not** duplicate logic. If it exists once, reuse it.
-- **Do not** commit API keys, Supabase URLs, or secrets.
-- **Do not** manually construct class instances in Compose screens — always inject via Koin.
 - **Do not** use `expect`/`actual` unless truly necessary (barcode scanning, platform permissions). Prefer shared `commonMain` implementations.
-- **Do not** leak DTO annotations (`@Serializable`, column names) into domain models.
