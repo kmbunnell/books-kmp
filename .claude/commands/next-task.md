@@ -1,22 +1,26 @@
 ---
 description: Pick up the next SHELVD Jira task and begin implementation
-allowed-tools: Bash(acli:*)
+allowed-tools: Bash
 ---
 
 ## Context
 
 `$ARGUMENTS` may contain a specific ticket key (e.g. `SHELVD-42`).
 
-**If a key was provided**, look it up:
+**If a key was provided** (i.e. `$ARGUMENTS` is non-empty), look it up:
 
-- Ticket lookup: !`acli jira workitem search --jql "project = SHELVD AND status = 'To Do' AND NOT issuetype = Epic AND key = $ARGUMENTS" --limit 1`
+```bash
+acli jira workitem search --jql "project = SHELVD AND status = 'To Do' AND NOT issuetype = Epic AND key = $ARGUMENTS" --limit 1
+```
 
 If the lookup returned no results, stop immediately and report:
 "Ticket key not found in todo"
 
-**If no key was provided**, find the next unassigned ticket:
+**If no key was provided** (i.e. `$ARGUMENTS` is empty), find the next unassigned ticket:
 
-- Next To Do issue: !`acli jira workitem search --jql "project = SHELVD AND status = 'To Do' AND NOT issuetype = Epic AND assignee is EMPTY ORDER BY created ASC" --limit 1`
+```bash
+acli jira workitem search --jql "project = SHELVD AND status = 'To Do' AND NOT issuetype = Epic AND assignee is EMPTY ORDER BY created ASC" --limit 1
+```
 
 If the command above returned no issues, stop immediately and report:
 "No free tickets in todo — all To Do items are already assigned."
