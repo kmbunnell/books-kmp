@@ -49,42 +49,9 @@ Presentation → Domain ← Data
 
 ---
 
-## Target Project Structure
+## Project Structure
 
-> **Note:** This is the intended architecture, not the current state of the repo. Create packages and directories incrementally as features are built — do not scaffold empty directories upfront. Always confirm the package name, location, and purpose before adding to the project structure.
-
-```
-books-kmp/
-├── shared/                       ← KMP shared module
-│   ├── commonMain/
-│   │   └── .../domain/
-│   │   │   ├── model/            ← Domain models
-│   │   │   ├── repository/       ← Repository interfaces
-│   │   │   └── usecase/          ← Use cases
-│   │   └── .../data/
-│   │       ├── repository/       ← Repository implementations
-│   │       ├── remote/           ← Data sources & API clients
-│   │       ├── dto/              ← Data transfer objects
-│   │       └── mapper/           ← DTO ↔ domain mappers
-│   ├── commonTest/               ← Shared unit tests
-│   ├── androidMain/              ← Android-specific actuals
-│   └── iosMain/                  ← iOS-specific actuals
-├── composeApp/
-│   ├── commonMain/
-│   │   └── .../ui/
-│   │       ├── screens/          ← Compose screens
-│   │       ├── components/       ← Reusable composables
-│   │       ├── viewmodel/        ← ViewModels
-│   │       ├── navigation/       ← Navigation graph & routes
-│   │       └── theme/            ← Colors, typography, shapes
-│   ├── androidMain/
-│   └── iosMain/
-├── androidApp/                   ← Android application shell
-├── iosApp/                       ← Xcode project / iOS shell
-└── docs/
-```
-
-The actual package name (shown as `...`) will be determined by the Gradle config. What matters is the **layer separation** (domain / data / ui), not exact paths.
+Create packages and directories incrementally as features are built — do not scaffold empty directories upfront. Always confirm the package name, location, and purpose before adding. What matters is layer separation (`domain/`, `data/`, `ui/`), not exact paths.
 
 ---
 
@@ -106,19 +73,14 @@ The actual package name (shown as `...`) will be determined by the Gradle config
 
 ## Code Style & Conventions
 
-- Kotlin coding conventions with consistent formatting.
-- `sealed class` / `sealed interface` for finite states (auth status, scan results, UI state).
-- `data class` for models and DTOs.
 - Naming: `AddBookUseCase`, `BookRepository`, `LibraryViewModel`, `LibraryUiState`.
-- Keep functions short (~30 lines max). Prefer explicit return types on public APIs.
-- Avoid `!!` — prefer `?.let`, `?:`, or explicit null checks with descriptive errors.
+- Prefer explicit return types on public APIs.
 
 ---
 
-## Build & Secrets
+## Secrets
 
-- Gradle with Kotlin DSL (`build.gradle.kts`), version catalog (`libs.versions.toml`).
-- Sensitive values (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `GOOGLE_BOOKS_API_KEY`) go in `local.properties`, injected via `BuildConfig`. **Never commit secrets.**
+Secrets (`SUPABASE_URL`, `SUPABASE_ANON_KEY`) go in `local.properties`, injected via `BuildConfig`. **Never commit secrets.**
 
 ---
 
