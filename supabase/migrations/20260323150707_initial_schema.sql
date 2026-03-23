@@ -108,18 +108,21 @@ CREATE TRIGGER on_auth_user_created
 -- Protect default tags from modification/deletion (Story 7)
 -- ============================================================
 -- NOTE on CASCADE behaviour: When a user is deleted from auth.users,
--- PostgreSQL's ON DELETE CASCADE removes the tags rows internally
--- without firing BEFORE DELETE triggers on the tags table, so
--- this trigger does NOT block user account deletion.
+-- ON DELETE CASCADE fires this trigger. We allow the delete if the
+-- parent user no longer exists (i.e. it's a cascade from user deletion).
 
 CREATE OR REPLACE FUNCTION public.protect_default_tags()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Block DELETE of default tags
+    -- Block DELETE of default tags (unless cascading from user deletion)
     IF TG_OP = 'DELETE' THEN
         IF OLD.is_default = true THEN
+            -- Allow if the parent user is being deleted (cascade)
+            IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = OLD.user_id) THEN
+                RETURN OLD;
+            END IF;
             RAISE EXCEPTION 'Cannot delete a default tag (id=%)', OLD.id;
         END IF;
         RETURN OLD;
