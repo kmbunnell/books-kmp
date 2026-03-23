@@ -18,6 +18,7 @@ For detailed specs, see:
 ### Test-Driven Development (TDD)
 
 - **Red → Green → Refactor.** Write a failing test first, implement the minimum code to pass it, then refactor. No production code without a corresponding test.
+- Tests are not an afterthought — they are the **first artifact** of every feature or bug fix.
 - Every public function in a use case or repository must have at least one unit test.
 - When fixing a bug, write a test that reproduces the bug **before** writing the fix.
 - Keep tests fast, isolated, and deterministic. Mock external dependencies at the repository boundary.
@@ -74,7 +75,10 @@ Create packages and directories incrementally as features are built — do not s
 ## Code Style & Conventions
 
 - Naming: `AddBookUseCase`, `BookRepository`, `LibraryViewModel`, `LibraryUiState`.
-- Prefer explicit return types on public APIs.
+- `sealed class` / `sealed interface` for finite states (auth status, scan results, UI state).
+- `data class` for models and DTOs.
+- Keep functions short (~30 lines max). Prefer explicit return types on public APIs.
+- Avoid `!!` — prefer `?.let`, `?:`, or explicit null checks with descriptive errors.
 
 ---
 
@@ -87,5 +91,10 @@ Secrets (`SUPABASE_URL`, `SUPABASE_ANON_KEY`) go in `local.properties`, injected
 ## Common Pitfalls
 
 - **Do not** create new packages or directories without asking first.
+- **Do not** put business logic in ViewModels. Delegate to use cases.
+- **Do not** skip writing the test first. If you are writing production code without a failing test, stop and write the test.
+- **Do not** duplicate logic. If it exists once, reuse it.
+- **Do not** commit API keys, Supabase URLs, or secrets.
+- **Do not** manually construct class instances in Compose screens — always inject via Koin.
 - **Do not** reference data-layer classes (DTOs, Supabase client) from the presentation layer.
 - **Do not** use `expect`/`actual` unless truly necessary (barcode scanning, platform permissions). Prefer shared `commonMain` implementations.

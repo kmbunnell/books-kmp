@@ -112,11 +112,3 @@ android {
 dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
-
-afterEvaluate {
-    tasks.matching { it.name.startsWith("ktlint") }.configureEach {
-        (this as? org.gradle.api.tasks.SourceTask)?.exclude {
-            it.file.path.contains("/build/")
-        }
-    }
-}
