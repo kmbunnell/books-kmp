@@ -7,7 +7,8 @@ import com.example.books_kmp.di.appModule
 import org.koin.core.context.startKoin
 import platform.UIKit.UIViewController
 
-fun MainViewController(): UIViewController {
+fun initKoin() {
     startKoin { modules(appModule) }
-    return ComposeUIViewController { App() }
 }
+
+fun MainViewController(): UIViewController = ComposeUIViewController { App() }
