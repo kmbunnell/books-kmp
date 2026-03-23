@@ -50,6 +50,7 @@ supabase-composeAuth = { module = "io.github.jan-tennert.supabase:compose-auth",
 koin-core    = { module = "io.insert-koin:koin-core",    version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-test    = { module = "io.insert-koin:koin-test",    version.ref = "koin" }
 
 # Ktor
 ktor-client-core                = { module = "io.ktor:ktor-client-core",                  version.ref = "ktor" }
@@ -65,7 +66,7 @@ kotlinx-coroutines-test    = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 
 # Coil 3
 coil-compose      = { module = "io.coil-kt.coil3:coil-compose",    version.ref = "coil" }
-coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor", version.ref = "coil" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
 # Turbine
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
