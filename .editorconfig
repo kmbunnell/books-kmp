@@ -1,6 +1,6 @@
 root = true
 
-[composeApp/build/generated/**]
+[**/build/**]
 ktlint = disabled
 
 [*.{kt,kts}]
