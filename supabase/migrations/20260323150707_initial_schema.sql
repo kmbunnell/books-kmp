@@ -179,3 +179,75 @@ CREATE TRIGGER set_tags_updated_at
     BEFORE UPDATE ON tags
     FOR EACH ROW
     EXECUTE FUNCTION public.update_timestamp();
+
+
+-- ============================================================
+-- RLS Policies for books, tags, and book_tags
+-- ============================================================
+
+-- BOOKS
+CREATE POLICY "Users can view their own books"
+    ON books FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own books"
+    ON books FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own books"
+    ON books FOR UPDATE
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own books"
+    ON books FOR DELETE
+    USING (auth.uid() = user_id);
+
+-- TAGS
+CREATE POLICY "Users can view their own tags"
+    ON tags FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own tags"
+    ON tags FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own tags"
+    ON tags FOR UPDATE
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own tags"
+    ON tags FOR DELETE
+    USING (auth.uid() = user_id);
+
+-- BOOK_TAGS (no user_id column, so join through books)
+CREATE POLICY "Users can view their own book_tags"
+    ON book_tags FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM books
+            WHERE books.id = book_tags.book_id
+            AND books.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can insert their own book_tags"
+    ON book_tags FOR INSERT
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM books
+            WHERE books.id = book_tags.book_id
+            AND books.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can delete their own book_tags"
+    ON book_tags FOR DELETE
+    USING (
+        EXISTS (
+            SELECT 1 FROM books
+            WHERE books.id = book_tags.book_id
+            AND books.user_id = auth.uid()
+        )
+    );
