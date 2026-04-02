@@ -8,7 +8,8 @@ import org.koin.core.context.startKoin
 import platform.UIKit.UIViewController
 
 fun initKoin() {
-    startKoin { modules(appModule) }
+    // TODO SHELVD-51: replace with real iOS credentials
+    startKoin { modules(appModule("PLACEHOLDER_URL", "PLACEHOLDER_KEY")) }
 }
 
 fun MainViewController(): UIViewController = ComposeUIViewController { App() }

@@ -109,7 +109,6 @@ Build a plan with these sections:
 4. **Tests to write first (TDD)** — List the test files and key test cases that will be written before production code. Include both unit tests and Compose UI tests where applicable.
 5. **Implementation steps** — Ordered list of what to build, in the sequence that satisfies TDD (test → implement → refactor per step).
 6. **Risks and regressions** — Anything that could break existing functionality, edge cases to watch for, or architectural concerns. If none, say "None identified."
-7. **Done checklist** — One concrete verification step per acceptance criterion (e.g., "run `./gradlew :composeApp:assembleDebug` — build succeeds with no errors").
 
 ### Step 6 — Present and get approval
 
