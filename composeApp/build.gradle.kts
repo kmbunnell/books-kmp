@@ -11,6 +11,27 @@ fun localProp(key: String): String =
     localProps.getProperty(key)
         ?: error("Missing required local.properties key: $key")
 
+val generateSecretsXcconfig by tasks.registering {
+    description = "Generate iosApp/Configuration/Secrets.xcconfig from local.properties"
+    val outputFile = rootProject.file("iosApp/Configuration/Secrets.xcconfig")
+    val url = localProp("SUPABASE_URL")
+    val key = localProp("SUPABASE_ANON_KEY")
+    inputs.property("supabaseUrl", url)
+    inputs.property("supabaseKey", key)
+    outputs.file(outputFile)
+    doLast {
+        // xcconfig treats // as a comment — escape with /$()/
+        val escapedUrl = url.replace("//", "/\$()/" )
+        outputFile.writeText(
+            """
+            |// Auto-generated from local.properties — do not edit manually.
+            |SUPABASE_URL = $escapedUrl
+            |SUPABASE_ANON_KEY = $key
+            """.trimMargin() + "\n",
+        )
+    }
+}
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
@@ -34,6 +55,10 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
         }
+    }
+
+    tasks.matching { it.name.startsWith("compileKotlinIos") }.configureEach {
+        dependsOn(generateSecretsXcconfig)
     }
 
     sourceSets {
