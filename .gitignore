@@ -35,3 +35,6 @@ DerivedData/
 
 # Logs
 *.log
+
+# Claude plan file
+.claude/plan.md
