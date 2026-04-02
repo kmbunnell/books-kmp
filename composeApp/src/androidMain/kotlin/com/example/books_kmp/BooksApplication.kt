@@ -10,7 +10,7 @@ class BooksApplication : Application() {
         super.onCreate()
         startKoin {
             androidContext(this@BooksApplication)
-            modules(appModule)
+            modules(appModule(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY))
         }
     }
 }
