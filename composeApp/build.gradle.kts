@@ -21,7 +21,7 @@ val generateSecretsXcconfig by tasks.registering {
     outputs.file(outputFile)
     doLast {
         // xcconfig treats // as a comment — escape with /$()/
-        val escapedUrl = url.replace("//", "/\$()/" )
+        val escapedUrl = url.replace("//", "/\$()/")
         outputFile.writeText(
             """
             |// Auto-generated from local.properties — do not edit manually.
