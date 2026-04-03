@@ -95,6 +95,7 @@ sealed interface LibraryEffect {
 - Repository interfaces live in the domain layer. Implementations live in the data layer.
 - Use cases are single-responsibility: one public `operator fun invoke(...)` or `suspend operator fun invoke(...)`.
 - Koin modules are the single place for dependency wiring. Never manually construct dependencies outside DI.
+- ViewModels emit typed errors via a feature-specific `XxxError` sealed interface — never localized strings. `UiState` field errors and `XxxEffect.ShowError` carry `XxxError` values. String resolution happens exclusively in Compose screens via `stringResource()`, resolved before any `LaunchedEffect`/`collect` block.
 
 ---
 
@@ -147,6 +148,13 @@ Create packages and directories incrementally as features are built — do not s
 - Keep functions short (~30 lines max). Prefer explicit return types on public APIs.
 - Avoid `!!` — prefer `?.let`, `?:`, or explicit null checks with descriptive errors.
 - One file per class for use cases, ViewModels, and repository interfaces. Group related intents/state/effects with their ViewModel.
+
+---
+
+## Strings & Resources
+
+- All user-visible strings must be defined in `composeApp/src/commonMain/composeResources/values/strings.xml` and accessed via `stringResource(Res.string.xxx)` in composables. Never hardcode display strings in Kotlin source.
+- Do not add strings to `androidMain/res/values/strings.xml` — that file is Android-only and invisible to iOS. The only exception is `app_name`, which is required by `AndroidManifest.xml`.
 
 ---
 

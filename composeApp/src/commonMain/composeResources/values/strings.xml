@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <string name="label_email">Email</string>
+    <string name="label_password">Password</string>
+    <string name="button_sign_in">Sign In</string>
+    <string name="sign_in_sign_up_prompt">Don't have an account? Sign Up</string>
+    <string name="error_email_required">Email is required</string>
+    <string name="error_password_required">Password is required</string>
+    <string name="error_sign_in_failed">Sign in failed</string>
+    <string name="error_sign_up_failed">Sign up failed</string>
+    <string name="error_sign_out_failed">Sign out failed</string>
+</resources>

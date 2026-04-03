@@ -85,7 +85,44 @@ class AuthViewModelTest {
                 viewModel.onIntent(AuthIntent.SignInWithEmail("test@example.com", "wrong-password"))
                 val effect = awaitItem()
                 assertIs<AuthEffect.ShowError>(effect)
-                assertEquals("Invalid credentials", effect.message)
+                assertIs<AuthError.SignInFailed>(effect.error)
+                assertEquals("Invalid credentials", effect.error.cause)
             }
+        }
+
+    @Test
+    fun `sign in with blank email sets email error and does not call repository`() =
+        runTest {
+            val viewModel = AuthViewModel(fakeRepo)
+
+            viewModel.onIntent(AuthIntent.SignInWithEmail("", "password123"))
+
+            assertEquals(AuthError.EmailRequired, viewModel.uiState.value.emailError)
+            assertNull(viewModel.uiState.value.passwordError)
+            assertFalse(fakeRepo.signInCalled)
+        }
+
+    @Test
+    fun `sign in with blank password sets password error and does not call repository`() =
+        runTest {
+            val viewModel = AuthViewModel(fakeRepo)
+
+            viewModel.onIntent(AuthIntent.SignInWithEmail("test@example.com", ""))
+
+            assertNull(viewModel.uiState.value.emailError)
+            assertEquals(AuthError.PasswordRequired, viewModel.uiState.value.passwordError)
+            assertFalse(fakeRepo.signInCalled)
+        }
+
+    @Test
+    fun `sign in with valid fields calls repository and clears validation errors`() =
+        runTest {
+            val viewModel = AuthViewModel(fakeRepo)
+
+            viewModel.onIntent(AuthIntent.SignInWithEmail("test@example.com", "password123"))
+
+            assertNull(viewModel.uiState.value.emailError)
+            assertNull(viewModel.uiState.value.passwordError)
+            assertTrue(fakeRepo.signInCalled)
         }
 }
