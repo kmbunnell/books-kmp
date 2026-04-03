@@ -160,7 +160,7 @@ Create packages and directories incrementally as features are built — do not s
 
 ## Secrets
 
-Secrets (`SUPABASE_URL`, `SUPABASE_ANON_KEY`) go in `local.properties`, injected via `BuildConfig`. **Never commit secrets.**
+Secrets go in `local.properties`, injected via `BuildConfig`. **Never commit secrets.**
 
 ---
 
