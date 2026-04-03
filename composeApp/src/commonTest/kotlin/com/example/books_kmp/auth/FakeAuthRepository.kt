@@ -8,20 +8,22 @@ class FakeAuthRepository : AuthRepository {
     var signInResult: Result<Unit> = Result.success(Unit)
     var signUpResult: Result<Unit> = Result.success(Unit)
     var signOutResult: Result<Unit> = Result.success(Unit)
+    var signInCalled = false
 
     override val sessionStatus: Flow<AuthSessionState> = sessionFlow
 
     override suspend fun signUp(
         email: String,
-        password: String
+        password: String,
     ) {
         signUpResult.getOrThrow()
     }
 
     override suspend fun signIn(
         email: String,
-        password: String
+        password: String,
     ) {
+        signInCalled = true
         signInResult.getOrThrow()
     }
 

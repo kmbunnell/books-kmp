@@ -13,10 +13,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+sealed interface AuthError {
+    data object EmailRequired : AuthError
+    data object PasswordRequired : AuthError
+    data class SignInFailed(val cause: String?) : AuthError
+    data class SignUpFailed(val cause: String?) : AuthError
+    data class SignOutFailed(val cause: String?) : AuthError
+}
+
 data class AuthUiState(
     val isLoading: Boolean = false,
     val isAuthenticated: Boolean = false,
     val userId: String? = null,
+    val emailError: AuthError? = null,
+    val passwordError: AuthError? = null,
 )
 
 sealed interface AuthIntent {
@@ -28,7 +38,7 @@ sealed interface AuthIntent {
 }
 
 sealed interface AuthEffect {
-    data class ShowError(val message: String) : AuthEffect
+    data class ShowError(val error: AuthError) : AuthEffect
 }
 
 class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
@@ -90,18 +100,27 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         try {
             authRepository.signUp(email, password)
         } catch (e: Exception) {
-            _effects.emit(AuthEffect.ShowError(e.message ?: "Sign up failed"))
+            _effects.emit(AuthEffect.ShowError(AuthError.SignUpFailed(e.message)))
         }
     }
 
     private suspend fun handleSignIn(
         email: String,
-        password: String
+        password: String,
     ) {
+        if (email.isBlank()) {
+            _uiState.update { it.copy(emailError = AuthError.EmailRequired, passwordError = null) }
+            return
+        }
+        if (password.isBlank()) {
+            _uiState.update { it.copy(emailError = null, passwordError = AuthError.PasswordRequired) }
+            return
+        }
+        _uiState.update { it.copy(emailError = null, passwordError = null) }
         try {
             authRepository.signIn(email, password)
         } catch (e: Exception) {
-            _effects.emit(AuthEffect.ShowError(e.message ?: "Sign in failed"))
+            _effects.emit(AuthEffect.ShowError(AuthError.SignInFailed(e.message)))
         }
     }
 
@@ -109,7 +128,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         try {
             authRepository.signOut()
         } catch (e: Exception) {
-            _effects.emit(AuthEffect.ShowError(e.message ?: "Sign out failed"))
+            _effects.emit(AuthEffect.ShowError(AuthError.SignOutFailed(e.message)))
         }
     }
 }
