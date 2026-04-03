@@ -83,6 +83,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+            implementation(libs.navigation.compose)
         }
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
@@ -97,6 +98,10 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.turbine)
+        }
+        androidUnitTest.dependencies {
+            implementation(libs.robolectric)
+            implementation(libs.compose.ui.test.junit4)
         }
     }
 }
@@ -128,6 +133,11 @@ android {
             isMinifyEnabled = false
         }
     }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -136,4 +146,5 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+    debugImplementation(libs.compose.ui.test.manifest)
 }

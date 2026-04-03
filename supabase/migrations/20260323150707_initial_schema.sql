@@ -203,6 +203,8 @@ CREATE POLICY "Users can delete their own books"
     ON books FOR DELETE
     USING (auth.uid() = user_id);
 
+ALTER TABLE books ENABLE ROW LEVEL SECURITY;
+
 -- TAGS
 CREATE POLICY "Users can view their own tags"
     ON tags FOR SELECT
@@ -220,6 +222,8 @@ CREATE POLICY "Users can update their own tags"
 CREATE POLICY "Users can delete their own tags"
     ON tags FOR DELETE
     USING (auth.uid() = user_id);
+
+ALTER TABLE tags ENABLE ROW LEVEL SECURITY;
 
 -- BOOK_TAGS (no user_id column, so join through books)
 CREATE POLICY "Users can view their own book_tags"
@@ -251,3 +255,5 @@ CREATE POLICY "Users can delete their own book_tags"
             AND books.user_id = auth.uid()
         )
     );
+
+ALTER TABLE book_tags ENABLE ROW LEVEL SECURITY;
