@@ -12,3 +12,5 @@ ktlint_standard_trailing-comma-on-call-site = disabled
 ktlint_standard_trailing-comma-on-declaration-site = disabled
 # Package name contains underscore (com.example.books_kmp) — matches applicationId, renaming is a broad refactor
 ktlint_standard_package-name = disabled
+# Compose @Composable functions use PascalCase by convention — suppress per-function annotations are not needed
+ktlint_function_naming_ignore_when_annotated_with = Composable
