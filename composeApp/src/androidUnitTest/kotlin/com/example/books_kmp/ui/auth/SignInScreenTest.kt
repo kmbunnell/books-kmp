@@ -103,7 +103,7 @@ class SignInScreenTest {
     }
 
     @Test
-    fun `shows snackbar when ShowError effect is emitted`() {
+    fun `shows snackbar when ShowError effect with InvalidCredentials is emitted`() {
         val effects = MutableSharedFlow<AuthEffect>(extraBufferCapacity = 1)
         composeTestRule.setContent {
             SignInScreen(
@@ -114,9 +114,26 @@ class SignInScreenTest {
             )
         }
         composeTestRule.waitForIdle()
-        effects.tryEmit(AuthEffect.ShowError(AuthError.SignInFailed("Invalid email or password")))
+        effects.tryEmit(AuthEffect.ShowError(AuthError.InvalidCredentials))
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Invalid email or password").assertIsDisplayed()
+    }
+
+    @Test
+    fun `shows snackbar when ShowError effect with SessionExpired is emitted`() {
+        val effects = MutableSharedFlow<AuthEffect>(extraBufferCapacity = 1)
+        composeTestRule.setContent {
+            SignInScreen(
+                uiState = AuthUiState(),
+                effects = effects,
+                onSignIn = { _, _ -> },
+                onNavigateToSignUp = {},
+            )
+        }
+        composeTestRule.waitForIdle()
+        effects.tryEmit(AuthEffect.ShowError(AuthError.SessionExpired))
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Your session has expired. Please sign in again.").assertIsDisplayed()
     }
 
     @Test

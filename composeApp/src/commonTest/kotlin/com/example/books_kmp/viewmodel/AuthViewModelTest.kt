@@ -3,6 +3,7 @@ package com.example.books_kmp.viewmodel
 import app.cash.turbine.test
 import com.example.books_kmp.auth.AuthSessionState
 import com.example.books_kmp.auth.FakeAuthRepository
+import com.example.books_kmp.auth.SignInUseCase
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -22,11 +23,13 @@ import kotlinx.coroutines.test.setMain
 class AuthViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var fakeRepo: FakeAuthRepository
+    private lateinit var signInUseCase: SignInUseCase
 
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeRepo = FakeAuthRepository()
+        signInUseCase = SignInUseCase(fakeRepo)
     }
 
     @AfterTest
@@ -38,7 +41,7 @@ class AuthViewModelTest {
     fun `initial state is NotAuthenticated when repository emits not authenticated`() =
         runTest {
             fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
-            val viewModel = AuthViewModel(fakeRepo)
+            val viewModel = AuthViewModel(fakeRepo, signInUseCase)
 
             val state = viewModel.uiState.value
             assertFalse(state.isAuthenticated)
@@ -50,7 +53,7 @@ class AuthViewModelTest {
     fun `state transitions to Authenticated after successful sign-in intent`() =
         runTest {
             fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
-            val viewModel = AuthViewModel(fakeRepo)
+            val viewModel = AuthViewModel(fakeRepo, signInUseCase)
 
             viewModel.onIntent(AuthIntent.SignInWithEmail("test@example.com", "password123"))
             fakeRepo.sessionFlow.emit(AuthSessionState.Authenticated("user-123"))
@@ -64,7 +67,7 @@ class AuthViewModelTest {
     fun `state transitions to NotAuthenticated after sign-out intent`() =
         runTest {
             fakeRepo.sessionFlow.emit(AuthSessionState.Authenticated("user-123"))
-            val viewModel = AuthViewModel(fakeRepo)
+            val viewModel = AuthViewModel(fakeRepo, signInUseCase)
 
             viewModel.onIntent(AuthIntent.SignOut)
             fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
@@ -75,40 +78,39 @@ class AuthViewModelTest {
         }
 
     @Test
-    fun `ShowError effect emitted when sign-in throws`() =
+    fun `ShowError effect with InvalidCredentials emitted when sign-in fails`() =
         runTest {
             fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
-            fakeRepo.signInResult = Result.failure(Exception("Invalid credentials"))
-            val viewModel = AuthViewModel(fakeRepo)
+            fakeRepo.signInException = Exception("Invalid credentials")
+            val viewModel = AuthViewModel(fakeRepo, signInUseCase)
 
             viewModel.effects.test {
                 viewModel.onIntent(AuthIntent.SignInWithEmail("test@example.com", "wrong-password"))
                 val effect = awaitItem()
                 assertIs<AuthEffect.ShowError>(effect)
-                assertIs<AuthError.SignInFailed>(effect.error)
-                assertEquals("Invalid credentials", effect.error.cause)
+                assertIs<AuthError.InvalidCredentials>(effect.error)
             }
         }
 
     @Test
-    fun `ShowError effect emitted when session status emits Error`() =
+    fun `ShowError effect with SessionExpired emitted when session status emits Error`() =
         runTest {
             fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
-            val viewModel = AuthViewModel(fakeRepo)
+            val viewModel = AuthViewModel(fakeRepo, signInUseCase)
 
             viewModel.effects.test {
-                fakeRepo.sessionFlow.emit(AuthSessionState.Error("Session expired"))
+                fakeRepo.sessionFlow.emit(AuthSessionState.Error)
                 val effect = awaitItem()
                 assertIs<AuthEffect.ShowError>(effect)
-                assertIs<AuthError.SessionError>(effect.error)
-                assertEquals("Session expired", effect.error.cause)
+                assertIs<AuthError.SessionExpired>(effect.error)
             }
         }
 
     @Test
     fun `sign in with blank email sets email error and does not call repository`() =
         runTest {
-            val viewModel = AuthViewModel(fakeRepo)
+            fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
+            val viewModel = AuthViewModel(fakeRepo, signInUseCase)
 
             viewModel.onIntent(AuthIntent.SignInWithEmail("", "password123"))
 
@@ -120,7 +122,8 @@ class AuthViewModelTest {
     @Test
     fun `sign in with blank password sets password error and does not call repository`() =
         runTest {
-            val viewModel = AuthViewModel(fakeRepo)
+            fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
+            val viewModel = AuthViewModel(fakeRepo, signInUseCase)
 
             viewModel.onIntent(AuthIntent.SignInWithEmail("test@example.com", ""))
 
@@ -132,12 +135,40 @@ class AuthViewModelTest {
     @Test
     fun `sign in with valid fields calls repository and clears validation errors`() =
         runTest {
-            val viewModel = AuthViewModel(fakeRepo)
+            fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
+            val viewModel = AuthViewModel(fakeRepo, signInUseCase)
 
             viewModel.onIntent(AuthIntent.SignInWithEmail("test@example.com", "password123"))
 
             assertNull(viewModel.uiState.value.emailError)
             assertNull(viewModel.uiState.value.passwordError)
             assertTrue(fakeRepo.signInCalled)
+        }
+
+    @Test
+    fun `isLoading is true while sign-in is in progress`() =
+        runTest {
+            fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
+            val viewModel = AuthViewModel(fakeRepo, signInUseCase)
+
+            viewModel.onIntent(AuthIntent.SignInWithEmail("test@example.com", "password123"))
+
+            // After successful sign-in, isLoading stays true until session flow updates
+            assertTrue(viewModel.uiState.value.isLoading)
+        }
+
+    @Test
+    fun `isLoading is false after sign-in fails`() =
+        runTest {
+            fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
+            fakeRepo.signInException = Exception("fail")
+            val viewModel = AuthViewModel(fakeRepo, signInUseCase)
+
+            viewModel.effects.test {
+                viewModel.onIntent(AuthIntent.SignInWithEmail("test@example.com", "password"))
+                awaitItem() // consume the effect
+            }
+
+            assertFalse(viewModel.uiState.value.isLoading)
         }
 }

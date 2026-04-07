@@ -14,7 +14,7 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
                 SessionStatus.Initializing -> AuthSessionState.Loading
                 is SessionStatus.Authenticated -> AuthSessionState.Authenticated(status.session.user?.id ?: "")
                 is SessionStatus.NotAuthenticated -> AuthSessionState.NotAuthenticated
-                is SessionStatus.RefreshFailure -> AuthSessionState.Error(status.cause.toString())
+                is SessionStatus.RefreshFailure -> AuthSessionState.Error
             }
         }
 

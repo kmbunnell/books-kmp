@@ -33,8 +33,9 @@ import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_sign_in
 import bookskmp.composeapp.generated.resources.error_email_required
+import bookskmp.composeapp.generated.resources.error_invalid_credentials
 import bookskmp.composeapp.generated.resources.error_password_required
-import bookskmp.composeapp.generated.resources.error_sign_in_failed
+import bookskmp.composeapp.generated.resources.error_session_expired
 import bookskmp.composeapp.generated.resources.error_sign_out_failed
 import bookskmp.composeapp.generated.resources.error_sign_up_failed
 import bookskmp.composeapp.generated.resources.label_email
@@ -60,20 +61,22 @@ fun SignInScreen(
 
     val errorEmailRequired = stringResource(Res.string.error_email_required)
     val errorPasswordRequired = stringResource(Res.string.error_password_required)
-    val errorSignInFailed = stringResource(Res.string.error_sign_in_failed)
+    val errorInvalidCredentials = stringResource(Res.string.error_invalid_credentials)
     val errorSignUpFailed = stringResource(Res.string.error_sign_up_failed)
     val errorSignOutFailed = stringResource(Res.string.error_sign_out_failed)
+    val errorSessionExpired = stringResource(Res.string.error_session_expired)
 
     LaunchedEffect(Unit) {
         effects.collect { effect ->
             when (effect) {
                 is AuthEffect.ShowError -> {
-                    val message = when (val error = effect.error) {
-                        is AuthError.SignInFailed -> error.cause ?: errorSignInFailed
-                        is AuthError.SignUpFailed -> error.cause ?: errorSignUpFailed
-                        is AuthError.SignOutFailed -> error.cause ?: errorSignOutFailed
-                        is AuthError.SessionError -> error.cause ?: errorSignInFailed
-                        else -> errorSignInFailed
+                    val message = when (effect.error) {
+                        AuthError.InvalidCredentials -> errorInvalidCredentials
+                        AuthError.SignUpFailed -> errorSignUpFailed
+                        AuthError.SignOutFailed -> errorSignOutFailed
+                        AuthError.SessionExpired -> errorSessionExpired
+                        AuthError.EmailRequired -> errorEmailRequired
+                        AuthError.PasswordRequired -> errorPasswordRequired
                     }
                     snackbarHostState.showSnackbar(message)
                 }

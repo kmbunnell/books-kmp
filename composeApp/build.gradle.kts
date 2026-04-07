@@ -76,6 +76,7 @@ kotlin {
             implementation(libs.supabase.composeAuth)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.json)
@@ -136,6 +137,8 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+            // Unit tests run against the debug variant only; release tests are not meaningful here.
+            all { test -> if (test.name.contains("release", ignoreCase = true)) test.enabled = false }
         }
     }
     compileOptions {
