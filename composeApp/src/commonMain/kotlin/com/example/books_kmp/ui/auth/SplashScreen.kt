@@ -8,6 +8,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.AuthUiState
 
 @Composable
@@ -28,7 +29,7 @@ fun SplashScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            CircularProgressIndicator(modifier = Modifier.testTag("loading_indicator"))
+            CircularProgressIndicator(modifier = Modifier.testTag(TestTags.Splash.LoadingIndicator))
         }
     }
 }

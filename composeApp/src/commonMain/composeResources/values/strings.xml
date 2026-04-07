@@ -6,7 +6,8 @@
     <string name="sign_in_sign_up_prompt">Don't have an account? Sign Up</string>
     <string name="error_email_required">Email is required</string>
     <string name="error_password_required">Password is required</string>
-    <string name="error_sign_in_failed">Sign in failed</string>
+    <string name="error_invalid_credentials">Invalid email or password</string>
     <string name="error_sign_up_failed">Sign up failed</string>
     <string name="error_sign_out_failed">Sign out failed</string>
+    <string name="error_session_expired">Your session has expired. Please sign in again.</string>
 </resources>

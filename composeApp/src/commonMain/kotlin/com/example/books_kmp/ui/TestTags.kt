@@ -7,4 +7,8 @@ object TestTags {
         const val LoadingIndicator = "sign_in_loading"
         const val SignInButton = "sign_in_button"
     }
+
+    object Splash {
+        const val LoadingIndicator = "splash_loading"
+    }
 }

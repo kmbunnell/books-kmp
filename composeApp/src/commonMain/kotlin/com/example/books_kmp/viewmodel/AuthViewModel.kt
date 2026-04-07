@@ -2,8 +2,11 @@ package com.example.books_kmp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.books_kmp.Result
 import com.example.books_kmp.auth.AuthRepository
 import com.example.books_kmp.auth.AuthSessionState
+import com.example.books_kmp.auth.SignInError
+import com.example.books_kmp.auth.SignInUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -16,10 +19,10 @@ import kotlinx.coroutines.launch
 sealed interface AuthError {
     data object EmailRequired : AuthError
     data object PasswordRequired : AuthError
-    data class SignInFailed(val cause: String?) : AuthError
-    data class SignUpFailed(val cause: String?) : AuthError
-    data class SignOutFailed(val cause: String?) : AuthError
-    data class SessionError(val cause: String?) : AuthError
+    data object InvalidCredentials : AuthError
+    data object SignUpFailed : AuthError
+    data object SignOutFailed : AuthError
+    data object SessionExpired : AuthError
 }
 
 data class AuthUiState(
@@ -42,7 +45,10 @@ sealed interface AuthEffect {
     data class ShowError(val error: AuthError) : AuthEffect
 }
 
-class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
+class AuthViewModel(
+    private val authRepository: AuthRepository,
+    private val signInUseCase: SignInUseCase,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState(isLoading = true))
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
@@ -59,9 +65,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                         _uiState.update { it.copy(isLoading = false, isAuthenticated = true, userId = sessionState.userId) }
                     AuthSessionState.NotAuthenticated ->
                         _uiState.update { it.copy(isLoading = false, isAuthenticated = false, userId = null) }
-                    is AuthSessionState.Error -> {
+                    AuthSessionState.Error -> {
                         _uiState.update { it.copy(isLoading = false, isAuthenticated = false, userId = null) }
-                        _effects.emit(AuthEffect.ShowError(AuthError.SessionError(sessionState.message)))
+                        _effects.emit(AuthEffect.ShowError(AuthError.SessionExpired))
                     }
                 }
             }
@@ -80,12 +86,12 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     private suspend fun handleSignUp(
         email: String,
-        password: String
+        password: String,
     ) {
         try {
             authRepository.signUp(email, password)
-        } catch (e: Exception) {
-            _effects.emit(AuthEffect.ShowError(AuthError.SignUpFailed(e.message)))
+        } catch (_: Exception) {
+            _effects.emit(AuthEffect.ShowError(AuthError.SignUpFailed))
         }
     }
 
@@ -93,27 +99,30 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         email: String,
         password: String,
     ) {
-        if (email.isBlank()) {
-            _uiState.update { it.copy(emailError = AuthError.EmailRequired, passwordError = null) }
-            return
-        }
-        if (password.isBlank()) {
-            _uiState.update { it.copy(emailError = null, passwordError = AuthError.PasswordRequired) }
-            return
-        }
-        _uiState.update { it.copy(emailError = null, passwordError = null) }
-        try {
-            authRepository.signIn(email, password)
-        } catch (e: Exception) {
-            _effects.emit(AuthEffect.ShowError(AuthError.SignInFailed(e.message)))
+        _uiState.update { it.copy(emailError = null, passwordError = null, isLoading = true) }
+
+        when (val result = signInUseCase(email, password)) {
+            is Result.Failure -> when (result.error) {
+                SignInError.EmptyEmail ->
+                    _uiState.update { it.copy(isLoading = false, emailError = AuthError.EmailRequired) }
+                SignInError.EmptyPassword ->
+                    _uiState.update { it.copy(isLoading = false, passwordError = AuthError.PasswordRequired) }
+                SignInError.InvalidCredentials -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.emit(AuthEffect.ShowError(AuthError.InvalidCredentials))
+                }
+            }
+            Result.Success -> {
+                // Session flow will update isLoading and isAuthenticated
+            }
         }
     }
 
     private suspend fun handleSignOut() {
         try {
             authRepository.signOut()
-        } catch (e: Exception) {
-            _effects.emit(AuthEffect.ShowError(AuthError.SignOutFailed(e.message)))
+        } catch (_: Exception) {
+            _effects.emit(AuthEffect.ShowError(AuthError.SignOutFailed))
         }
     }
 }

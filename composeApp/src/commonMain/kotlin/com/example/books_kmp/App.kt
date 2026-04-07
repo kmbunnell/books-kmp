@@ -14,13 +14,13 @@ import com.example.books_kmp.ui.auth.SplashScreen
 import com.example.books_kmp.ui.library.LibraryScreen
 import com.example.books_kmp.viewmodel.AuthIntent
 import com.example.books_kmp.viewmodel.AuthViewModel
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun App() {
     MaterialTheme {
         val navController = rememberNavController()
-        val authViewModel: AuthViewModel = koinInject()
+        val authViewModel: AuthViewModel = koinViewModel()
         val uiState by authViewModel.uiState.collectAsState()
 
         NavHost(navController = navController, startDestination = NavDestination.Splash.route) {

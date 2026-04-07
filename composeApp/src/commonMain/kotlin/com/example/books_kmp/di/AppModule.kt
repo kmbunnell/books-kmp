@@ -1,11 +1,13 @@
 package com.example.books_kmp.di
 
 import com.example.books_kmp.auth.AuthRepository
+import com.example.books_kmp.auth.SignInUseCase
 import com.example.books_kmp.auth.SupabaseAuthRepository
 import com.example.books_kmp.viewmodel.AuthViewModel
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import org.koin.core.module.Module
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 fun appModule(
@@ -22,5 +24,6 @@ fun appModule(
             }
         }
         single<AuthRepository> { SupabaseAuthRepository(get()) }
-        factory { AuthViewModel(get()) }
+        factory { SignInUseCase(get()) }
+        viewModel { AuthViewModel(get(), get()) }
     }

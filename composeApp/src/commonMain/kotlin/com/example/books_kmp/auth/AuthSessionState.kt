@@ -7,5 +7,5 @@ sealed interface AuthSessionState {
 
     data object NotAuthenticated : AuthSessionState
 
-    data class Error(val message: String) : AuthSessionState
+    data object Error : AuthSessionState
 }

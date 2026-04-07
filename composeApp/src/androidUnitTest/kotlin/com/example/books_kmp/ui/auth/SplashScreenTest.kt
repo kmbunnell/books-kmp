@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.AuthUiState
 import kotlin.test.assertTrue
 import org.junit.Rule
@@ -27,7 +28,7 @@ class SplashScreenTest {
                 onNotAuthenticated = {},
             )
         }
-        composeTestRule.onNodeWithTag("loading_indicator").assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.Splash.LoadingIndicator).assertIsDisplayed()
     }
 
     @Test
