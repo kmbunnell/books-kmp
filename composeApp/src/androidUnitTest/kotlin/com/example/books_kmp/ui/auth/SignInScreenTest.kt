@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.AuthEffect
 import com.example.books_kmp.viewmodel.AuthError
 import com.example.books_kmp.viewmodel.AuthUiState
@@ -35,8 +36,8 @@ class SignInScreenTest {
                 onNavigateToSignUp = {},
             )
         }
-        composeTestRule.onNodeWithTag("sign_in_email_field").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("sign_in_password_field").assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.SignIn.EmailField).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.SignIn.PasswordField).assertIsDisplayed()
     }
 
     @Test
@@ -75,8 +76,8 @@ class SignInScreenTest {
                 onNavigateToSignUp = {},
             )
         }
-        composeTestRule.onNodeWithTag("sign_in_loading").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("sign_in_button").assertIsNotEnabled()
+        composeTestRule.onNodeWithTag(TestTags.SignIn.LoadingIndicator).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.SignIn.SignInButton).assertIsNotEnabled()
     }
 
     @Test
@@ -94,9 +95,9 @@ class SignInScreenTest {
                 onNavigateToSignUp = {},
             )
         }
-        composeTestRule.onNodeWithTag("sign_in_email_field").performTextInput("test@example.com")
-        composeTestRule.onNodeWithTag("sign_in_password_field").performTextInput("password123")
-        composeTestRule.onNodeWithTag("sign_in_button").performClick()
+        composeTestRule.onNodeWithTag(TestTags.SignIn.EmailField).performTextInput("test@example.com")
+        composeTestRule.onNodeWithTag(TestTags.SignIn.PasswordField).performTextInput("password123")
+        composeTestRule.onNodeWithTag(TestTags.SignIn.SignInButton).performClick()
         assertEquals("test@example.com", capturedEmail)
         assertEquals("password123", capturedPassword)
     }
