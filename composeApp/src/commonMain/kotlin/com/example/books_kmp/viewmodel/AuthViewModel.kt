@@ -19,6 +19,7 @@ sealed interface AuthError {
     data class SignInFailed(val cause: String?) : AuthError
     data class SignUpFailed(val cause: String?) : AuthError
     data class SignOutFailed(val cause: String?) : AuthError
+    data class SessionError(val cause: String?) : AuthError
 }
 
 data class AuthUiState(
@@ -42,7 +43,7 @@ sealed interface AuthEffect {
 }
 
 class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow(AuthUiState())
+    private val _uiState = MutableStateFlow(AuthUiState(isLoading = true))
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     private val _effects = MutableSharedFlow<AuthEffect>()
@@ -51,32 +52,16 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     init {
         viewModelScope.launch {
             authRepository.sessionStatus.collect { sessionState ->
-                _uiState.update { current ->
-                    when (sessionState) {
-                        AuthSessionState.Loading ->
-                            current.copy(
-                                isLoading = true,
-                                isAuthenticated = false,
-                                userId = null
-                            )
-                        is AuthSessionState.Authenticated ->
-                            current.copy(
-                                isLoading = false,
-                                isAuthenticated = true,
-                                userId = sessionState.userId
-                            )
-                        AuthSessionState.NotAuthenticated ->
-                            current.copy(
-                                isLoading = false,
-                                isAuthenticated = false,
-                                userId = null
-                            )
-                        is AuthSessionState.Error ->
-                            current.copy(
-                                isLoading = false,
-                                isAuthenticated = false,
-                                userId = null
-                            )
+                when (sessionState) {
+                    AuthSessionState.Loading ->
+                        _uiState.update { it.copy(isLoading = true, isAuthenticated = false, userId = null) }
+                    is AuthSessionState.Authenticated ->
+                        _uiState.update { it.copy(isLoading = false, isAuthenticated = true, userId = sessionState.userId) }
+                    AuthSessionState.NotAuthenticated ->
+                        _uiState.update { it.copy(isLoading = false, isAuthenticated = false, userId = null) }
+                    is AuthSessionState.Error -> {
+                        _uiState.update { it.copy(isLoading = false, isAuthenticated = false, userId = null) }
+                        _effects.emit(AuthEffect.ShowError(AuthError.SessionError(sessionState.message)))
                     }
                 }
             }

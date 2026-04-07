@@ -72,6 +72,7 @@ fun SignInScreen(
                         is AuthError.SignInFailed -> error.cause ?: errorSignInFailed
                         is AuthError.SignUpFailed -> error.cause ?: errorSignUpFailed
                         is AuthError.SignOutFailed -> error.cause ?: errorSignOutFailed
+                        is AuthError.SessionError -> error.cause ?: errorSignInFailed
                         else -> errorSignInFailed
                     }
                     snackbarHostState.showSnackbar(message)

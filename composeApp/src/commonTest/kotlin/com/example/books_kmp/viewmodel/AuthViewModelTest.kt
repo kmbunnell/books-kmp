@@ -91,6 +91,21 @@ class AuthViewModelTest {
         }
 
     @Test
+    fun `ShowError effect emitted when session status emits Error`() =
+        runTest {
+            fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
+            val viewModel = AuthViewModel(fakeRepo)
+
+            viewModel.effects.test {
+                fakeRepo.sessionFlow.emit(AuthSessionState.Error("Session expired"))
+                val effect = awaitItem()
+                assertIs<AuthEffect.ShowError>(effect)
+                assertIs<AuthError.SessionError>(effect.error)
+                assertEquals("Session expired", effect.error.cause)
+            }
+        }
+
+    @Test
     fun `sign in with blank email sets email error and does not call repository`() =
         runTest {
             val viewModel = AuthViewModel(fakeRepo)
