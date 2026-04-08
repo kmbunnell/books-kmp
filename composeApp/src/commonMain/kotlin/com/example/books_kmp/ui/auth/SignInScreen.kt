@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,23 +36,37 @@ import bookskmp.composeapp.generated.resources.button_sign_in
 import bookskmp.composeapp.generated.resources.error_email_required
 import bookskmp.composeapp.generated.resources.error_invalid_credentials
 import bookskmp.composeapp.generated.resources.error_password_required
-import bookskmp.composeapp.generated.resources.error_session_expired
-import bookskmp.composeapp.generated.resources.error_sign_out_failed
-import bookskmp.composeapp.generated.resources.error_sign_up_failed
 import bookskmp.composeapp.generated.resources.label_email
 import bookskmp.composeapp.generated.resources.label_password
 import bookskmp.composeapp.generated.resources.sign_in_sign_up_prompt
+import com.example.books_kmp.auth.SignInError
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.AuthEffect
-import com.example.books_kmp.viewmodel.AuthError
-import com.example.books_kmp.viewmodel.AuthUiState
+import com.example.books_kmp.viewmodel.SignInEffect
+import com.example.books_kmp.viewmodel.SignInIntent
+import com.example.books_kmp.viewmodel.SignInUiState
+import com.example.books_kmp.viewmodel.SignInViewModel
 import kotlinx.coroutines.flow.SharedFlow
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun SignInScreen(
-    uiState: AuthUiState,
-    effects: SharedFlow<AuthEffect>,
+fun SignInScreen(onNavigateToSignUp: () -> Unit) {
+    val viewModel: SignInViewModel = koinViewModel()
+    val uiState by viewModel.uiState.collectAsState()
+    SignInScreenContent(
+        uiState = uiState,
+        effects = viewModel.effects,
+        onSignIn = { email, password ->
+            viewModel.onIntent(SignInIntent.SignIn(email, password))
+        },
+        onNavigateToSignUp = onNavigateToSignUp,
+    )
+}
+
+@Composable
+fun SignInScreenContent(
+    uiState: SignInUiState,
+    effects: SharedFlow<SignInEffect>,
     onSignIn: (email: String, password: String) -> Unit,
     onNavigateToSignUp: () -> Unit,
 ) {
@@ -62,21 +77,15 @@ fun SignInScreen(
     val errorEmailRequired = stringResource(Res.string.error_email_required)
     val errorPasswordRequired = stringResource(Res.string.error_password_required)
     val errorInvalidCredentials = stringResource(Res.string.error_invalid_credentials)
-    val errorSignUpFailed = stringResource(Res.string.error_sign_up_failed)
-    val errorSignOutFailed = stringResource(Res.string.error_sign_out_failed)
-    val errorSessionExpired = stringResource(Res.string.error_session_expired)
 
     LaunchedEffect(Unit) {
         effects.collect { effect ->
             when (effect) {
-                is AuthEffect.ShowError -> {
+                is SignInEffect.ShowError -> {
                     val message = when (effect.error) {
-                        AuthError.InvalidCredentials -> errorInvalidCredentials
-                        AuthError.SignUpFailed -> errorSignUpFailed
-                        AuthError.SignOutFailed -> errorSignOutFailed
-                        AuthError.SessionExpired -> errorSessionExpired
-                        AuthError.EmailRequired -> errorEmailRequired
-                        AuthError.PasswordRequired -> errorPasswordRequired
+                        SignInError.InvalidCredentials -> errorInvalidCredentials
+                        SignInError.EmptyEmail -> errorEmailRequired
+                        SignInError.EmptyPassword -> errorPasswordRequired
                     }
                     snackbarHostState.showSnackbar(message)
                 }

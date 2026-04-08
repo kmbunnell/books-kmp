@@ -12,7 +12,6 @@ import com.example.books_kmp.ui.auth.SignInScreen
 import com.example.books_kmp.ui.auth.SignUpScreen
 import com.example.books_kmp.ui.auth.SplashScreen
 import com.example.books_kmp.ui.library.LibraryScreen
-import com.example.books_kmp.viewmodel.AuthIntent
 import com.example.books_kmp.viewmodel.AuthViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -48,11 +47,6 @@ fun App() {
                     }
                 }
                 SignInScreen(
-                    uiState = uiState,
-                    effects = authViewModel.effects,
-                    onSignIn = { email, password ->
-                        authViewModel.onIntent(AuthIntent.SignInWithEmail(email, password))
-                    },
                     onNavigateToSignUp = { navController.navigate(NavDestination.SignUp.route) },
                 )
             }
