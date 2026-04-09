@@ -1,6 +1,8 @@
 package com.example.books_kmp.viewmodel
 
 import app.cash.turbine.test
+import com.example.books_kmp.Result
+import com.example.books_kmp.auth.AuthRepositoryError
 import com.example.books_kmp.auth.FakeAuthRepository
 import com.example.books_kmp.auth.SignInError
 import com.example.books_kmp.auth.SignInUseCase
@@ -40,7 +42,7 @@ class SignInViewModelTest {
     @Test
     fun `ShowError effect with InvalidCredentials emitted when sign-in fails`() =
         runTest {
-            fakeRepo.signInException = Exception("Invalid credentials")
+            fakeRepo.signInResult = Result.Failure(AuthRepositoryError.InvalidCredentials)
             val viewModel = SignInViewModel(signInUseCase)
 
             viewModel.effects.test {
@@ -98,9 +100,23 @@ class SignInViewModelTest {
         }
 
     @Test
+    fun `ShowError effect with SignInFailed emitted when repository returns NetworkError`() =
+        runTest {
+            fakeRepo.signInResult = Result.Failure(AuthRepositoryError.NetworkError)
+            val viewModel = SignInViewModel(signInUseCase)
+
+            viewModel.effects.test {
+                viewModel.onIntent(SignInIntent.SignIn("test@example.com", "password123"))
+                val effect = awaitItem()
+                assertIs<SignInEffect.ShowError>(effect)
+                assertIs<SignInError.SignInFailed>(effect.error)
+            }
+        }
+
+    @Test
     fun `isLoading is false after sign-in fails`() =
         runTest {
-            fakeRepo.signInException = Exception("fail")
+            fakeRepo.signInResult = Result.Failure(AuthRepositoryError.InvalidCredentials)
             val viewModel = SignInViewModel(signInUseCase)
 
             viewModel.effects.test {
