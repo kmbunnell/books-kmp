@@ -19,4 +19,7 @@
     <string name="error_invalid_email_format">Please enter a valid email address</string>
     <string name="error_sign_out_failed">Sign out failed</string>
     <string name="error_session_expired">Your session has expired. Please sign in again.</string>
+    <string name="cd_show_password">Show password</string>
+    <string name="cd_hide_password">Hide password</string>
+    <string name="hint_password_requirement">Password must be at least 6 characters</string>
 </resources>

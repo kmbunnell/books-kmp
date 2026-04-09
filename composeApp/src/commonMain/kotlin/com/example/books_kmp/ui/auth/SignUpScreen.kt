@@ -5,8 +5,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -23,9 +29,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_create_account
+import bookskmp.composeapp.generated.resources.cd_hide_password
+import bookskmp.composeapp.generated.resources.cd_show_password
 import bookskmp.composeapp.generated.resources.error_confirm_password_required
 import bookskmp.composeapp.generated.resources.error_email_already_in_use
 import bookskmp.composeapp.generated.resources.error_email_required
@@ -34,6 +43,7 @@ import bookskmp.composeapp.generated.resources.error_passwords_do_not_match
 import bookskmp.composeapp.generated.resources.error_invalid_email_format
 import bookskmp.composeapp.generated.resources.error_sign_up_failed
 import bookskmp.composeapp.generated.resources.error_weak_password
+import bookskmp.composeapp.generated.resources.hint_password_requirement
 import bookskmp.composeapp.generated.resources.label_confirm_password
 import bookskmp.composeapp.generated.resources.label_email
 import bookskmp.composeapp.generated.resources.label_password
@@ -73,6 +83,9 @@ fun SignUpScreenContent(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
+
 
     val errorEmailRequired = stringResource(Res.string.error_email_required)
     val errorInvalidEmailFormat = stringResource(Res.string.error_invalid_email_format)
@@ -82,6 +95,9 @@ fun SignUpScreenContent(
     val errorPasswordsDoNotMatch = stringResource(Res.string.error_passwords_do_not_match)
     val errorEmailAlreadyInUse = stringResource(Res.string.error_email_already_in_use)
     val errorSignUpFailed = stringResource(Res.string.error_sign_up_failed)
+    val cdShowPassword = stringResource(Res.string.cd_show_password)
+    val cdHidePassword = stringResource(Res.string.cd_hide_password)
+    val hintPasswordRequirement = stringResource(Res.string.hint_password_requirement)
 
     LaunchedEffect(Unit) {
         effects.collect { effect ->
@@ -135,7 +151,18 @@ fun SignUpScreenContent(
             value = password,
             onValueChange = { password = it },
             label = { Text(stringResource(Res.string.label_password)) },
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(
+                    onClick = { passwordVisible = !passwordVisible },
+                    modifier = Modifier.testTag(TestTags.SignUp.PasswordToggle),
+                ) {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = if (passwordVisible) cdHidePassword else cdShowPassword,
+                    )
+                }
+            },
             keyboardOptions =
                 KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -163,7 +190,18 @@ fun SignUpScreenContent(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
             label = { Text(stringResource(Res.string.label_confirm_password)) },
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(
+                    onClick = { confirmPasswordVisible = !confirmPasswordVisible },
+                    modifier = Modifier.testTag(TestTags.SignUp.ConfirmPasswordToggle),
+                ) {
+                    Icon(
+                        imageVector = if (confirmPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = if (confirmPasswordVisible) cdHidePassword else cdShowPassword,
+                    )
+                }
+            },
             keyboardOptions =
                 KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -189,6 +227,15 @@ fun SignUpScreenContent(
                 Modifier
                     .fillMaxWidth()
                     .testTag(TestTags.SignUp.ConfirmPasswordField),
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = hintPasswordRequirement,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(TestTags.SignUp.PasswordHint),
         )
         Spacer(modifier = Modifier.height(16.dp))
         if (uiState.isLoading) {

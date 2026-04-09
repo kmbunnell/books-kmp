@@ -2,11 +2,14 @@ package com.example.books_kmp.ui.auth
 
 import android.app.Application
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import com.example.books_kmp.auth.SignInError
 import com.example.books_kmp.ui.TestTags
@@ -117,6 +120,82 @@ class SignInScreenTest {
         effects.tryEmit(SignInEffect.ShowError(SignInError.InvalidCredentials))
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Invalid email or password").assertIsDisplayed()
+    }
+
+    @Test
+    fun `password toggle button is displayed`() {
+        composeTestRule.setContent {
+            SignInScreenContent(
+                uiState = SignInUiState(),
+                effects = MutableSharedFlow(),
+                onSignIn = { _, _ -> },
+                onNavigateToSignUp = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.SignIn.PasswordToggle).assertIsDisplayed()
+    }
+
+    @Test
+    fun `password is obscured by default`() {
+        composeTestRule.setContent {
+            SignInScreenContent(
+                uiState = SignInUiState(),
+                effects = MutableSharedFlow(),
+                onSignIn = { _, _ -> },
+                onNavigateToSignUp = {},
+            )
+        }
+        composeTestRule.onNodeWithContentDescription("Show password").assertIsDisplayed()
+    }
+
+    @Test
+    fun `clicking toggle reveals password`() {
+        composeTestRule.setContent {
+            SignInScreenContent(
+                uiState = SignInUiState(),
+                effects = MutableSharedFlow(),
+                onSignIn = { _, _ -> },
+                onNavigateToSignUp = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.SignIn.PasswordToggle).performClick()
+        composeTestRule.onNodeWithContentDescription("Hide password").assertIsDisplayed()
+    }
+
+    @Test
+    fun `pressing IME next on email moves focus to password`() {
+        composeTestRule.setContent {
+            SignInScreenContent(
+                uiState = SignInUiState(),
+                effects = MutableSharedFlow(),
+                onSignIn = { _, _ -> },
+                onNavigateToSignUp = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.SignIn.EmailField).performImeAction()
+        composeTestRule.onNodeWithTag(TestTags.SignIn.PasswordField).assertIsFocused()
+    }
+
+    @Test
+    fun `pressing IME done on password submits form`() {
+        var capturedEmail = ""
+        var capturedPassword = ""
+        composeTestRule.setContent {
+            SignInScreenContent(
+                uiState = SignInUiState(),
+                effects = MutableSharedFlow(),
+                onSignIn = { email, password ->
+                    capturedEmail = email
+                    capturedPassword = password
+                },
+                onNavigateToSignUp = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.SignIn.EmailField).performTextInput("test@example.com")
+        composeTestRule.onNodeWithTag(TestTags.SignIn.PasswordField).performTextInput("password123")
+        composeTestRule.onNodeWithTag(TestTags.SignIn.PasswordField).performImeAction()
+        assertEquals("test@example.com", capturedEmail)
+        assertEquals("password123", capturedPassword)
     }
 
     @Test
