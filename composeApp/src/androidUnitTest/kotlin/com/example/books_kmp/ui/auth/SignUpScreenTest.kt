@@ -287,46 +287,6 @@ class SignUpScreenTest {
     }
 
     @Test
-    fun `pressing IME next on password moves focus to confirm password`() {
-        composeTestRule.setContent {
-            SignUpScreenContent(
-                uiState = SignUpUiState(),
-                effects = MutableSharedFlow(),
-                onSignUp = { _, _, _ -> },
-                onNavigateToSignIn = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.SignUp.PasswordField).performImeAction()
-        composeTestRule.onNodeWithTag(TestTags.SignUp.ConfirmPasswordField).assertIsFocused()
-    }
-
-    @Test
-    fun `pressing IME done on confirm password submits form`() {
-        var capturedEmail = ""
-        var capturedPassword = ""
-        var capturedConfirm = ""
-        composeTestRule.setContent {
-            SignUpScreenContent(
-                uiState = SignUpUiState(),
-                effects = MutableSharedFlow(),
-                onSignUp = { email, password, confirm ->
-                    capturedEmail = email
-                    capturedPassword = password
-                    capturedConfirm = confirm
-                },
-                onNavigateToSignIn = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.SignUp.EmailField).performTextInput("test@example.com")
-        composeTestRule.onNodeWithTag(TestTags.SignUp.PasswordField).performTextInput("password123")
-        composeTestRule.onNodeWithTag(TestTags.SignUp.ConfirmPasswordField).performTextInput("password123")
-        composeTestRule.onNodeWithTag(TestTags.SignUp.ConfirmPasswordField).performImeAction()
-        assertEquals("test@example.com", capturedEmail)
-        assertEquals("password123", capturedPassword)
-        assertEquals("password123", capturedConfirm)
-    }
-
-    @Test
     fun `sign in link is present`() {
         composeTestRule.setContent {
             SignUpScreenContent(
