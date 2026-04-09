@@ -1,9 +1,11 @@
 package com.example.books_kmp.auth
 
+import com.example.books_kmp.Result
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
+import io.github.jan.supabase.exceptions.RestException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -20,21 +22,47 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
 
     override suspend fun signUp(
         email: String,
-        password: String
-    ) {
-        supabase.auth.signUpWith(Email) {
-            this.email = email
-            this.password = password
+        password: String,
+    ): Result<AuthRepositoryError> {
+        return try {
+            supabase.auth.signUpWith(Email) {
+                this.email = email
+                this.password = password
+            }
+            Result.Success
+        } catch (e: RestException) {
+            Result.Failure(
+                when (e.error) {
+                    "user_already_exists" -> AuthRepositoryError.EmailAlreadyInUse
+                    "weak_password" -> AuthRepositoryError.WeakPassword
+                    "validation_failed" -> AuthRepositoryError.InvalidEmail
+                    else -> AuthRepositoryError.Unknown
+                },
+            )
+        } catch (_: Exception) {
+            Result.Failure(AuthRepositoryError.NetworkError)
         }
     }
 
     override suspend fun signIn(
         email: String,
-        password: String
-    ) {
-        supabase.auth.signInWith(Email) {
-            this.email = email
-            this.password = password
+        password: String,
+    ): Result<AuthRepositoryError> {
+        return try {
+            supabase.auth.signInWith(Email) {
+                this.email = email
+                this.password = password
+            }
+            Result.Success
+        } catch (e: RestException) {
+            Result.Failure(
+                when (e.error) {
+                    "invalid_credentials" -> AuthRepositoryError.InvalidCredentials
+                    else -> AuthRepositoryError.Unknown
+                },
+            )
+        } catch (_: Exception) {
+            Result.Failure(AuthRepositoryError.NetworkError)
         }
     }
 

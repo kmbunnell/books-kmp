@@ -62,6 +62,10 @@ class SignInViewModel(
                         _uiState.update { it.copy(isLoading = false) }
                         _effects.emit(SignInEffect.ShowError(SignInError.InvalidCredentials))
                     }
+                    SignInError.SignInFailed -> {
+                        _uiState.update { it.copy(isLoading = false) }
+                        _effects.emit(SignInEffect.ShowError(SignInError.SignInFailed))
+                    }
                 }
             Result.Success ->
                 _uiState.update { it.copy(isLoading = false) }

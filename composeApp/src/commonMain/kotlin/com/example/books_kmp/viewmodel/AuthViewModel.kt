@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 
 sealed interface AuthError {
     data object SignOutFailed : AuthError
+
     data object SessionExpired : AuthError
 }
 
@@ -48,7 +49,13 @@ class AuthViewModel(
                     AuthSessionState.Loading ->
                         _uiState.update { it.copy(isLoading = true, isAuthenticated = false, userId = null) }
                     is AuthSessionState.Authenticated ->
-                        _uiState.update { it.copy(isLoading = false, isAuthenticated = true, userId = sessionState.userId) }
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isAuthenticated = true,
+                                userId = sessionState.userId
+                            )
+                        }
                     AuthSessionState.NotAuthenticated ->
                         _uiState.update { it.copy(isLoading = false, isAuthenticated = false, userId = null) }
                     AuthSessionState.Error -> {

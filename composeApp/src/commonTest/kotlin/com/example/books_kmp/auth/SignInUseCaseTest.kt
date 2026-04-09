@@ -49,9 +49,9 @@ class SignInUseCaseTest {
         }
 
     @Test
-    fun `returns Failure with InvalidCredentials when repository throws`() =
+    fun `returns Failure with InvalidCredentials when repository returns InvalidCredentials`() =
         runTest {
-            fakeRepo.signInException = Exception("Invalid credentials")
+            fakeRepo.signInResult = Result.Failure(AuthRepositoryError.InvalidCredentials)
 
             val result = useCase("test@example.com", "wrong-password")
 
@@ -67,5 +67,27 @@ class SignInUseCaseTest {
 
             assertIs<Result.Failure<SignInError>>(result)
             assertEquals(SignInError.EmptyEmail, result.error)
+        }
+
+    @Test
+    fun `returns Failure with SignInFailed when repository returns NetworkError`() =
+        runTest {
+            fakeRepo.signInResult = Result.Failure(AuthRepositoryError.NetworkError)
+
+            val result = useCase("test@example.com", "password123")
+
+            assertIs<Result.Failure<SignInError>>(result)
+            assertEquals(SignInError.SignInFailed, result.error)
+        }
+
+    @Test
+    fun `returns Failure with SignInFailed when repository returns Unknown`() =
+        runTest {
+            fakeRepo.signInResult = Result.Failure(AuthRepositoryError.Unknown)
+
+            val result = useCase("test@example.com", "password123")
+
+            assertIs<Result.Failure<SignInError>>(result)
+            assertEquals(SignInError.SignInFailed, result.error)
         }
 }

@@ -16,6 +16,18 @@ import com.example.books_kmp.viewmodel.AuthViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
+private fun NavigateToLibraryOnAuth(
+    isAuthenticated: Boolean,
+    onAuthenticated: () -> Unit,
+) {
+    LaunchedEffect(isAuthenticated) {
+        if (isAuthenticated) {
+            onAuthenticated()
+        }
+    }
+}
+
+@Composable
 fun App() {
     MaterialTheme {
         val navController = rememberNavController()
@@ -39,19 +51,30 @@ fun App() {
                 )
             }
             composable(NavDestination.SignIn.route) {
-                LaunchedEffect(uiState.isAuthenticated) {
-                    if (uiState.isAuthenticated) {
+                NavigateToLibraryOnAuth(
+                    isAuthenticated = uiState.isAuthenticated,
+                    onAuthenticated = {
                         navController.navigate(NavDestination.Library.route) {
                             popUpTo(NavDestination.SignIn.route) { inclusive = true }
                         }
-                    }
-                }
+                    },
+                )
                 SignInScreen(
                     onNavigateToSignUp = { navController.navigate(NavDestination.SignUp.route) },
                 )
             }
             composable(NavDestination.SignUp.route) {
-                SignUpScreen()
+                NavigateToLibraryOnAuth(
+                    isAuthenticated = uiState.isAuthenticated,
+                    onAuthenticated = {
+                        navController.navigate(NavDestination.Library.route) {
+                            popUpTo(NavDestination.SignIn.route) { inclusive = true }
+                        }
+                    },
+                )
+                SignUpScreen(
+                    onNavigateToSignIn = { navController.popBackStack() },
+                )
             }
             composable(NavDestination.Library.route) {
                 LibraryScreen()

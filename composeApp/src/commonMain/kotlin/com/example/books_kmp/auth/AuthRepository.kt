@@ -1,5 +1,6 @@
 package com.example.books_kmp.auth
 
+import com.example.books_kmp.Result
 import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {
@@ -7,13 +8,13 @@ interface AuthRepository {
 
     suspend fun signUp(
         email: String,
-        password: String
-    )
+        password: String,
+    ): Result<AuthRepositoryError>
 
     suspend fun signIn(
         email: String,
-        password: String
-    )
+        password: String,
+    ): Result<AuthRepositoryError>
 
     suspend fun signOut()
 }
