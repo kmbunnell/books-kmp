@@ -5,8 +5,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -23,9 +28,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_sign_in
+import bookskmp.composeapp.generated.resources.cd_hide_password
+import bookskmp.composeapp.generated.resources.cd_show_password
 import bookskmp.composeapp.generated.resources.error_email_required
 import bookskmp.composeapp.generated.resources.error_invalid_credentials
 import bookskmp.composeapp.generated.resources.error_sign_in_failed
@@ -67,11 +75,14 @@ fun SignInScreenContent(
     val snackbarHostState = remember { SnackbarHostState() }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     val errorEmailRequired = stringResource(Res.string.error_email_required)
     val errorPasswordRequired = stringResource(Res.string.error_password_required)
     val errorInvalidCredentials = stringResource(Res.string.error_invalid_credentials)
     val errorSignInFailed = stringResource(Res.string.error_sign_in_failed)
+    val cdShowPassword = stringResource(Res.string.cd_show_password)
+    val cdHidePassword = stringResource(Res.string.cd_hide_password)
 
     LaunchedEffect(Unit) {
         effects.collect { effect ->
@@ -112,7 +123,18 @@ fun SignInScreenContent(
             value = password,
             onValueChange = { password = it },
             label = { Text(stringResource(Res.string.label_password)) },
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(
+                    onClick = { passwordVisible = !passwordVisible },
+                    modifier = Modifier.testTag(TestTags.SignIn.PasswordToggle),
+                ) {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = if (passwordVisible) cdHidePassword else cdShowPassword,
+                    )
+                }
+            },
             keyboardOptions =
                 KeyboardOptions(
                     keyboardType = KeyboardType.Password,

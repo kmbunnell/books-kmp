@@ -7,6 +7,7 @@ object TestTags {
         const val PasswordField = "sign_in_password_field"
         const val LoadingIndicator = "sign_in_loading"
         const val SignInButton = "sign_in_button"
+        const val PasswordToggle = "sign_in_password_toggle"
     }
 
     object SignUp {
@@ -15,6 +16,9 @@ object TestTags {
         const val ConfirmPasswordField = "sign_up_confirm_password_field"
         const val CreateAccountButton = "sign_up_create_account_button"
         const val LoadingIndicator = "sign_up_loading"
+        const val PasswordToggle = "sign_up_password_toggle"
+        const val ConfirmPasswordToggle = "sign_up_confirm_password_toggle"
+        const val PasswordHint = "sign_up_password_hint"
     }
 
     object Splash {
