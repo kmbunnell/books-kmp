@@ -20,11 +20,11 @@ If this fails, stop immediately and report: "Cannot connect to Jira. Check that 
 **If a key was provided** (i.e. `$ARGUMENTS` is non-empty), look it up:
 
 ```bash
-acli jira workitem search --jql "project = SHELVD AND status = 'To Do' AND NOT issuetype = Epic AND key = $ARGUMENTS" --limit 1
+acli jira workitem search --jql "project = SHELVD AND NOT issuetype = Epic AND key = $ARGUMENTS" --limit 1
 ```
 
 If the lookup returned no results, stop immediately and report:
-"Ticket key not found in todo"
+"Ticket key not found"
 
 **If no key was provided** (i.e. `$ARGUMENTS` is empty), find the next unassigned ticket:
 
@@ -48,14 +48,24 @@ acli jira workitem edit --key <KEY> --assignee "@me" --yes
 acli jira workitem transition --key <KEY> --status "In Progress" --yes
 ```
 
-Then check the current git branch:
+Then check if the feature branch already exists:
 
+```bash
+git branch --list feature/<KEY>
+```
+
+**If the branch already exists**, check it out:
+```bash
+git checkout feature/<KEY>
+```
+Report: "Branch `feature/<KEY>` already exists — checked out."
+
+**If the branch does not exist**, check the current branch:
 ```bash
 git branch --show-current
 ```
 
 If the current branch is `main` or `develop`, create and checkout a feature branch:
-
 ```bash
 git checkout -b feature/<KEY>
 ```

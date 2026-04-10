@@ -40,9 +40,9 @@ import bookskmp.composeapp.generated.resources.cd_show_password
 import bookskmp.composeapp.generated.resources.error_confirm_password_required
 import bookskmp.composeapp.generated.resources.error_email_already_in_use
 import bookskmp.composeapp.generated.resources.error_email_required
+import bookskmp.composeapp.generated.resources.error_invalid_email_format
 import bookskmp.composeapp.generated.resources.error_password_required
 import bookskmp.composeapp.generated.resources.error_passwords_do_not_match
-import bookskmp.composeapp.generated.resources.error_invalid_email_format
 import bookskmp.composeapp.generated.resources.error_sign_up_failed
 import bookskmp.composeapp.generated.resources.error_weak_password
 import bookskmp.composeapp.generated.resources.hint_password_requirement
@@ -135,16 +135,17 @@ fun SignUpScreenContent(
                 ),
             keyboardActions = KeyboardActions(onNext = { passwordFocusRequester.requestFocus() }),
             isError = uiState.emailError != null,
-            supportingText = uiState.emailError?.let { error ->
-                {
-                    Text(
-                        when (error) {
-                            SignUpError.InvalidEmail -> errorInvalidEmailFormat
-                            else -> errorEmailRequired
-                        },
-                    )
-                }
-            },
+            supportingText =
+                uiState.emailError?.let { error ->
+                    {
+                        Text(
+                            when (error) {
+                                SignUpError.InvalidEmail -> errorInvalidEmailFormat
+                                else -> errorEmailRequired
+                            },
+                        )
+                    }
+                },
             enabled = !uiState.isLoading,
             modifier =
                 Modifier
@@ -176,16 +177,17 @@ fun SignUpScreenContent(
                 ),
             keyboardActions = KeyboardActions(onNext = { confirmPasswordFocusRequester.requestFocus() }),
             isError = uiState.passwordError != null,
-            supportingText = uiState.passwordError?.let { error ->
-                {
-                    Text(
-                        when (error) {
-                            SignUpError.WeakPassword -> errorWeakPassword
-                            else -> errorPasswordRequired
-                        },
-                    )
-                }
-            },
+            supportingText =
+                uiState.passwordError?.let { error ->
+                    {
+                        Text(
+                            when (error) {
+                                SignUpError.WeakPassword -> errorWeakPassword
+                                else -> errorPasswordRequired
+                            },
+                        )
+                    }
+                },
             enabled = !uiState.isLoading,
             modifier =
                 Modifier
@@ -199,14 +201,16 @@ fun SignUpScreenContent(
             onValueChange = { confirmPassword = it },
             label = { Text(stringResource(Res.string.label_confirm_password)) },
             singleLine = true,
-            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation =
+                if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(
                     onClick = { confirmPasswordVisible = !confirmPasswordVisible },
                     modifier = Modifier.testTag(TestTags.SignUp.ConfirmPasswordToggle),
                 ) {
                     Icon(
-                        imageVector = if (confirmPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        imageVector =
+                            if (confirmPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                         contentDescription = if (confirmPasswordVisible) cdHidePassword else cdShowPassword,
                     )
                 }
@@ -221,16 +225,17 @@ fun SignUpScreenContent(
                     onDone = { onSignUp(email, password, confirmPassword) },
                 ),
             isError = uiState.confirmPasswordError != null,
-            supportingText = uiState.confirmPasswordError?.let { error ->
-                {
-                    Text(
-                        when (error) {
-                            SignUpError.EmptyConfirmPassword -> errorConfirmPasswordRequired
-                            else -> errorPasswordsDoNotMatch
-                        },
-                    )
-                }
-            },
+            supportingText =
+                uiState.confirmPasswordError?.let { error ->
+                    {
+                        Text(
+                            when (error) {
+                                SignUpError.EmptyConfirmPassword -> errorConfirmPasswordRequired
+                                else -> errorPasswordsDoNotMatch
+                            },
+                        )
+                    }
+                },
             enabled = !uiState.isLoading,
             modifier =
                 Modifier
@@ -243,9 +248,10 @@ fun SignUpScreenContent(
             text = hintPasswordRequirement,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(TestTags.SignUp.PasswordHint),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.SignUp.PasswordHint),
         )
         Spacer(modifier = Modifier.height(16.dp))
         if (uiState.isLoading) {

@@ -72,9 +72,19 @@ class SignUpViewModel(
                     SignUpError.EmptyPassword ->
                         _uiState.update { it.copy(isLoading = false, passwordError = SignUpError.EmptyPassword) }
                     SignUpError.EmptyConfirmPassword ->
-                        _uiState.update { it.copy(isLoading = false, confirmPasswordError = SignUpError.EmptyConfirmPassword) }
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                confirmPasswordError = SignUpError.EmptyConfirmPassword
+                            )
+                        }
                     SignUpError.PasswordMismatch ->
-                        _uiState.update { it.copy(isLoading = false, confirmPasswordError = SignUpError.PasswordMismatch) }
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                confirmPasswordError = SignUpError.PasswordMismatch
+                            )
+                        }
                     SignUpError.WeakPassword ->
                         _uiState.update { it.copy(isLoading = false, passwordError = SignUpError.WeakPassword) }
                     SignUpError.InvalidEmail ->
