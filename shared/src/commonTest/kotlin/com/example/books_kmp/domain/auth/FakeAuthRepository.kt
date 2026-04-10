@@ -1,9 +1,6 @@
-package com.example.books_kmp.auth
+package com.example.books_kmp.domain.auth
 
 import com.example.books_kmp.Result
-import com.example.books_kmp.domain.auth.AuthRepository
-import com.example.books_kmp.domain.auth.AuthRepositoryError
-import com.example.books_kmp.domain.auth.AuthSessionState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 

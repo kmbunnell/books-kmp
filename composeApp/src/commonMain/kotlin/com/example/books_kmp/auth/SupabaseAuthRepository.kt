@@ -1,6 +1,9 @@
 package com.example.books_kmp.auth
 
 import com.example.books_kmp.Result
+import com.example.books_kmp.domain.auth.AuthRepository
+import com.example.books_kmp.domain.auth.AuthRepositoryError
+import com.example.books_kmp.domain.auth.AuthSessionState
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email

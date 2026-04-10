@@ -1,9 +1,9 @@
 package com.example.books_kmp.di
 
-import com.example.books_kmp.auth.AuthRepository
-import com.example.books_kmp.auth.SignInUseCase
-import com.example.books_kmp.auth.SignUpUseCase
 import com.example.books_kmp.auth.SupabaseAuthRepository
+import com.example.books_kmp.domain.auth.AuthRepository
+import com.example.books_kmp.domain.auth.SignInUseCase
+import com.example.books_kmp.domain.auth.SignUpUseCase
 import com.example.books_kmp.viewmodel.AuthViewModel
 import com.example.books_kmp.viewmodel.SignInViewModel
 import com.example.books_kmp.viewmodel.SignUpViewModel

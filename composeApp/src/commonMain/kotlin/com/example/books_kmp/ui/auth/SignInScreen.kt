@@ -43,7 +43,7 @@ import bookskmp.composeapp.generated.resources.error_sign_in_failed
 import bookskmp.composeapp.generated.resources.label_email
 import bookskmp.composeapp.generated.resources.label_password
 import bookskmp.composeapp.generated.resources.sign_in_sign_up_prompt
-import com.example.books_kmp.auth.SignInError
+import com.example.books_kmp.domain.auth.SignInError
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.SignInEffect
 import com.example.books_kmp.viewmodel.SignInIntent

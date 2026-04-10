@@ -3,8 +3,8 @@ package com.example.books_kmp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.books_kmp.Result
-import com.example.books_kmp.auth.SignUpError
-import com.example.books_kmp.auth.SignUpUseCase
+import com.example.books_kmp.domain.auth.SignUpError
+import com.example.books_kmp.domain.auth.SignUpUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow

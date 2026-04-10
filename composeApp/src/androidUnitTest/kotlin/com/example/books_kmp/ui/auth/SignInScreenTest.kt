@@ -9,7 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import com.example.books_kmp.auth.SignInError
+import com.example.books_kmp.domain.auth.SignInError
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.SignInEffect
 import com.example.books_kmp.viewmodel.SignInUiState

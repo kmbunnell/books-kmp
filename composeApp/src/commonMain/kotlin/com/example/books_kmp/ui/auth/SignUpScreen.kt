@@ -50,7 +50,7 @@ import bookskmp.composeapp.generated.resources.label_confirm_password
 import bookskmp.composeapp.generated.resources.label_email
 import bookskmp.composeapp.generated.resources.label_password
 import bookskmp.composeapp.generated.resources.sign_up_sign_in_prompt
-import com.example.books_kmp.auth.SignUpError
+import com.example.books_kmp.domain.auth.SignUpError
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.SignUpEffect
 import com.example.books_kmp.viewmodel.SignUpIntent
