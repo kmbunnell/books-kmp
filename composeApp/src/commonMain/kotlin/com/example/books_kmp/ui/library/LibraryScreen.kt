@@ -42,5 +42,7 @@ fun LibraryScreenContent(onSignOut: () -> Unit) {
                 },
             )
         },
-    ) { _ -> }
+    ) { innerPadding ->
+        // TODO: apply innerPadding to content when Library body is implemented
+    }
 }
