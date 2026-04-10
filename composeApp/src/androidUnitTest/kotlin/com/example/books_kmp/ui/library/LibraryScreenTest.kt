@@ -36,4 +36,14 @@ class LibraryScreenTest {
         composeTestRule.onNodeWithTag(TestTags.Library.SignOutButton).performClick()
         assertTrue(signOutCalled)
     }
+
+    @Test
+    fun `LibraryScreen passes sign out callback through to content`() {
+        var signOutCalled = false
+        composeTestRule.setContent {
+            LibraryScreen(onSignOut = { signOutCalled = true })
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.SignOutButton).performClick()
+        assertTrue(signOutCalled)
+    }
 }

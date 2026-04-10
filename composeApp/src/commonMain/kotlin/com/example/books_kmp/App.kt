@@ -13,17 +13,17 @@ import com.example.books_kmp.ui.auth.SignUpScreen
 import com.example.books_kmp.ui.auth.SplashScreen
 import com.example.books_kmp.ui.library.LibraryScreen
 import com.example.books_kmp.viewmodel.AuthIntent
-import com.example.books_kmp.viewmodel.AuthUiState
 import com.example.books_kmp.viewmodel.AuthViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-private fun NavigateToSignInOnSignOut(
-    uiState: AuthUiState,
+internal fun NavigateToSignInOnSignOut(
+    isAuthenticated: Boolean,
+    isLoading: Boolean,
     onSignedOut: () -> Unit,
 ) {
-    LaunchedEffect(uiState.isAuthenticated, uiState.isLoading) {
-        if (!uiState.isAuthenticated && !uiState.isLoading) {
+    LaunchedEffect(isAuthenticated, isLoading) {
+        if (!isAuthenticated && !isLoading) {
             onSignedOut()
         }
     }
@@ -92,10 +92,11 @@ fun App() {
             }
             composable(NavDestination.Library.route) {
                 NavigateToSignInOnSignOut(
-                    uiState = uiState,
+                    isAuthenticated = uiState.isAuthenticated,
+                    isLoading = uiState.isLoading,
                     onSignedOut = {
                         navController.navigate(NavDestination.SignIn.route) {
-                            popUpTo(0) { inclusive = true }
+                            popUpTo(NavDestination.Library.route) { inclusive = true }
                         }
                     },
                 )
