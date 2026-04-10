@@ -1,4 +1,4 @@
-package com.example.books_kmp.auth
+package com.example.books_kmp.domain.auth
 
 sealed interface AuthSessionState {
     data object Loading : AuthSessionState

@@ -2,10 +2,10 @@ package com.example.books_kmp.viewmodel
 
 import app.cash.turbine.test
 import com.example.books_kmp.Result
-import com.example.books_kmp.auth.AuthRepositoryError
 import com.example.books_kmp.auth.FakeAuthRepository
-import com.example.books_kmp.auth.SignUpError
-import com.example.books_kmp.auth.SignUpUseCase
+import com.example.books_kmp.domain.auth.AuthRepositoryError
+import com.example.books_kmp.domain.auth.SignUpError
+import com.example.books_kmp.domain.auth.SignUpUseCase
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test

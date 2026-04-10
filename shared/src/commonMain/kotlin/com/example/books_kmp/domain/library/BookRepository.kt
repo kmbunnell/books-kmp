@@ -1,4 +1,4 @@
-package com.example.books_kmp.domain.repository
+package com.example.books_kmp.domain.library
 
 import com.example.books_kmp.domain.model.Book
 

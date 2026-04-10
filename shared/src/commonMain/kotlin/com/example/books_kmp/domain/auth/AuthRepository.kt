@@ -1,4 +1,4 @@
-package com.example.books_kmp.auth
+package com.example.books_kmp.domain.auth
 
 import com.example.books_kmp.Result
 import kotlinx.coroutines.flow.Flow
