@@ -12,8 +12,22 @@ import com.example.books_kmp.ui.auth.SignInScreen
 import com.example.books_kmp.ui.auth.SignUpScreen
 import com.example.books_kmp.ui.auth.SplashScreen
 import com.example.books_kmp.ui.library.LibraryScreen
+import com.example.books_kmp.viewmodel.AuthIntent
+import com.example.books_kmp.viewmodel.AuthUiState
 import com.example.books_kmp.viewmodel.AuthViewModel
 import org.koin.compose.viewmodel.koinViewModel
+
+@Composable
+private fun NavigateToSignInOnSignOut(
+    uiState: AuthUiState,
+    onSignedOut: () -> Unit,
+) {
+    LaunchedEffect(uiState.isAuthenticated, uiState.isLoading) {
+        if (!uiState.isAuthenticated && !uiState.isLoading) {
+            onSignedOut()
+        }
+    }
+}
 
 @Composable
 private fun NavigateToLibraryOnAuth(
@@ -77,7 +91,15 @@ fun App() {
                 )
             }
             composable(NavDestination.Library.route) {
-                LibraryScreen()
+                NavigateToSignInOnSignOut(
+                    uiState = uiState,
+                    onSignedOut = {
+                        navController.navigate(NavDestination.SignIn.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                )
+                LibraryScreen(onSignOut = { authViewModel.onIntent(AuthIntent.SignOut) })
             }
         }
     }
