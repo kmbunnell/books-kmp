@@ -38,13 +38,13 @@ import bookskmp.composeapp.generated.resources.cd_hide_password
 import bookskmp.composeapp.generated.resources.cd_show_password
 import bookskmp.composeapp.generated.resources.error_email_required
 import bookskmp.composeapp.generated.resources.error_invalid_credentials
-import bookskmp.composeapp.generated.resources.error_sign_in_failed
 import bookskmp.composeapp.generated.resources.error_password_required
+import bookskmp.composeapp.generated.resources.error_sign_in_failed
 import bookskmp.composeapp.generated.resources.label_email
 import bookskmp.composeapp.generated.resources.label_password
 import bookskmp.composeapp.generated.resources.sign_in_sign_up_prompt
-import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.auth.SignInError
+import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.SignInEffect
 import com.example.books_kmp.viewmodel.SignInIntent
 import com.example.books_kmp.viewmodel.SignInUiState
