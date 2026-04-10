@@ -25,6 +25,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -85,7 +87,8 @@ fun SignUpScreenContent(
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-
+    val passwordFocusRequester = remember { FocusRequester() }
+    val confirmPasswordFocusRequester = remember { FocusRequester() }
 
     val errorEmailRequired = stringResource(Res.string.error_email_required)
     val errorInvalidEmailFormat = stringResource(Res.string.error_invalid_email_format)
@@ -124,11 +127,13 @@ fun SignUpScreenContent(
             value = email,
             onValueChange = { email = it },
             label = { Text(stringResource(Res.string.label_email)) },
+            singleLine = true,
             keyboardOptions =
                 KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next,
                 ),
+            keyboardActions = KeyboardActions(onNext = { passwordFocusRequester.requestFocus() }),
             isError = uiState.emailError != null,
             supportingText = uiState.emailError?.let { error ->
                 {
@@ -151,6 +156,7 @@ fun SignUpScreenContent(
             value = password,
             onValueChange = { password = it },
             label = { Text(stringResource(Res.string.label_password)) },
+            singleLine = true,
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(
@@ -168,6 +174,7 @@ fun SignUpScreenContent(
                     keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Next,
                 ),
+            keyboardActions = KeyboardActions(onNext = { confirmPasswordFocusRequester.requestFocus() }),
             isError = uiState.passwordError != null,
             supportingText = uiState.passwordError?.let { error ->
                 {
@@ -183,6 +190,7 @@ fun SignUpScreenContent(
             modifier =
                 Modifier
                     .fillMaxWidth()
+                    .focusRequester(passwordFocusRequester)
                     .testTag(TestTags.SignUp.PasswordField),
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -190,6 +198,7 @@ fun SignUpScreenContent(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
             label = { Text(stringResource(Res.string.label_confirm_password)) },
+            singleLine = true,
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(
@@ -226,6 +235,7 @@ fun SignUpScreenContent(
             modifier =
                 Modifier
                     .fillMaxWidth()
+                    .focusRequester(confirmPasswordFocusRequester)
                     .testTag(TestTags.SignUp.ConfirmPasswordField),
         )
         Spacer(modifier = Modifier.height(4.dp))
