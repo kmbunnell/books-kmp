@@ -24,4 +24,8 @@ object TestTags {
     object Splash {
         const val LoadingIndicator = "splash_loading"
     }
+
+    object Library {
+        const val SignOutButton = "library_sign_out_button"
+    }
 }

@@ -72,6 +72,21 @@ class AuthViewModelTest {
         }
 
     @Test
+    fun `ShowError effect with SignOutFailed emitted when signOut throws`() =
+        runTest {
+            fakeRepo.sessionFlow.emit(AuthSessionState.Authenticated("user-123"))
+            fakeRepo.signOutException = Exception("network error")
+            val viewModel = AuthViewModel(fakeRepo)
+
+            viewModel.effects.test {
+                viewModel.onIntent(AuthIntent.SignOut)
+                val effect = awaitItem()
+                assertIs<AuthEffect.ShowError>(effect)
+                assertIs<AuthError.SignOutFailed>(effect.error)
+            }
+        }
+
+    @Test
     fun `ShowError effect with SessionExpired emitted when session status emits Error`() =
         runTest {
             fakeRepo.sessionFlow.emit(AuthSessionState.NotAuthenticated)
