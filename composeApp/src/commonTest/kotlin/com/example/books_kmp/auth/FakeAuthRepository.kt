@@ -1,6 +1,6 @@
 package com.example.books_kmp.auth
 
-import com.example.books_kmp.Result
+import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.AuthRepositoryError
 import com.example.books_kmp.domain.auth.AuthSessionState

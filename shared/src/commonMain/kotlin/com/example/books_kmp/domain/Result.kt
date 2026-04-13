@@ -1,4 +1,4 @@
-package com.example.books_kmp
+package com.example.books_kmp.domain
 
 sealed interface Result<out E> {
     data object Success : Result<Nothing>

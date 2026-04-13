@@ -1,6 +1,6 @@
 package com.example.books_kmp.domain.auth
 
-import com.example.books_kmp.Result
+import com.example.books_kmp.domain.Result
 
 class SignInUseCase(private val authRepository: AuthRepository) {
     suspend operator fun invoke(
