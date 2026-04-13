@@ -34,11 +34,12 @@ class OpenLibraryApiClient(private val httpClient: HttpClient) {
             when (response.status) {
                 HttpStatusCode.TooManyRequests -> Result.Failure(BookLookupError.RateLimited)
                 HttpStatusCode.OK -> parseBody(isbn, response.bodyAsText())
-                else -> Result.Failure(
-                    BookLookupError.NetworkError(
-                        RuntimeException("Unexpected HTTP ${response.status.value}"),
-                    ),
-                )
+                else ->
+                    Result.Failure(
+                        BookLookupError.NetworkError(
+                            RuntimeException("Unexpected HTTP ${response.status.value}"),
+                        ),
+                    )
             }
         } catch (e: SerializationException) {
             Result.Failure(BookLookupError.MalformedResponse)
@@ -46,7 +47,10 @@ class OpenLibraryApiClient(private val httpClient: HttpClient) {
             Result.Failure(BookLookupError.NetworkError(e))
         }
 
-    private fun parseBody(isbn: String, bodyText: String): Result<BookLookupData, BookLookupError> {
+    private fun parseBody(
+        isbn: String,
+        bodyText: String
+    ): Result<BookLookupData, BookLookupError> {
         val responseMap: Map<String, OpenLibraryBookDto> =
             json.decodeFromString(bodyText)
         val dto = responseMap["ISBN:$isbn"] ?: return Result.Failure(BookLookupError.NotFound)

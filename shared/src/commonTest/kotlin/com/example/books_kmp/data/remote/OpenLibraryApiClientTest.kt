@@ -30,21 +30,23 @@ class OpenLibraryApiClientTest {
     fun `lookupByIsbn returns Success with correct title authors and coverImageUrl for valid ISBN response`() =
         runTest {
             val isbn = "9780451524935"
-            val engine = MockEngine { _ ->
-                respond(
-                    content = """
-                    {
-                      "ISBN:9780451524935": {
-                        "title": "Nineteen Eighty-Four",
-                        "authors": [{"name": "George Orwell"}],
-                        "cover": {"medium": "https://covers.openlibrary.org/b/id/8575708-M.jpg"}
-                      }
-                    }
-                    """.trimIndent(),
-                    status = HttpStatusCode.OK,
-                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                )
-            }
+            val engine =
+                MockEngine { _ ->
+                    respond(
+                        content =
+                            """
+                            {
+                              "ISBN:9780451524935": {
+                                "title": "Nineteen Eighty-Four",
+                                "authors": [{"name": "George Orwell"}],
+                                "cover": {"medium": "https://covers.openlibrary.org/b/id/8575708-M.jpg"}
+                              }
+                            }
+                            """.trimIndent(),
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
 
             val result = buildClient(engine).lookupByIsbn(isbn)
 
@@ -60,13 +62,14 @@ class OpenLibraryApiClientTest {
     @Test
     fun `lookupByIsbn returns NotFound when response is empty JSON object`() =
         runTest {
-            val engine = MockEngine { _ ->
-                respond(
-                    content = "{}",
-                    status = HttpStatusCode.OK,
-                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                )
-            }
+            val engine =
+                MockEngine { _ ->
+                    respond(
+                        content = "{}",
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
 
             val result = buildClient(engine).lookupByIsbn("9780000000000")
 
@@ -77,12 +80,13 @@ class OpenLibraryApiClientTest {
     @Test
     fun `lookupByIsbn returns RateLimited on HTTP 429`() =
         runTest {
-            val engine = MockEngine { _ ->
-                respond(
-                    content = "",
-                    status = HttpStatusCode(429, "Too Many Requests"),
-                )
-            }
+            val engine =
+                MockEngine { _ ->
+                    respond(
+                        content = "",
+                        status = HttpStatusCode(429, "Too Many Requests"),
+                    )
+                }
 
             val result = buildClient(engine).lookupByIsbn("9780451524935")
 
@@ -93,13 +97,14 @@ class OpenLibraryApiClientTest {
     @Test
     fun `lookupByIsbn returns MalformedResponse when JSON cannot be parsed`() =
         runTest {
-            val engine = MockEngine { _ ->
-                respond(
-                    content = "not valid json {{{",
-                    status = HttpStatusCode.OK,
-                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                )
-            }
+            val engine =
+                MockEngine { _ ->
+                    respond(
+                        content = "not valid json {{{",
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
 
             val result = buildClient(engine).lookupByIsbn("9780451524935")
 
@@ -111,13 +116,14 @@ class OpenLibraryApiClientTest {
     fun `lookupByIsbn returns MalformedResponse when book entry has no title`() =
         runTest {
             val isbn = "9780451524935"
-            val engine = MockEngine { _ ->
-                respond(
-                    content = """{"ISBN:$isbn": {"authors": [{"name": "George Orwell"}]}}""",
-                    status = HttpStatusCode.OK,
-                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                )
-            }
+            val engine =
+                MockEngine { _ ->
+                    respond(
+                        content = """{"ISBN:$isbn": {"authors": [{"name": "George Orwell"}]}}""",
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
 
             val result = buildClient(engine).lookupByIsbn(isbn)
 
@@ -128,9 +134,10 @@ class OpenLibraryApiClientTest {
     @Test
     fun `lookupByIsbn returns NetworkError on IOException`() =
         runTest {
-            val engine = MockEngine { _ ->
-                throw RuntimeException("Connection refused")
-            }
+            val engine =
+                MockEngine { _ ->
+                    throw RuntimeException("Connection refused")
+                }
 
             val result = buildClient(engine).lookupByIsbn("9780451524935")
 
@@ -142,14 +149,15 @@ class OpenLibraryApiClientTest {
     fun `User-Agent header Shelved 1 0 is present on outbound request`() =
         runTest {
             var capturedUserAgent: String? = null
-            val engine = MockEngine { request ->
-                capturedUserAgent = request.headers[HttpHeaders.UserAgent]
-                respond(
-                    content = "{}",
-                    status = HttpStatusCode.OK,
-                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                )
-            }
+            val engine =
+                MockEngine { request ->
+                    capturedUserAgent = request.headers[HttpHeaders.UserAgent]
+                    respond(
+                        content = "{}",
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
 
             buildClient(engine).lookupByIsbn("9780451524935")
 
