@@ -13,7 +13,7 @@ class SignUpUseCase(private val authRepository: AuthRepository) {
         if (confirmPassword.isBlank()) return Result.Failure(SignUpError.EmptyConfirmPassword)
         if (password != confirmPassword) return Result.Failure(SignUpError.PasswordMismatch)
         return when (val result = authRepository.signUp(email, password)) {
-            is Result.Success -> Result.Success(Unit)
+            is Result.Success -> result
             is Result.Failure ->
                 Result.Failure(
                     when (result.error) {

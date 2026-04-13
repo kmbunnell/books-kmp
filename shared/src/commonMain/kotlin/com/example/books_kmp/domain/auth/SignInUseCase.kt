@@ -10,7 +10,7 @@ class SignInUseCase(private val authRepository: AuthRepository) {
         if (email.isBlank()) return Result.Failure(SignInError.EmptyEmail)
         if (password.isBlank()) return Result.Failure(SignInError.EmptyPassword)
         return when (val result = authRepository.signIn(email, password)) {
-            is Result.Success -> Result.Success(Unit)
+            is Result.Success -> result
             is Result.Failure ->
                 Result.Failure(
                     when (result.error) {
