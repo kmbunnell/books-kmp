@@ -1,6 +1,6 @@
 package com.example.books_kmp.domain.auth
 
-import com.example.books_kmp.Result
+import com.example.books_kmp.domain.Result
 import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {

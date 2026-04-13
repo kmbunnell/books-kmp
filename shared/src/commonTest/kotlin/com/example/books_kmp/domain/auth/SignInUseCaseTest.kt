@@ -1,6 +1,6 @@
 package com.example.books_kmp.domain.auth
 
-import com.example.books_kmp.Result
+import com.example.books_kmp.domain.Result
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -2,7 +2,7 @@ package com.example.books_kmp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.books_kmp.Result
+import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.auth.SignInError
 import com.example.books_kmp.domain.auth.SignInUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
