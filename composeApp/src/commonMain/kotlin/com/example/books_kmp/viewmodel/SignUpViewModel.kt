@@ -98,7 +98,7 @@ class SignUpViewModel(
                         _effects.emit(SignUpEffect.ShowError(SignUpError.SignUpFailed))
                     }
                 }
-            Result.Success ->
+            is Result.Success ->
                 _uiState.update { it.copy(isLoading = false) }
         }
     }

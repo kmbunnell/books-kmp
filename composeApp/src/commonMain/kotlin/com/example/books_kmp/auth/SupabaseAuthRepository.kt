@@ -26,13 +26,13 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
     override suspend fun signUp(
         email: String,
         password: String,
-    ): Result<AuthRepositoryError> {
+    ): Result<Unit, AuthRepositoryError> {
         return try {
             supabase.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
             }
-            Result.Success
+            Result.Success(Unit)
         } catch (e: RestException) {
             Result.Failure(
                 when (e.error) {
@@ -50,13 +50,13 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
     override suspend fun signIn(
         email: String,
         password: String,
-    ): Result<AuthRepositoryError> {
+    ): Result<Unit, AuthRepositoryError> {
         return try {
             supabase.auth.signInWith(Email) {
                 this.email = email
                 this.password = password
             }
-            Result.Success
+            Result.Success(Unit)
         } catch (e: RestException) {
             Result.Failure(
                 when (e.error) {

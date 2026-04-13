@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 
 class FakeAuthRepository : AuthRepository {
     val sessionFlow = MutableSharedFlow<AuthSessionState>(replay = 1)
-    var signInResult: Result<AuthRepositoryError> = Result.Success
-    var signUpResult: Result<AuthRepositoryError> = Result.Success
+    var signInResult: Result<Unit, AuthRepositoryError> = Result.Success(Unit)
+    var signUpResult: Result<Unit, AuthRepositoryError> = Result.Success(Unit)
     var signOutException: Exception? = null
     var signInCalled = false
     var signUpCalled = false
@@ -20,7 +20,7 @@ class FakeAuthRepository : AuthRepository {
     override suspend fun signUp(
         email: String,
         password: String,
-    ): Result<AuthRepositoryError> {
+    ): Result<Unit, AuthRepositoryError> {
         signUpCalled = true
         return signUpResult
     }
@@ -28,7 +28,7 @@ class FakeAuthRepository : AuthRepository {
     override suspend fun signIn(
         email: String,
         password: String,
-    ): Result<AuthRepositoryError> {
+    ): Result<Unit, AuthRepositoryError> {
         signInCalled = true
         return signInResult
     }
