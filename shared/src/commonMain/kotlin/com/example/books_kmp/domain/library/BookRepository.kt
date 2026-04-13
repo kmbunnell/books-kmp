@@ -8,4 +8,6 @@ interface BookRepository {
     suspend fun getBookByIsbn(isbn: String): Book?
 
     suspend fun addBook(book: Book): Book
+
+    suspend fun isbnExists(isbn: String?): Boolean
 }
