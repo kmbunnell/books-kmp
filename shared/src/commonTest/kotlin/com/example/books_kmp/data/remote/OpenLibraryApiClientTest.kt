@@ -1,5 +1,8 @@
 package com.example.books_kmp.data.remote
 
+import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.model.BookLookupData
+import com.example.books_kmp.domain.model.BookLookupError
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -24,7 +27,7 @@ class OpenLibraryApiClientTest {
     }
 
     @Test
-    fun `lookupByIsbn returns Found with correct title authors and coverImageUrl for valid ISBN response`() =
+    fun `lookupByIsbn returns Success with correct title authors and coverImageUrl for valid ISBN response`() =
         runTest {
             val isbn = "9780451524935"
             val engine = MockEngine { _ ->
@@ -45,12 +48,12 @@ class OpenLibraryApiClientTest {
 
             val result = buildClient(engine).lookupByIsbn(isbn)
 
-            assertIs<OpenLibraryResult.Found>(result)
-            assertEquals("Nineteen Eighty-Four", result.bookData.title)
-            assertEquals(listOf("George Orwell"), result.bookData.authors)
+            assertIs<Result.Success<BookLookupData>>(result)
+            assertEquals("Nineteen Eighty-Four", result.data.title)
+            assertEquals(listOf("George Orwell"), result.data.authors)
             assertEquals(
                 "https://covers.openlibrary.org/b/id/8575708-M.jpg",
-                result.bookData.coverImageUrl,
+                result.data.coverImageUrl,
             )
         }
 
@@ -67,7 +70,8 @@ class OpenLibraryApiClientTest {
 
             val result = buildClient(engine).lookupByIsbn("9780000000000")
 
-            assertIs<OpenLibraryResult.NotFound>(result)
+            assertIs<Result.Failure<BookLookupError>>(result)
+            assertEquals(BookLookupError.NotFound, result.error)
         }
 
     @Test
@@ -82,7 +86,8 @@ class OpenLibraryApiClientTest {
 
             val result = buildClient(engine).lookupByIsbn("9780451524935")
 
-            assertIs<OpenLibraryResult.RateLimited>(result)
+            assertIs<Result.Failure<BookLookupError>>(result)
+            assertEquals(BookLookupError.RateLimited, result.error)
         }
 
     @Test
@@ -98,7 +103,8 @@ class OpenLibraryApiClientTest {
 
             val result = buildClient(engine).lookupByIsbn("9780451524935")
 
-            assertIs<OpenLibraryResult.MalformedResponse>(result)
+            assertIs<Result.Failure<BookLookupError>>(result)
+            assertEquals(BookLookupError.MalformedResponse, result.error)
         }
 
     @Test
@@ -115,7 +121,8 @@ class OpenLibraryApiClientTest {
 
             val result = buildClient(engine).lookupByIsbn(isbn)
 
-            assertIs<OpenLibraryResult.MalformedResponse>(result)
+            assertIs<Result.Failure<BookLookupError>>(result)
+            assertEquals(BookLookupError.MalformedResponse, result.error)
         }
 
     @Test
@@ -127,7 +134,8 @@ class OpenLibraryApiClientTest {
 
             val result = buildClient(engine).lookupByIsbn("9780451524935")
 
-            assertIs<OpenLibraryResult.NetworkError>(result)
+            assertIs<Result.Failure<BookLookupError>>(result)
+            assertIs<BookLookupError.NetworkError>(result.error)
         }
 
     @Test

@@ -6,11 +6,11 @@ class SignInUseCase(private val authRepository: AuthRepository) {
     suspend operator fun invoke(
         email: String,
         password: String,
-    ): Result<SignInError> {
+    ): Result<Unit, SignInError> {
         if (email.isBlank()) return Result.Failure(SignInError.EmptyEmail)
         if (password.isBlank()) return Result.Failure(SignInError.EmptyPassword)
         return when (val result = authRepository.signIn(email, password)) {
-            Result.Success -> Result.Success
+            is Result.Success -> Result.Success(Unit)
             is Result.Failure ->
                 Result.Failure(
                     when (result.error) {

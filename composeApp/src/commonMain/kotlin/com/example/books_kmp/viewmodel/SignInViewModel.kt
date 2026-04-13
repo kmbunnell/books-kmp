@@ -67,7 +67,7 @@ class SignInViewModel(
                         _effects.emit(SignInEffect.ShowError(SignInError.SignInFailed))
                     }
                 }
-            Result.Success ->
+            is Result.Success ->
                 _uiState.update { it.copy(isLoading = false) }
         }
     }

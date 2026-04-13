@@ -1,7 +1,9 @@
 package com.example.books_kmp.data.remote
 
 import com.example.books_kmp.data.remote.dto.OpenLibraryBookDto
+import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.BookLookupData
+import com.example.books_kmp.domain.model.BookLookupError
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -17,7 +19,7 @@ private const val USER_AGENT = "Shelved/1.0"
 private val json = Json { ignoreUnknownKeys = true }
 
 class OpenLibraryApiClient(private val httpClient: HttpClient) {
-    suspend fun lookupByIsbn(isbn: String): OpenLibraryResult =
+    suspend fun lookupByIsbn(isbn: String): Result<BookLookupData, BookLookupError> =
         try {
             val response =
                 httpClient.get(BASE_URL) {
@@ -30,31 +32,32 @@ class OpenLibraryApiClient(private val httpClient: HttpClient) {
                 }
 
             when (response.status) {
-                HttpStatusCode.TooManyRequests -> OpenLibraryResult.RateLimited
+                HttpStatusCode.TooManyRequests -> Result.Failure(BookLookupError.RateLimited)
                 HttpStatusCode.OK -> parseBody(isbn, response.bodyAsText())
-                else -> OpenLibraryResult.NetworkError(
-                    RuntimeException("Unexpected HTTP ${response.status.value}"),
+                else -> Result.Failure(
+                    BookLookupError.NetworkError(
+                        RuntimeException("Unexpected HTTP ${response.status.value}"),
+                    ),
                 )
             }
         } catch (e: SerializationException) {
-            OpenLibraryResult.MalformedResponse
+            Result.Failure(BookLookupError.MalformedResponse)
         } catch (e: Exception) {
-            OpenLibraryResult.NetworkError(e)
+            Result.Failure(BookLookupError.NetworkError(e))
         }
 
-    private fun parseBody(isbn: String, bodyText: String): OpenLibraryResult {
+    private fun parseBody(isbn: String, bodyText: String): Result<BookLookupData, BookLookupError> {
         val responseMap: Map<String, OpenLibraryBookDto> =
             json.decodeFromString(bodyText)
-        val dto = responseMap["ISBN:$isbn"] ?: return OpenLibraryResult.NotFound
-        val title = dto.title ?: return OpenLibraryResult.MalformedResponse
-        return OpenLibraryResult.Found(
-            bookData =
-                BookLookupData(
-                    isbn = isbn,
-                    title = title,
-                    authors = dto.authors?.mapNotNull { it.name } ?: emptyList(),
-                    coverImageUrl = dto.cover?.medium,
-                ),
+        val dto = responseMap["ISBN:$isbn"] ?: return Result.Failure(BookLookupError.NotFound)
+        val title = dto.title ?: return Result.Failure(BookLookupError.MalformedResponse)
+        return Result.Success(
+            BookLookupData(
+                isbn = isbn,
+                title = title,
+                authors = dto.authors?.mapNotNull { it.name } ?: emptyList(),
+                coverImageUrl = dto.cover?.medium,
+            ),
         )
     }
 }

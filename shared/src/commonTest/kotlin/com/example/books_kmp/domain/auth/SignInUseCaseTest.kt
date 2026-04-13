@@ -44,7 +44,7 @@ class SignInUseCaseTest {
         runTest {
             val result = useCase("test@example.com", "password123")
 
-            assertIs<Result.Success>(result)
+            assertIs<Result.Success<Unit>>(result)
             assertTrue(fakeRepo.signInCalled)
         }
 
