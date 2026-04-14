@@ -4,7 +4,7 @@
 -- Create the books table
 CREATE TABLE IF NOT EXISTS books (
     id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id         uuid        NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
     isbn            text,
     title           text        NOT NULL,
     authors         text[]      NOT NULL,
