@@ -8,6 +8,7 @@ import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -157,9 +158,10 @@ class SupabaseBookRepositoryTest {
     @Test
     fun `addBook sets user_id from authenticated session via RLS`() =
         runTest {
-            val authUser = checkNotNull(supabase.auth.currentUserOrNull()) { "Must be authenticated before this test runs" }
+            val authUser =
+                checkNotNull(supabase.auth.currentUserOrNull()) { "Must be authenticated before this test runs" }
             repository.addBook(testBook(isbn = "9780140449136"))
-            val rows = supabase.from("books").select("user_id").decodeList<UserIdRow>()
+            val rows = supabase.from("books").select(Columns.list("user_id")).decodeList<UserIdRow>()
             assertEquals(1, rows.size)
             assertEquals(authUser.id, rows.first().userId)
         }
