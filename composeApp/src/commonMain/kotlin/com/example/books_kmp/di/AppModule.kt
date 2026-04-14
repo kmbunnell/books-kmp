@@ -1,14 +1,17 @@
 package com.example.books_kmp.di
 
 import com.example.books_kmp.auth.SupabaseAuthRepository
+import com.example.books_kmp.data.library.SupabaseBookRepository
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.SignInUseCase
 import com.example.books_kmp.domain.auth.SignUpUseCase
+import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.viewmodel.AuthViewModel
 import com.example.books_kmp.viewmodel.SignInViewModel
 import com.example.books_kmp.viewmodel.SignUpViewModel
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.postgrest.Postgrest
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -24,9 +27,11 @@ fun appModule(
                 supabaseKey = supabaseKey,
             ) {
                 install(Auth)
+                install(Postgrest)
             }
         }
         single<AuthRepository> { SupabaseAuthRepository(get()) }
+        single<BookRepository> { SupabaseBookRepository(get()) }
         factory { SignInUseCase(get()) }
         factory { SignUpUseCase(get()) }
         viewModel { AuthViewModel(get()) }
