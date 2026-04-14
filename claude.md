@@ -94,6 +94,7 @@ sealed interface LibraryEffect {
 - Domain models and DTOs are always separate classes. Map between them explicitly. Do not leak DTO annotations (`@Serializable`, column names) into domain models.
 - Repository interfaces live in the domain layer. Implementations live in the data layer.
 - Use cases are single-responsibility: one public `operator fun invoke(...)` or `suspend operator fun invoke(...)`.
+- Use cases return `Result<T, XxxError>` — never a custom `XxxResult` sealed interface. The error type is a feature-specific sealed interface (e.g., `AddBookError`, `SignInError`) defined in its own file alongside the use case. Success data goes in `Result.Success(data)`; all failure variants go in `Result.Failure(XxxError.Variant)`.
 - Koin modules are the single place for dependency wiring. Never manually construct dependencies outside DI.
 - ViewModels emit typed errors via a feature-specific `XxxError` sealed interface — never localized strings. `UiState` field errors and `XxxEffect.ShowError` carry `XxxError` values. String resolution happens exclusively in Compose screens via `stringResource()`, resolved before any `LaunchedEffect`/`collect` block.
 

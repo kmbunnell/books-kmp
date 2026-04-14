@@ -3,7 +3,6 @@ package com.example.books_kmp.di
 import com.example.books_kmp.data.library.SupabaseBookRepository
 import com.example.books_kmp.domain.library.BookRepository
 import io.github.jan.supabase.auth.Auth
-import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.minimalSettings
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest

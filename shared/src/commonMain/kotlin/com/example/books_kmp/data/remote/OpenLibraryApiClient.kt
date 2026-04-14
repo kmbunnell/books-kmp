@@ -2,6 +2,7 @@ package com.example.books_kmp.data.remote
 
 import com.example.books_kmp.data.remote.dto.OpenLibraryBookDto
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.library.BookLookupService
 import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.domain.model.BookLookupError
 import io.ktor.client.HttpClient
@@ -18,8 +19,8 @@ private const val USER_AGENT = "Shelved/1.0"
 
 private val json = Json { ignoreUnknownKeys = true }
 
-class OpenLibraryApiClient(private val httpClient: HttpClient) {
-    suspend fun lookupByIsbn(isbn: String): Result<BookLookupData, BookLookupError> =
+class OpenLibraryApiClient(private val httpClient: HttpClient) : BookLookupService {
+    override suspend fun lookupByIsbn(isbn: String): Result<BookLookupData, BookLookupError> =
         try {
             val response =
                 httpClient.get(BASE_URL) {
