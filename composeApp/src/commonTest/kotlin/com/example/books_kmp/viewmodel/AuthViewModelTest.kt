@@ -1,8 +1,8 @@
 package com.example.books_kmp.viewmodel
 
 import app.cash.turbine.test
-import com.example.books_kmp.auth.FakeAuthRepository
 import com.example.books_kmp.domain.auth.AuthSessionState
+import com.example.books_kmp.domain.auth.FakeAuthRepository
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test

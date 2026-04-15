@@ -1,9 +1,9 @@
 package com.example.books_kmp.viewmodel
 
 import app.cash.turbine.test
-import com.example.books_kmp.auth.FakeAuthRepository
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.auth.AuthRepositoryError
+import com.example.books_kmp.domain.auth.FakeAuthRepository
 import com.example.books_kmp.domain.auth.SignInError
 import com.example.books_kmp.domain.auth.SignInUseCase
 import kotlin.test.AfterTest
