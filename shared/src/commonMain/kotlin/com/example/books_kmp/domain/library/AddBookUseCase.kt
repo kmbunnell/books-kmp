@@ -3,6 +3,7 @@ package com.example.books_kmp.domain.library
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.BookLookupError
+import com.example.books_kmp.domain.model.NewBook
 
 class AddBookUseCase(
     private val bookRepository: BookRepository,
@@ -24,8 +25,7 @@ class AddBookUseCase(
             is Result.Success -> {
                 val data = result.data
                 val book =
-                    Book(
-                        id = "",
+                    NewBook(
                         isbn = data.isbn,
                         title = data.title,
                         authors = data.authors,

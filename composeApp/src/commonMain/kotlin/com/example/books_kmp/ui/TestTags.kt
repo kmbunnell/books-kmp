@@ -28,4 +28,12 @@ object TestTags {
     object Library {
         const val SignOutButton = "library_sign_out_button"
     }
+
+    object ManualEntry {
+        const val TitleField = "manual_entry_title_field"
+        const val AuthorField = "manual_entry_author_field"
+        const val SaveButton = "manual_entry_save_button"
+        const val CancelButton = "manual_entry_cancel_button"
+        const val LoadingIndicator = "manual_entry_loading"
+    }
 }

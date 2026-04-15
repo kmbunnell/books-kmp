@@ -1,6 +1,7 @@
 package com.example.books_kmp.data.library
 
 import com.example.books_kmp.domain.model.Book
+import com.example.books_kmp.domain.model.NewBook
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -30,7 +31,7 @@ fun BookDto.toBook(): Book =
         coverImageUrl = coverImageUrl,
     )
 
-fun Book.toDto(): BookDto =
+fun NewBook.toDto(): BookDto =
     BookDto(
         isbn = isbn,
         title = title,

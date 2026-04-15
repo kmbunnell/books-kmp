@@ -42,7 +42,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `invoke calls addBook with Book constructed correctly from BookLookupData`() =
+    fun `invoke calls addBook with NewBook constructed correctly from BookLookupData`() =
         runTest {
             lookup.lookupResult =
                 Result.Success(

@@ -1,6 +1,6 @@
 package com.example.books_kmp.data.library
 
-import com.example.books_kmp.domain.model.Book
+import com.example.books_kmp.domain.model.NewBook
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.minimalSettings
@@ -176,9 +176,8 @@ class SupabaseBookRepositoryTest {
         title: String = "Test Book",
         authors: List<String> = listOf("Test Author"),
         coverImageUrl: String? = null,
-    ): Book =
-        Book(
-            id = "",
+    ): NewBook =
+        NewBook(
             isbn = isbn,
             title = title,
             authors = authors,
