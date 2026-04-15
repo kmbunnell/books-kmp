@@ -12,6 +12,7 @@ import com.example.books_kmp.ui.auth.SignInScreen
 import com.example.books_kmp.ui.auth.SignUpScreen
 import com.example.books_kmp.ui.auth.SplashScreen
 import com.example.books_kmp.ui.library.LibraryScreen
+import com.example.books_kmp.ui.manualentry.ManualEntryScreen
 import com.example.books_kmp.viewmodel.AuthIntent
 import com.example.books_kmp.viewmodel.AuthViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -101,6 +102,16 @@ fun App() {
                     },
                 )
                 LibraryScreen(onSignOut = { authViewModel.onIntent(AuthIntent.SignOut) })
+            }
+            composable(NavDestination.ManualEntry.route) {
+                ManualEntryScreen(
+                    onNavigateToLibrary = {
+                        navController.navigate(NavDestination.Library.route) {
+                            popUpTo(NavDestination.ManualEntry.route) { inclusive = true }
+                        }
+                    },
+                    onNavigateBack = { navController.popBackStack() },
+                )
             }
         }
     }

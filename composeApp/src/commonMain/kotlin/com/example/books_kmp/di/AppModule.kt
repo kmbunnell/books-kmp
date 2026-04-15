@@ -9,7 +9,9 @@ import com.example.books_kmp.domain.auth.SignUpUseCase
 import com.example.books_kmp.domain.library.AddBookUseCase
 import com.example.books_kmp.domain.library.BookLookupService
 import com.example.books_kmp.domain.library.BookRepository
+import com.example.books_kmp.domain.library.SaveManualBookUseCase
 import com.example.books_kmp.viewmodel.AuthViewModel
+import com.example.books_kmp.viewmodel.ManualEntryViewModel
 import com.example.books_kmp.viewmodel.SignInViewModel
 import com.example.books_kmp.viewmodel.SignUpViewModel
 import io.github.jan.supabase.auth.Auth
@@ -41,7 +43,9 @@ fun appModule(
         factory { SignInUseCase(get()) }
         factory { SignUpUseCase(get()) }
         factory { AddBookUseCase(get(), get()) }
+        factory { SaveManualBookUseCase(get()) }
         viewModel { AuthViewModel(get()) }
         viewModel { SignInViewModel(get()) }
         viewModel { SignUpViewModel(get()) }
+        viewModel { ManualEntryViewModel(get()) }
     }
