@@ -31,3 +31,4 @@ dependencyResolutionManagement {
 include(":composeApp")
 include(":shared")
 include(":shared-testing")
+include(":shared-integration-tests")

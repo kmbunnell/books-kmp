@@ -29,19 +29,26 @@ import kotlinx.serialization.Serializable
  *   email: test@books.local
  *   password: Test1234!
  *
- * Create via: supabase auth create-user test@books.local --password Test1234!
+ * Create via the Auth admin API (requires the local service-role key from `supabase status`):
+ *   SERVICE_ROLE_KEY=$(supabase status -o json | jq -r .SERVICE_ROLE_KEY)
+ *   curl -X POST http://127.0.0.1:54321/auth/v1/admin/users \
+ *     -H "apikey: $SERVICE_ROLE_KEY" \
+ *     -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
+ *     -H "Content-Type: application/json" \
+ *     -d '{"email":"test@books.local","password":"Test1234!","email_confirm":true}'
  */
 class SupabaseBookRepositoryTest {
-    private val supabaseUrl = "http://127.0.0.1:54321"
+    // Set via env var: export SUPABASE_URL=$(supabase status -o json | jq -r .API_URL)
+    private val supabaseUrl = System.getenv("SUPABASE_URL") ?: "http://127.0.0.1:54321"
 
-    // Local Supabase anon key — get from `supabase status -o json | jq -r .ANON_KEY`
+    // Set via env var: export SUPABASE_ANON_KEY=$(supabase status -o json | jq -r .ANON_KEY)
     private val supabaseKey =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
-            "eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9." +
-            "CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
+        checkNotNull(System.getenv("SUPABASE_ANON_KEY")) {
+            "SUPABASE_ANON_KEY env var not set. Run: export SUPABASE_ANON_KEY=\$(supabase status -o json | jq -r .ANON_KEY)"
+        }
 
-    private val testEmail = "test@books.local"
-    private val testPassword = "Test1234!"
+    private val testEmail = System.getenv("INTEGRATION_TEST_EMAIL") ?: "test@books.local"
+    private val testPassword = System.getenv("INTEGRATION_TEST_PASSWORD") ?: "Test1234!"
 
     private val supabase =
         createSupabaseClient(
