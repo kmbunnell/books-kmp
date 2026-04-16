@@ -44,7 +44,8 @@ class SupabaseBookRepositoryTest {
     // Set via env var: export SUPABASE_ANON_KEY=$(supabase status -o json | jq -r .ANON_KEY)
     private val supabaseKey =
         checkNotNull(System.getenv("SUPABASE_ANON_KEY")) {
-            "SUPABASE_ANON_KEY env var not set. Run: export SUPABASE_ANON_KEY=\$(supabase status -o json | jq -r .ANON_KEY)"
+            "SUPABASE_ANON_KEY env var not set. Run: " +
+                "export SUPABASE_ANON_KEY=\$(supabase status -o json | jq -r .ANON_KEY)"
         }
 
     private val testEmail = System.getenv("INTEGRATION_TEST_EMAIL") ?: "test@books.local"
