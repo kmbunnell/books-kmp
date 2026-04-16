@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+  push:
+    branches:
+      - develop
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Lint, test, build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Seed local.properties
+        # Android build fails without these keys. Unit tests do not make real
+        # Supabase calls, so placeholder values are safe here. Integration tests
+        # run in a separate workflow against a local Supabase instance.
+        run: |
+          {
+            echo 'SUPABASE_URL=https://placeholder.supabase.co'
+            echo 'SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwbGFjZWhvbGRlciIsInJvbGUiOiJhbm9uIn0.placeholder-signature-not-a-real-key'
+          } > local.properties
+
+      - name: ktlint check
+        run: ./gradlew ktlintCheck
+
+      - name: Unit tests
+        run: ./gradlew :shared:testDebugUnitTest :composeApp:testDebugUnitTest
+
+      - name: Verify integration test compilation
+        # Compile integration tests without running them — no Supabase instance available in CI.
+        # Full integration test run is handled by the integration-tests workflow.
+        run: ./gradlew :shared-integration-tests:compileTestKotlinJvm
+
+      - name: Assemble debug APK
+        run: ./gradlew :composeApp:assembleDebug
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/reports/ktlint/
+          retention-days: 7

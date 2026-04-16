@@ -10,6 +10,7 @@ kotlin {
     androidTarget {
         compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
     }
+    jvm()
     iosArm64()
     iosSimulatorArm64()
 
@@ -32,7 +33,6 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.ktor.client.mock)
-            implementation(libs.supabase.auth)
             implementation(projects.sharedTesting)
         }
     }
