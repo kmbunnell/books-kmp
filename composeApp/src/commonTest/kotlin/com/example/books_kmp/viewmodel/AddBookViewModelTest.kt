@@ -117,14 +117,46 @@ class AddBookViewModelTest {
         }
 
     @Test
-    fun `LookupIsbn with NotFound emits NavigateToManualEntry effect`() =
+    fun `LookupIsbn with NotFound sets error to NotFound`() =
         runTest {
             fakeService.lookupResult = Result.Failure(BookLookupError.NotFound)
             viewModel.effects.test {
                 viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
                 viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+                assertIs<AddBookScreenError.NotFound>(viewModel.uiState.value.error)
+                expectNoEvents()
+            }
+        }
+
+    @Test
+    fun `EnterManually emits NavigateToManualEntry effect`() =
+        runTest {
+            viewModel.effects.test {
+                viewModel.onIntent(AddBookIntent.EnterManually)
                 assertIs<AddBookEffect.NavigateToManualEntry>(awaitItem())
             }
+        }
+
+    @Test
+    fun `CancelBookPreview clears isbn in state`() =
+        runTest {
+            fakeService.lookupResult = Result.Success(validLookupData)
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            assertNotNull(viewModel.uiState.value.foundBook)
+            viewModel.onIntent(AddBookIntent.CancelBookPreview)
+            assertEquals("", viewModel.uiState.value.isbn)
+        }
+
+    @Test
+    fun `DismissDuplicateDialog clears isbn in state`() =
+        runTest {
+            fakeRepo.isbnExistsOverride = true
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            assertTrue(viewModel.uiState.value.showDuplicateDialog)
+            viewModel.onIntent(AddBookIntent.DismissDuplicateDialog)
+            assertEquals("", viewModel.uiState.value.isbn)
         }
 
     @Test

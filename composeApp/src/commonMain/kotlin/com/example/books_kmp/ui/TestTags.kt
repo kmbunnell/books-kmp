@@ -42,8 +42,9 @@ object TestTags {
         const val CancelButton = "add_book_cancel_button"
         const val DuplicateDialog = "add_book_duplicate_dialog"
         const val DuplicateDialogOkButton = "add_book_duplicate_dialog_ok"
-        const val NetworkErrorBanner = "add_book_network_error_banner"
+        const val ErrorBanner = "add_book_error_banner"
         const val RetryButton = "add_book_retry_button"
+        const val EnterManuallyButton = "add_book_enter_manually_button"
     }
 
     object ManualEntry {

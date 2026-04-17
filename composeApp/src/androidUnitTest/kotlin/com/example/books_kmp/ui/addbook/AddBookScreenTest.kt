@@ -351,7 +351,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.AddBook.NetworkErrorBanner).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
     }
 
     @Test
@@ -369,6 +369,53 @@ class AddBookScreenTest {
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.RetryButton).performClick()
         assertEquals(AddBookIntent.Retry, capturedIntent)
+    }
+
+    @Test
+    fun `not found error message is shown for NotFound error state`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(error = AddBookScreenError.NotFound),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToLibrary = {},
+                onNavigateToManualEntry = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
+    }
+
+    @Test
+    fun `enter manually button is displayed for NotFound error state`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(error = AddBookScreenError.NotFound),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToLibrary = {},
+                onNavigateToManualEntry = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.EnterManuallyButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `tapping enter manually button dispatches EnterManually intent`() {
+        var capturedIntent: AddBookIntent? = null
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(error = AddBookScreenError.NotFound),
+                effects = emptyEffects,
+                onIntent = { capturedIntent = it },
+                onNavigateUp = {},
+                onNavigateToLibrary = {},
+                onNavigateToManualEntry = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.EnterManuallyButton).performClick()
+        assertEquals(AddBookIntent.EnterManually, capturedIntent)
     }
 
     @Test
