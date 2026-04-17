@@ -178,3 +178,4 @@ Secrets go in `local.properties`, injected via `BuildConfig`. **Never commit sec
 - **Do not** add ad-hoc public methods to ViewModels for each user action. All user actions go through `onIntent(intent)`.
 - **Do not** put mutable state in UI state classes. `UiState` is always an immutable `data class`.
 - **Do not** skip Compose UI tests for new screens. Every screen needs tests for its states and interactions.
+- **Do not** write `catch (e: Exception)` in a `suspend` function without rethrowing `CancellationException` first — swallowing it breaks structured concurrency. Pattern: `catch (e: CancellationException) { throw e }` before the broad catch.

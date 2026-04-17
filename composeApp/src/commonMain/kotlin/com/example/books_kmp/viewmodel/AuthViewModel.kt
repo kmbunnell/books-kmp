@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.launch
 
 sealed interface AuthError {
@@ -78,6 +79,8 @@ class AuthViewModel(
     private suspend fun handleSignOut() {
         try {
             authRepository.signOut()
+        } catch (e: CancellationException) {
+            throw e
         } catch (_: Exception) {
             _effects.emit(AuthEffect.ShowError(AuthError.SignOutFailed))
         }

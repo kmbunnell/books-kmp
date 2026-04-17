@@ -5,5 +5,6 @@ enum class NavDestination(val route: String) {
     SignIn("sign_in"),
     SignUp("sign_up"),
     Library("library"),
+    AddBook("add_book"),
     ManualEntry("manual_entry"),
 }

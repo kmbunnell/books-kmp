@@ -32,4 +32,19 @@
     <string name="error_title_required">Title is required</string>
     <string name="error_author_required">Author is required</string>
     <string name="error_save_failed">Failed to save book. Please try again.</string>
+    <string name="title_add_book">Add Book</string>
+    <string name="label_isbn">ISBN</string>
+    <string name="button_look_up">Look Up</string>
+    <string name="label_is_this_right_book">Is this the right book?</string>
+    <string name="button_add">Add</string>
+    <string name="error_duplicate_title">Duplicate Book</string>
+    <string name="error_duplicate_message">This ISBN is already in your library.</string>
+    <string name="button_ok">OK</string>
+    <string name="error_network_generic">Network error. Please try again.</string>
+    <string name="button_retry">Retry</string>
+    <string name="error_rate_limited">Too many requests. Please try again later.</string>
+    <string name="snackbar_book_added">Book added</string>
+    <string name="cd_book_cover">Book cover</string>
+    <string name="cd_add_book">Add book</string>
+    <string name="cd_navigate_up">Navigate up</string>
 </resources>

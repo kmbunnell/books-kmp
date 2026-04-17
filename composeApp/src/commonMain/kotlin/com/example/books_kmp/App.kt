@@ -5,9 +5,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.books_kmp.ui.addbook.AddBookScreen
 import com.example.books_kmp.ui.auth.SignInScreen
 import com.example.books_kmp.ui.auth.SignUpScreen
 import com.example.books_kmp.ui.auth.SplashScreen
@@ -48,6 +53,7 @@ fun App() {
         val navController = rememberNavController()
         val authViewModel: AuthViewModel = koinViewModel()
         val uiState by authViewModel.uiState.collectAsState()
+        var pendingBookAdded by rememberSaveable { mutableStateOf(false) } //move to libraryVM once it's created.
 
         NavHost(navController = navController, startDestination = NavDestination.Splash.route) {
             composable(NavDestination.Splash.route) {
@@ -101,7 +107,24 @@ fun App() {
                         }
                     },
                 )
-                LibraryScreen(onSignOut = { authViewModel.onIntent(AuthIntent.SignOut) })
+                LibraryScreen(
+                    onSignOut = { authViewModel.onIntent(AuthIntent.SignOut) },
+                    onNavigateToAddBook = { navController.navigate(NavDestination.AddBook.route) },
+                    showBookAdded = pendingBookAdded,
+                    onBookAddedShown = { pendingBookAdded = false },
+                )
+            }
+            composable(NavDestination.AddBook.route) {
+                AddBookScreen(
+                    onNavigateUp = { navController.popBackStack() },
+                    onNavigateToLibrary = {
+                        pendingBookAdded = true
+                        navController.popBackStack()
+                    },
+                    onNavigateToManualEntry = {
+                        navController.navigate(NavDestination.ManualEntry.route)
+                    },
+                )
             }
             composable(NavDestination.ManualEntry.route) {
                 ManualEntryScreen(

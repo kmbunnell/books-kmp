@@ -11,6 +11,7 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
@@ -42,6 +43,8 @@ class OpenLibraryApiClient(private val httpClient: HttpClient) : BookLookupServi
                         ),
                     )
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: SerializationException) {
             Result.Failure(BookLookupError.MalformedResponse)
         } catch (e: Exception) {

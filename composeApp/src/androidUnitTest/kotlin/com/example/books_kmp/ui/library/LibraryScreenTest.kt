@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.example.books_kmp.ui.TestTags
 import kotlin.test.assertTrue
@@ -45,5 +46,38 @@ class LibraryScreenTest {
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SignOutButton).performClick()
         assertTrue(signOutCalled)
+    }
+
+    @Test
+    fun `Add Book FAB is displayed`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(onSignOut = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.AddBookFab).assertIsDisplayed()
+    }
+
+    @Test
+    fun `clicking Add Book FAB triggers onNavigateToAddBook callback`() {
+        var navigateCalled = false
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                onSignOut = {},
+                onNavigateToAddBook = { navigateCalled = true },
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.AddBookFab).performClick()
+        assertTrue(navigateCalled)
+    }
+
+    @Test
+    fun `snackbar is shown when showBookAdded is true`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                onSignOut = {},
+                showBookAdded = true,
+                onBookAddedShown = {},
+            )
+        }
+        composeTestRule.onNodeWithText("Book added").assertIsDisplayed()
     }
 }
