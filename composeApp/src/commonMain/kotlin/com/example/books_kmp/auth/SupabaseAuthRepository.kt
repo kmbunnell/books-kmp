@@ -9,6 +9,7 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.exceptions.RestException
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -33,6 +34,8 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
                 this.password = password
             }
             Result.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: RestException) {
             Result.Failure(
                 when (e.error) {
@@ -57,6 +60,8 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
                 this.password = password
             }
             Result.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: RestException) {
             Result.Failure(
                 when (e.error) {

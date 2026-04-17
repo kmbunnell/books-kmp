@@ -5,6 +5,7 @@ import com.example.books_kmp.domain.model.NewBook
 
 class FakeBookRepository(
     var addBookShouldThrow: Boolean = false,
+    var isbnExistsShouldThrow: Boolean = false,
 ) : BookRepository {
     private val books = mutableListOf<Book>()
     var isbnExistsOverride: Boolean? = null
@@ -31,5 +32,8 @@ class FakeBookRepository(
         return saved
     }
 
-    override suspend fun isbnExists(isbn: String?): Boolean = isbnExistsOverride ?: books.any { it.isbn == isbn }
+    override suspend fun isbnExists(isbn: String?): Boolean {
+        if (isbnExistsShouldThrow) throw RuntimeException("isbnExists failed")
+        return isbnExistsOverride ?: books.any { it.isbn == isbn }
+    }
 }

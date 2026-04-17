@@ -27,6 +27,23 @@ object TestTags {
 
     object Library {
         const val SignOutButton = "library_sign_out_button"
+        const val AddBookFab = "library_add_book_fab"
+    }
+
+    object AddBook {
+        const val NavigateUpButton = "add_book_navigate_up_button"
+        const val IsbnField = "add_book_isbn_field"
+        const val LookUpButton = "add_book_look_up_button"
+        const val LoadingIndicator = "add_book_loading"
+        const val BookPreviewTitle = "add_book_preview_title"
+        const val BookPreviewAuthors = "add_book_preview_authors"
+        const val BookPreviewCover = "add_book_preview_cover"
+        const val AddButton = "add_book_add_button"
+        const val CancelButton = "add_book_cancel_button"
+        const val DuplicateDialog = "add_book_duplicate_dialog"
+        const val DuplicateDialogOkButton = "add_book_duplicate_dialog_ok"
+        const val NetworkErrorBanner = "add_book_network_error_banner"
+        const val RetryButton = "add_book_retry_button"
     }
 
     object ManualEntry {
