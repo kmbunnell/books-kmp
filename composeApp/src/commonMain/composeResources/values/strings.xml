@@ -35,7 +35,6 @@
     <string name="title_add_book">Add Book</string>
     <string name="label_isbn">ISBN</string>
     <string name="button_look_up">Look Up</string>
-    <string name="label_is_this_right_book">Is this the right book?</string>
     <string name="button_add">Add</string>
     <string name="error_duplicate_title">Duplicate Book</string>
     <string name="error_duplicate_message">This ISBN is already in your library.</string>
@@ -47,4 +46,7 @@
     <string name="cd_book_cover">Book cover</string>
     <string name="cd_add_book">Add book</string>
     <string name="cd_navigate_up">Navigate up</string>
+    <string name="error_isbn_not_found">Unable to look up isbn, would you like to enter this book manually instead?</string>
+    <string name="button_enter_manually">Enter Manually</string>
+    <string name="cd_close">Close</string>
 </resources>

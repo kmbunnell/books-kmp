@@ -28,6 +28,8 @@ sealed interface AddBookScreenError {
     data object NetworkError : AddBookScreenError
 
     data object RateLimited : AddBookScreenError
+
+    data object NotFound : AddBookScreenError
 }
 
 sealed interface AddBookIntent {
@@ -42,6 +44,8 @@ sealed interface AddBookIntent {
     data object DismissDuplicateDialog : AddBookIntent
 
     data object Retry : AddBookIntent
+
+    data object EnterManually : AddBookIntent
 }
 
 sealed interface AddBookEffect {
@@ -66,9 +70,16 @@ class AddBookViewModel(
                 is AddBookIntent.IsbnChanged -> _uiState.update { it.copy(isbn = intent.isbn) }
                 is AddBookIntent.LookupIsbn -> handleLookupIsbn(intent.isbn)
                 AddBookIntent.ConfirmBook -> handleConfirmBook()
-                AddBookIntent.CancelBookPreview -> _uiState.update { it.copy(foundBook = null) }
-                AddBookIntent.DismissDuplicateDialog -> _uiState.update { it.copy(showDuplicateDialog = false) }
+                AddBookIntent.CancelBookPreview -> _uiState.update { it.copy(foundBook = null, isbn = "") }
+                AddBookIntent.DismissDuplicateDialog ->
+                    _uiState.update {
+                        it.copy(
+                            showDuplicateDialog = false,
+                            isbn = ""
+                        )
+                    }
                 AddBookIntent.Retry -> handleLookupIsbn(_uiState.value.isbn)
+                AddBookIntent.EnterManually -> _effects.emit(AddBookEffect.NavigateToManualEntry)
             }
         }
     }
@@ -83,7 +94,7 @@ class AddBookViewModel(
                 _uiState.update { it.copy(isLoading = false) }
                 when (result.error) {
                     AddBookError.Duplicate -> _uiState.update { it.copy(showDuplicateDialog = true) }
-                    AddBookError.NotFound -> _effects.emit(AddBookEffect.NavigateToManualEntry)
+                    AddBookError.NotFound -> _uiState.update { it.copy(error = AddBookScreenError.NotFound) }
                     is AddBookError.NetworkError -> _uiState.update { it.copy(error = AddBookScreenError.NetworkError) }
                     AddBookError.RateLimited -> _uiState.update { it.copy(error = AddBookScreenError.RateLimited) }
                     AddBookError.MalformedResponse ->

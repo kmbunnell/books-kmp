@@ -1,14 +1,19 @@
 package com.example.books_kmp.ui.addbook
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -22,22 +27,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_add
-import bookskmp.composeapp.generated.resources.button_cancel
+import bookskmp.composeapp.generated.resources.button_enter_manually
 import bookskmp.composeapp.generated.resources.button_look_up
 import bookskmp.composeapp.generated.resources.button_ok
 import bookskmp.composeapp.generated.resources.button_retry
 import bookskmp.composeapp.generated.resources.cd_book_cover
+import bookskmp.composeapp.generated.resources.cd_close
 import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.error_duplicate_message
 import bookskmp.composeapp.generated.resources.error_duplicate_title
+import bookskmp.composeapp.generated.resources.error_isbn_not_found
 import bookskmp.composeapp.generated.resources.error_network_generic
 import bookskmp.composeapp.generated.resources.error_rate_limited
-import bookskmp.composeapp.generated.resources.label_is_this_right_book
 import bookskmp.composeapp.generated.resources.label_isbn
 import bookskmp.composeapp.generated.resources.title_add_book
 import coil3.compose.AsyncImage
@@ -79,10 +89,10 @@ fun AddBookScreenContent(
     onNavigateToLibrary: () -> Unit,
     onNavigateToManualEntry: () -> Unit,
 ) {
-    val errorNetworkGeneric = stringResource(Res.string.error_network_generic)
-    val errorRateLimited = stringResource(Res.string.error_rate_limited)
+    val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
         effects.collect { effect ->
             when (effect) {
                 AddBookEffect.NavigateToLibrary -> onNavigateToLibrary()
@@ -143,15 +153,11 @@ fun AddBookScreenContent(
                 modifier =
                     Modifier
                         .fillMaxWidth()
+                        .focusRequester(focusRequester)
                         .testTag(TestTags.AddBook.IsbnField),
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.testTag(TestTags.AddBook.LoadingIndicator))
-                Spacer(modifier = Modifier.height(16.dp))
-            }
 
             Button(
                 onClick = { onIntent(AddBookIntent.LookupIsbn(uiState.isbn)) },
@@ -164,63 +170,116 @@ fun AddBookScreenContent(
                 Text(stringResource(Res.string.button_look_up))
             }
 
-            uiState.error?.let { error ->
-                val message =
-                    when (error) {
-                        AddBookScreenError.NetworkError -> errorNetworkGeneric
-                        AddBookScreenError.RateLimited -> errorRateLimited
-                    }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = message,
-                    modifier = Modifier.testTag(TestTags.AddBook.NetworkErrorBanner),
+            if (uiState.isLoading) {
+                Spacer(modifier = Modifier.height(32.dp))
+                CircularProgressIndicator(
+                    modifier =
+                        Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .testTag(TestTags.AddBook.LoadingIndicator),
                 )
-                TextButton(
-                    onClick = { onIntent(AddBookIntent.Retry) },
-                    modifier = Modifier.testTag(TestTags.AddBook.RetryButton),
-                ) {
-                    Text(stringResource(Res.string.button_retry))
-                }
+            }
+
+            uiState.error?.let { error ->
+                ErrorSection(error = error, onIntent = onIntent)
             }
 
             uiState.foundBook?.let { book ->
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = stringResource(Res.string.label_is_this_right_book))
-                book.coverImageUrl?.let { url ->
-                    AsyncImage(
-                        model = url,
-                        contentDescription = stringResource(Res.string.cd_book_cover),
-                        modifier = Modifier.testTag(TestTags.AddBook.BookPreviewCover),
-                    )
-                }
-                Text(
-                    text = book.title,
-                    modifier = Modifier.testTag(TestTags.AddBook.BookPreviewTitle),
-                )
-                Text(
-                    text = book.authors.joinToString(", "),
-                    modifier = Modifier.testTag(TestTags.AddBook.BookPreviewAuthors),
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { onIntent(AddBookIntent.ConfirmBook) },
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .testTag(TestTags.AddBook.AddButton),
+                Card(
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(Res.string.button_add))
-                }
-                TextButton(
-                    onClick = { onIntent(AddBookIntent.CancelBookPreview) },
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .testTag(TestTags.AddBook.CancelButton),
-                ) {
-                    Text(stringResource(Res.string.button_cancel))
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                        ) {
+                            book.coverImageUrl?.let { url ->
+                                AsyncImage(
+                                    model = url,
+                                    contentDescription = stringResource(Res.string.cd_book_cover),
+                                    modifier =
+                                        Modifier
+                                            .size(120.dp)
+                                            .testTag(TestTags.AddBook.BookPreviewCover),
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                            Text(
+                                text = book.title,
+                                modifier = Modifier.testTag(TestTags.AddBook.BookPreviewTitle),
+                            )
+                            Text(
+                                text = book.authors.joinToString(", "),
+                                modifier = Modifier.testTag(TestTags.AddBook.BookPreviewAuthors),
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { onIntent(AddBookIntent.ConfirmBook) },
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .testTag(TestTags.AddBook.AddButton),
+                            ) {
+                                Text(stringResource(Res.string.button_add))
+                            }
+                        }
+                        IconButton(
+                            onClick = { onIntent(AddBookIntent.CancelBookPreview) },
+                            modifier =
+                                Modifier
+                                    .align(Alignment.TopEnd)
+                                    .testTag(TestTags.AddBook.CancelButton),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = stringResource(Res.string.cd_close),
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ErrorSection(
+    error: AddBookScreenError,
+    onIntent: (AddBookIntent) -> Unit,
+) {
+    val message =
+        stringResource(
+            when (error) {
+                AddBookScreenError.NotFound -> Res.string.error_isbn_not_found
+                AddBookScreenError.NetworkError -> Res.string.error_network_generic
+                AddBookScreenError.RateLimited -> Res.string.error_rate_limited
+            },
+        )
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(
+        text = message,
+        modifier = Modifier.testTag(TestTags.AddBook.ErrorBanner),
+    )
+    when (error) {
+        AddBookScreenError.NotFound ->
+            TextButton(
+                onClick = { onIntent(AddBookIntent.EnterManually) },
+                modifier = Modifier.testTag(TestTags.AddBook.EnterManuallyButton),
+            ) {
+                Text(stringResource(Res.string.button_enter_manually))
+            }
+        AddBookScreenError.NetworkError,
+        AddBookScreenError.RateLimited ->
+            TextButton(
+                onClick = { onIntent(AddBookIntent.Retry) },
+                modifier = Modifier.testTag(TestTags.AddBook.RetryButton),
+            ) {
+                Text(stringResource(Res.string.button_retry))
+            }
     }
 }
