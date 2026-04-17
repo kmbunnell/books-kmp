@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.AuthSessionState
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -11,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.launch
 
 sealed interface AuthError {
