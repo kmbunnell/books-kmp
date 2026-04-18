@@ -1,0 +1,3 @@
+sdk.dir=/path/to/android/sdk
+SUPABASE_URL=your-supabase-url
+SUPABASE_ANON_KEY=your-supabase-anon-key
