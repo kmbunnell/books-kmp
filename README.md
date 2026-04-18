@@ -1,35 +1,43 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# Shelved
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+A cross-platform mobile app for book collectors to build and manage a personal digital library. Scan a barcode or enter an ISBN, and Shelved automatically pulls in the cover, title, and author from the Open Library API. Organize your collection with a flexible tagging system that acts as virtual shelves.
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+Built with **Kotlin Multiplatform** and **Compose Multiplatform**, targeting both Android and iOS from a single shared codebase.
 
-### Build and Run Android Application
+> **Status:** Work in progress — clean architecture skeleton is in place; Supabase integration, UI screens, and barcode scanning are actively under development.
 
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
+## Tech Stack
 
-### Build and Run iOS Application
+| Layer | Technology |
+|-------|-----------|
+| Shared Logic | Kotlin Multiplatform (KMP) |
+| Shared UI | Compose Multiplatform |
+| Backend & Auth | Supabase (Auth, PostgreSQL, Row Level Security) |
+| Networking | Ktor Client |
+| Serialization | kotlinx.serialization |
+| Image Loading | Coil 3 (Multiplatform) |
+| Dependency Injection | Koin |
+| Navigation | Compose Navigation (Multiplatform) |
+| Barcode Scanning | ML Kit (Android) / AVFoundation (iOS) |
 
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+## Architecture
 
----
+Shelved follows a **clean architecture** pattern with clear separation between layers:
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+- **Presentation** (`composeApp/commonMain`) — Compose screens, ViewModels exposing state via `StateFlow`
+- **Domain** (`shared/commonMain`) — Use cases, domain models, and repository interfaces. Pure Kotlin, no platform dependencies
+- **Data** (`shared/commonMain` + platform source sets) — Repository implementations, Supabase data sources, Open Library API client
+
+Platform-specific code (barcode scanning, native sign-in) uses KMP's `expect`/`actual` pattern to keep the shared API clean while leveraging native capabilities on each platform.
+
+## Development Workflow
+
+This project uses [Claude Code](https://github.com/anthropics/claude-code) as part of the development workflow. The repo includes a `CLAUDE.md` project context file and custom commands in `.claude/commands/`.
+
+## Build & Run
+
+**Prerequisites:** Android Studio (with KMP plugin), Xcode, and a JDK compatible with the project's Kotlin version. Copy `local.properties.example` to `local.properties` and fill in your Supabase URL and anon key before building — the app will not compile without them.
+
+**Android:** Use the run configuration in Android Studio, or `./gradlew :composeApp:assembleDebug` from the terminal.
+
+**iOS:** Open the `/iosApp` directory in Xcode and run from there.
