@@ -14,8 +14,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -173,26 +175,37 @@ class SignUpViewModelTest {
         }
 
     @Test
-    fun `isLoading is false after successful sign up`() =
+    fun `isLoading transitions false to true to false across a successful sign up`() =
         runTest {
+            val gate = CompletableDeferred<Unit>()
+            fakeRepo.signUpGate = gate
             val viewModel = SignUpViewModel(signUpUseCase)
+            backgroundScope.launch { viewModel.effects.collect {} }
 
-            viewModel.onIntent(SignUpIntent.SignUp("test@example.com", "password123", "password123"))
-
-            assertFalse(viewModel.uiState.value.isLoading)
+            viewModel.uiState.test {
+                assertFalse(awaitItem().isLoading)
+                viewModel.onIntent(SignUpIntent.SignUp("test@example.com", "password123", "password123"))
+                assertTrue(awaitItem().isLoading)
+                gate.complete(Unit)
+                assertFalse(awaitItem().isLoading)
+            }
         }
 
     @Test
-    fun `isLoading is false after sign up fails`() =
+    fun `isLoading transitions false to true to false across a failed sign up`() =
         runTest {
+            val gate = CompletableDeferred<Unit>()
+            fakeRepo.signUpGate = gate
             fakeRepo.signUpResult = Result.Failure(AuthRepositoryError.Unknown)
             val viewModel = SignUpViewModel(signUpUseCase)
+            backgroundScope.launch { viewModel.effects.collect {} }
 
-            viewModel.effects.test {
+            viewModel.uiState.test {
+                assertFalse(awaitItem().isLoading)
                 viewModel.onIntent(SignUpIntent.SignUp("test@example.com", "password123", "password123"))
-                awaitItem() // consume the effect
+                assertTrue(awaitItem().isLoading)
+                gate.complete(Unit)
+                assertFalse(awaitItem().isLoading)
             }
-
-            assertFalse(viewModel.uiState.value.isLoading)
         }
 }

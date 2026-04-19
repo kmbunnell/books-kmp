@@ -1,6 +1,7 @@
 package com.example.books_kmp.domain.auth
 
 import com.example.books_kmp.domain.Result
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
@@ -12,6 +13,11 @@ class FakeAuthRepository : AuthRepository {
     var signInCalled = false
     var signUpCalled = false
 
+    // Optional gates — tests set these to suspend sign-in/up until completed,
+    // allowing deterministic observation of in-flight ViewModel state.
+    var signInGate: CompletableDeferred<Unit>? = null
+    var signUpGate: CompletableDeferred<Unit>? = null
+
     override val sessionStatus: Flow<AuthSessionState> = sessionFlow
 
     override suspend fun signUp(
@@ -19,6 +25,7 @@ class FakeAuthRepository : AuthRepository {
         password: String,
     ): Result<Unit, AuthRepositoryError> {
         signUpCalled = true
+        signUpGate?.await()
         return signUpResult
     }
 
@@ -27,6 +34,7 @@ class FakeAuthRepository : AuthRepository {
         password: String,
     ): Result<Unit, AuthRepositoryError> {
         signInCalled = true
+        signInGate?.await()
         return signInResult
     }
 
