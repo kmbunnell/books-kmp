@@ -6,37 +6,21 @@ Books-KMP is a cross-platform mobile book library app built with **Kotlin Multip
 
 **Target platforms:** Android and iOS from a single shared codebase.
 
-For detailed specs, see:
-- `docs/specs.md` — data models, API details, screens, functional requirements
-- `docs/database.md` — Supabase schema, RLS policies, triggers, data flow
-- `docs/auth.md` — authentication providers, session flow, Supabase auth modules
+See `docs/overview.md` for tech-choice rationale, schema notes, and planned features. Schema, models, screens, and navigation are authoritative in code.
 
 ---
 
 ## Core Principles
 
-Apply **SOLID** and **DRY** principles throughout. The sections below call out where they matter most for this project.
-
 ### 1. Test-Driven Development (TDD)
 
-**Red → Green → Refactor.** Write a failing test first, implement the minimum code to pass it, then refactor. No production code without a corresponding test.
+**Red → Green → Refactor.** Write a failing test first, implement the minimum to pass, then refactor. Skip tests for pure data classes and interfaces with no logic.
 
-**Unit tests (business logic):**
-- Every public function in a use case or repository must have at least one unit test.
-- When fixing a bug, write a test that reproduces the bug **before** writing the fix.
-- Keep tests fast, isolated, and deterministic. Mock external dependencies at the repository boundary.
-- Prefer hand-rolled fakes over mocking libraries for KMP compatibility.
-- Use descriptive test names: `` `invoke returns error when ISBN is duplicate` ``.
-- Each test should test one behavior. Prefer many small tests over few large ones.
-- Test files mirror production structure: `domain/usecase/AddBookUseCaseTest.kt` alongside `domain/usecase/AddBookUseCase.kt`.
-- Frameworks: `kotlin.test` + `kotlinx-coroutines-test` for domain/data; `Turbine` for Flow/StateFlow testing in ViewModels.
+**Unit tests:** Every use case and repository function with logic needs a test. When fixing a bug, write a failing test that reproduces it first. Prefer hand-rolled fakes over mocking libraries (KMP compatibility). Test files mirror production: `domain/usecase/AddBookUseCaseTest.kt` next to `AddBookUseCase.kt`. Frameworks: `kotlin.test` + `kotlinx-coroutines-test`; `Turbine` for Flow/StateFlow.
 
-**Compose UI tests:**
-- Every screen must have tests for its states (loading, error, empty, populated) and interactions (button clicks, navigation, form input).
-- Use `ComposeUiTest` (Multiplatform) with semantic matchers. UI tests live alongside screen code. Inject fake ViewModels or use cases to isolate UI behavior.
+**Compose UI tests:** Cover each screen's states (loading, error, empty, populated) and interactions. Use `ComposeUiTest` with semantic matchers; inject fake ViewModels or use cases.
 
-**Integration tests:**
-- Use `supabase start` (local Docker instance) for Supabase integration tests.
+**Integration tests:** Use `supabase start` (local Docker) for Supabase integration tests.
 
 ### 2. Clean Architecture + MVI
 
@@ -52,12 +36,7 @@ Presentation (MVI) → Domain ← Data
 - **Data:** Repository implementations, data sources, DTOs, mappers. Depends on domain interfaces.
 - **Presentation:** Compose screens, ViewModels, UI state. ViewModels depend on use cases only — no business logic in ViewModels.
 
-**MVI pattern (Model-View-Intent):**
-
-Each screen has three components:
-- **State** (`data class XxxUiState`): Immutable snapshot of everything the UI needs to render. Exposed from ViewModel via `StateFlow<XxxUiState>`.
-- **Intent** (`sealed interface XxxIntent`): Every user action is an explicit intent object (e.g., `SearchIntent.QueryChanged(text)`, `SearchIntent.Submit`). Screens call `viewModel.onIntent(intent)` — no ad-hoc ViewModel methods per action.
-- **ViewModel** processes intents, delegates to use cases, and emits new state. Side effects (navigation, toasts) flow through a `SharedFlow<XxxEffect>` or `Channel<XxxEffect>`.
+**MVI pattern:** Each screen exposes `StateFlow<XxxUiState>` (immutable snapshot), accepts user actions as `sealed interface XxxIntent` via `viewModel.onIntent(intent)` — no ad-hoc methods per action — and emits side effects (navigation, toasts) through `SharedFlow<XxxEffect>` or `Channel<XxxEffect>`. ViewModels delegate to use cases; no business logic.
 
 **Architecture rules:**
 - Domain models and DTOs are always separate classes. Map between them explicitly. Do not leak DTO annotations (`@Serializable`, column names) into domain models.
@@ -96,8 +75,6 @@ KMP + CMP, Supabase (`supabase-kt`, `compose-auth`), Ktor, kotlinx.serialization
 ## Common Pitfalls
 
 - **Do not** create new packages or directories without asking first.
-- **Do not** skip writing the failing test first.
 - **Do not** commit API keys, Supabase URLs, or secrets.
-- **Do not** manually construct class instances in Compose screens — always inject via Koin.
 - **Do not** use `expect`/`actual` unless truly necessary (barcode scanning, platform permissions).
 - **Do not** write `catch (e: Exception)` in a `suspend` function without rethrowing `CancellationException` first — swallowing it breaks structured concurrency. Pattern: `catch (e: CancellationException) { throw e }` before the broad catch.
