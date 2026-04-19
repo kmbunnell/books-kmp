@@ -14,8 +14,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -90,13 +92,20 @@ class SignInViewModelTest {
         }
 
     @Test
-    fun `isLoading is false after successful sign-in`() =
+    fun `isLoading transitions false to true to false across a successful sign-in`() =
         runTest {
+            val gate = CompletableDeferred<Unit>()
+            fakeRepo.signInGate = gate
             val viewModel = SignInViewModel(signInUseCase)
+            backgroundScope.launch { viewModel.effects.collect {} }
 
-            viewModel.onIntent(SignInIntent.SignIn("test@example.com", "password123"))
-
-            assertFalse(viewModel.uiState.value.isLoading)
+            viewModel.uiState.test {
+                assertFalse(awaitItem().isLoading)
+                viewModel.onIntent(SignInIntent.SignIn("test@example.com", "password123"))
+                assertTrue(awaitItem().isLoading)
+                gate.complete(Unit)
+                assertFalse(awaitItem().isLoading)
+            }
         }
 
     @Test
@@ -114,16 +123,20 @@ class SignInViewModelTest {
         }
 
     @Test
-    fun `isLoading is false after sign-in fails`() =
+    fun `isLoading transitions false to true to false across a failed sign-in`() =
         runTest {
+            val gate = CompletableDeferred<Unit>()
+            fakeRepo.signInGate = gate
             fakeRepo.signInResult = Result.Failure(AuthRepositoryError.InvalidCredentials)
             val viewModel = SignInViewModel(signInUseCase)
+            backgroundScope.launch { viewModel.effects.collect {} }
 
-            viewModel.effects.test {
+            viewModel.uiState.test {
+                assertFalse(awaitItem().isLoading)
                 viewModel.onIntent(SignInIntent.SignIn("test@example.com", "password"))
-                awaitItem() // consume the effect
+                assertTrue(awaitItem().isLoading)
+                gate.complete(Unit)
+                assertFalse(awaitItem().isLoading)
             }
-
-            assertFalse(viewModel.uiState.value.isLoading)
         }
 }

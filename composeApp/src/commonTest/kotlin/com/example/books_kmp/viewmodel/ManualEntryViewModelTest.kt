@@ -11,8 +11,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -96,11 +98,38 @@ class ManualEntryViewModelTest {
         }
 
     @Test
-    fun `isLoading is true while save is in progress, false after`() =
+    fun `isLoading transitions false to true to false across a successful save`() =
         runTest {
+            val gate = CompletableDeferred<Unit>()
+            fakeRepo.addBookGate = gate
             val viewModel = ManualEntryViewModel(useCase)
-            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
-            assertFalse(viewModel.uiState.value.isLoading)
+            backgroundScope.launch { viewModel.effects.collect {} }
+
+            viewModel.uiState.test {
+                assertFalse(awaitItem().isLoading)
+                viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+                assertTrue(awaitItem().isLoading)
+                gate.complete(Unit)
+                assertFalse(awaitItem().isLoading)
+            }
+        }
+
+    @Test
+    fun `isLoading transitions false to true to false across a failed save`() =
+        runTest {
+            val gate = CompletableDeferred<Unit>()
+            fakeRepo.addBookGate = gate
+            fakeRepo.addBookShouldThrow = true
+            val viewModel = ManualEntryViewModel(useCase)
+            backgroundScope.launch { viewModel.effects.collect {} }
+
+            viewModel.uiState.test {
+                assertFalse(awaitItem().isLoading)
+                viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+                assertTrue(awaitItem().isLoading)
+                gate.complete(Unit)
+                assertFalse(awaitItem().isLoading)
+            }
         }
 
     @Test
