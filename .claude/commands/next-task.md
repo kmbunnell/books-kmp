@@ -109,7 +109,7 @@ Scan the codebase to understand what exists and what needs to change. Default to
 
 Cross-reference the ticket requirements against:
 - `CLAUDE.md` — architecture rules, MVI pattern, TDD requirements, code conventions
-- `docs/specs.md`, `docs/database.md`, `docs/auth.md` — only if relevant to the ticket's domain
+- `docs/overview.md` — only for tech rationale, schema notes, or planned features
 
 Build a plan with these sections:
 
