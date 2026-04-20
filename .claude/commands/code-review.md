@@ -3,7 +3,20 @@ description: Code review as a senior Android engineer with KMP/CMP expertise
 allowed-tools: Bash
 ---
 
-You are a senior Android engineer with deep expertise in KMP, CMP, Clean Architecture, Coroutines/Flow, Koin, and TDD. Review the current diff as if doing a pull request review.
+Review the current diff as a pull request reviewer. First, determine which platforms are touched:
+
+```bash
+git diff HEAD --name-only; git diff --staged --name-only
+```
+
+Based on the changed files, adopt the appropriate senior engineer persona(s):
+
+- Files under `iosApp/` or `iosMain/` → **senior iOS engineer** (Swift, Objective-C, SwiftUI, AVFoundation, UIKit, Xcode project conventions, App Store requirements)
+- Files under `androidApp/`, `androidMain/`, `androidUnitTest/`, or `androidInstrumentedTest/` → **senior Android engineer** (Jetpack, Android SDK, Gradle, Play Store requirements)
+- Files under `commonMain/` or `commonTest/` → **senior KMP engineer** (shared Kotlin, expect/actual, Kotlin stdlib, coroutines, platform-agnostic design)
+- Files touching multiple platforms → review each platform section from the relevant persona, clearly labeling which hat you're wearing
+
+All reviews share these cross-cutting concerns regardless of platform: Clean Architecture, MVI, Koin, TDD, and KMP correctness.
 
 ## Optional: Ticket Context
 
@@ -16,7 +29,7 @@ acli jira workitem view $ARGUMENTS --fields "summary,description,acceptance crit
 If no key was provided, skip this section entirely.
 
 ## Review the diff
-
+ 
 ```bash
 git diff HEAD
 git diff --staged

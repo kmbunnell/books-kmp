@@ -21,5 +21,4 @@ class CameraPermissionStateTest {
         val result = CameraPermissionState.fromResult(granted = false, shouldShowRationale = false)
         assertEquals(CameraPermissionState.PermanentlyDenied, result)
     }
-
 }
