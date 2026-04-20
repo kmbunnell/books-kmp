@@ -49,4 +49,9 @@
     <string name="error_isbn_not_found">Unable to look up isbn, would you like to enter this book manually instead?</string>
     <string name="button_enter_manually">Enter Manually</string>
     <string name="cd_close">Close</string>
+    <string name="camera_permission_title">Camera Permission Required</string>
+    <string name="camera_permission_rationale">Camera access is needed to scan book barcodes. Please grant the permission to continue.</string>
+    <string name="camera_permission_permanently_denied">Camera access has been permanently denied. Please enable it in Settings to scan barcodes.</string>
+    <string name="button_open_settings">Open Settings</string>
+    <string name="button_not_now">Not Now</string>
 </resources>

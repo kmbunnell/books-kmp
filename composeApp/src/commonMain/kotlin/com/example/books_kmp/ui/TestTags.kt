@@ -54,4 +54,12 @@ object TestTags {
         const val CancelButton = "manual_entry_cancel_button"
         const val LoadingIndicator = "manual_entry_loading"
     }
+
+    object CameraPermission {
+        const val RationaleDialog = "camera_permission_rationale_dialog"
+        const val SettingsDialog = "camera_permission_settings_dialog"
+        const val RetryButton = "camera_permission_retry_button"
+        const val OpenSettingsButton = "camera_permission_open_settings_button"
+        const val DismissButton = "camera_permission_dismiss_button"
+    }
 }
