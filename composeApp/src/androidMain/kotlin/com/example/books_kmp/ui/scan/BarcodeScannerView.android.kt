@@ -55,7 +55,7 @@ actual fun BarcodeScannerView(onResult: (Result<String, BarcodeScanError>) -> Un
     }
 }
 
-@OptIn(ExperimentalGetImage::class)
+@androidx.annotation.OptIn(ExperimentalGetImage::class)
 @Composable
 private fun CameraPreview(onResult: (Result<String, BarcodeScanError>) -> Unit) {
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -82,7 +82,7 @@ private fun CameraPreview(onResult: (Result<String, BarcodeScanError>) -> Unit) 
                         val provider = future.get().also { cameraProviderState.value = it }
                         val preview =
                             Preview.Builder().build().also {
-                                it.setSurfaceProvider(previewView.surfaceProvider)
+                                it.surfaceProvider = previewView.surfaceProvider
                             }
                         val client =
                             BarcodeScanning.getClient(
@@ -123,7 +123,7 @@ private fun CameraPreview(onResult: (Result<String, BarcodeScanError>) -> Unit) 
     )
 }
 
-@OptIn(ExperimentalGetImage::class)
+@androidx.annotation.OptIn(ExperimentalGetImage::class)
 private fun processFrame(
     imageProxy: ImageProxy,
     client: com.google.mlkit.vision.barcode.BarcodeScanner,
