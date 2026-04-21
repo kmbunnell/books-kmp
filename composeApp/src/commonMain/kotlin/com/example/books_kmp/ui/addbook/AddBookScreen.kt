@@ -40,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -64,6 +63,7 @@ import bookskmp.composeapp.generated.resources.label_isbn
 import bookskmp.composeapp.generated.resources.title_add_book
 import coil3.compose.AsyncImage
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.ui.scan.BarcodeScannerView
 import com.example.books_kmp.viewmodel.AddBookEffect
@@ -71,7 +71,6 @@ import com.example.books_kmp.viewmodel.AddBookIntent
 import com.example.books_kmp.viewmodel.AddBookScreenError
 import com.example.books_kmp.viewmodel.AddBookUiState
 import com.example.books_kmp.viewmodel.AddBookViewModel
-import com.example.books_kmp.domain.model.BookLookupData
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import org.jetbrains.compose.resources.stringResource
@@ -403,15 +402,17 @@ private fun AddBookScreenPreview_Error() {
 @Composable
 private fun AddBookScreenPreview_FoundBook() {
     AddBookScreenContent(
-        uiState = AddBookUiState(
-            isbn = "9780140449136",
-            foundBook = BookLookupData(
+        uiState =
+            AddBookUiState(
                 isbn = "9780140449136",
-                title = "The Iliad",
-                authors = listOf("Homer"),
-                coverImageUrl = null,
+                foundBook =
+                    BookLookupData(
+                        isbn = "9780140449136",
+                        title = "The Iliad",
+                        authors = listOf("Homer"),
+                        coverImageUrl = null,
+                    ),
             ),
-        ),
         effects = MutableSharedFlow(),
         onIntent = {},
         onNavigateUp = {},

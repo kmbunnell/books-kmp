@@ -87,9 +87,10 @@ class AddBookViewModel(
                     }
                 AddBookIntent.Retry -> handleLookupIsbn(_uiState.value.isbn)
                 AddBookIntent.EnterManually -> _effects.emit(AddBookEffect.NavigateToManualEntry)
-                AddBookIntent.StartScan -> _uiState.update {
-                    it.copy(isScanning = true, isbn = "", error = null, foundBook = null)
-                }
+                AddBookIntent.StartScan ->
+                    _uiState.update {
+                        it.copy(isScanning = true, isbn = "", error = null, foundBook = null)
+                    }
                 is AddBookIntent.BarcodeScanned -> {
                     _uiState.update { it.copy(isScanning = false) }
                     handleLookupIsbn(intent.isbn)
