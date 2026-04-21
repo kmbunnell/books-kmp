@@ -18,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.example.books_kmp.domain.library.BarcodeScanError
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.library.BarcodeScanError
 import com.example.books_kmp.ui.permission.CameraPermissionState
 import com.example.books_kmp.ui.permission.CameraRationaleDialog
 import com.example.books_kmp.ui.permission.CameraSettingsDialog
