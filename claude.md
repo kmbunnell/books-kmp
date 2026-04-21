@@ -83,6 +83,7 @@ When a feature requires platform-specific UI (camera, maps, native pickers), use
 
 ## Common Pitfalls
 
+- **Present the best architectural solution, not merely one that satisfies acceptance criteria.** Evaluate trade-offs before proposing a plan — if a cleaner design exists, recommend it even if a simpler path would compile and pass tests.
 - **Do not** create new packages or directories without asking first.
 - **Do not** commit API keys, Supabase URLs, or secrets.
 - **Do not** use `expect`/`actual` for business logic unless truly necessary. For platform-specific **UI** (camera, maps, native pickers), prefer `expect`/`actual` composables with `AndroidView`/`UIKitView` over separate Activities.
