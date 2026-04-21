@@ -254,4 +254,66 @@ class AddBookViewModelTest {
             viewModel.onIntent(AddBookIntent.CancelBookPreview)
             assertNull(viewModel.uiState.value.foundBook)
         }
+
+    @Test
+    fun `StartScan sets isScanning true`() =
+        runTest {
+            assertFalse(viewModel.uiState.value.isScanning)
+            viewModel.onIntent(AddBookIntent.StartScan)
+            assertTrue(viewModel.uiState.value.isScanning)
+        }
+
+    @Test
+    fun `ScanDismissed sets isScanning false`() =
+        runTest {
+            viewModel.onIntent(AddBookIntent.StartScan)
+            assertTrue(viewModel.uiState.value.isScanning)
+            viewModel.onIntent(AddBookIntent.ScanDismissed)
+            assertFalse(viewModel.uiState.value.isScanning)
+        }
+
+    @Test
+    fun `StartScan clears previous error and foundBook and isbn`() =
+        runTest {
+            fakeService.lookupResult = Result.Failure(BookLookupError.NotFound)
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            assertIs<AddBookScreenError.NotFound>(viewModel.uiState.value.error)
+
+            viewModel.onIntent(AddBookIntent.StartScan)
+
+            val state = viewModel.uiState.value
+            assertNull(state.error)
+            assertNull(state.foundBook)
+            assertEquals("", state.isbn)
+            assertTrue(state.isScanning)
+        }
+
+    @Test
+    fun `StartScan after successful lookup clears foundBook and isbn`() =
+        runTest {
+            fakeService.lookupResult = Result.Success(validLookupData)
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            assertNotNull(viewModel.uiState.value.foundBook)
+
+            viewModel.onIntent(AddBookIntent.StartScan)
+
+            val state = viewModel.uiState.value
+            assertNull(state.foundBook)
+            assertNull(state.error)
+            assertEquals("", state.isbn)
+            assertTrue(state.isScanning)
+        }
+
+    @Test
+    fun `BarcodeScanned sets isScanning false and triggers lookup`() =
+        runTest {
+            fakeService.lookupResult = Result.Success(validLookupData)
+            viewModel.onIntent(AddBookIntent.StartScan)
+            assertTrue(viewModel.uiState.value.isScanning)
+            viewModel.onIntent(AddBookIntent.BarcodeScanned("9780140449136"))
+            assertFalse(viewModel.uiState.value.isScanning)
+            assertEquals(validLookupData, viewModel.uiState.value.foundBook)
+        }
 }

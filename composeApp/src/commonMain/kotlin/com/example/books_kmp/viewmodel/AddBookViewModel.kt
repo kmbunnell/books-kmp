@@ -22,6 +22,7 @@ data class AddBookUiState(
     val error: AddBookScreenError? = null,
     val showDuplicateDialog: Boolean = false,
     val foundBook: BookLookupData? = null,
+    val isScanning: Boolean = false,
 )
 
 sealed interface AddBookScreenError {
@@ -46,6 +47,12 @@ sealed interface AddBookIntent {
     data object Retry : AddBookIntent
 
     data object EnterManually : AddBookIntent
+
+    data object StartScan : AddBookIntent
+
+    data class BarcodeScanned(val isbn: String) : AddBookIntent
+
+    data object ScanDismissed : AddBookIntent
 }
 
 sealed interface AddBookEffect {
@@ -80,6 +87,14 @@ class AddBookViewModel(
                     }
                 AddBookIntent.Retry -> handleLookupIsbn(_uiState.value.isbn)
                 AddBookIntent.EnterManually -> _effects.emit(AddBookEffect.NavigateToManualEntry)
+                AddBookIntent.StartScan -> _uiState.update {
+                    it.copy(isScanning = true, isbn = "", error = null, foundBook = null)
+                }
+                is AddBookIntent.BarcodeScanned -> {
+                    _uiState.update { it.copy(isScanning = false) }
+                    handleLookupIsbn(intent.isbn)
+                }
+                AddBookIntent.ScanDismissed -> _uiState.update { it.copy(isScanning = false) }
             }
         }
     }

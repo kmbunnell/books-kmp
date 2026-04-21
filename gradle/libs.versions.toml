@@ -24,6 +24,8 @@ coil                  = "3.4.0"
 turbine               = "1.2.1"
 robolectric           = "4.16.1"
 ktlint                = "12.3.0"
+camerax               = "1.4.1"
+mlkit-barcode         = "17.3.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -81,6 +83,15 @@ coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.re
 
 # Turbine
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+
+# CameraX
+camerax-core      = { module = "androidx.camera:camera-core",      version.ref = "camerax" }
+camerax-camera2   = { module = "androidx.camera:camera-camera2",   version.ref = "camerax" }
+camerax-lifecycle = { module = "androidx.camera:camera-lifecycle",  version.ref = "camerax" }
+camerax-view      = { module = "androidx.camera:camera-view",       version.ref = "camerax" }
+
+# ML Kit
+mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkit-barcode" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
