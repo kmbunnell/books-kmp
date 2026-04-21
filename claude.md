@@ -52,6 +52,15 @@ Presentation (MVI) → Domain ← Data
 
 KMP + CMP, Supabase (`supabase-kt`, `compose-auth`), Ktor, kotlinx.serialization, Koin, Compose Navigation (Multiplatform), Coil 3, ML Kit (Android) / AVFoundation (iOS) for barcode scanning.
 
+### Platform UI in CMP
+
+When a feature requires platform-specific UI (camera, maps, native pickers), use **`expect`/`actual` composables** backed by `AndroidView` (Android) or `UIKitView` (iOS) — not separate Activities or view controllers.
+
+- **Android camera**: bind CameraX to `LocalLifecycleOwner.current` inside an `AndroidView`. Use `DisposableEffect` to unbind and shut down the executor when the composable leaves composition. Use `rememberUpdatedState` for any callback passed into an `AndroidView` factory so it always calls the latest lambda.
+- **iOS camera**: use `UIKitView` wrapping an `AVCaptureSession`-based `UIView`. Handle permission via `suspendCancellableCoroutine` + `AVCaptureDevice.requestAccessForMediaType`.
+- **One-shot callbacks** (e.g., "barcode detected"): guard with `AtomicBoolean.compareAndSet(false, true)` to prevent duplicate deliveries from concurrent camera frames.
+- **Do not** start a separate `Activity` for UI flows that can live in the nav graph or as a composable overlay. The bridge/channel pattern for Activity→coroutine handoff is superseded by composable lifecycle ownership.
+
 ---
 
 ## Code Style & Conventions
@@ -76,5 +85,7 @@ KMP + CMP, Supabase (`supabase-kt`, `compose-auth`), Ktor, kotlinx.serialization
 
 - **Do not** create new packages or directories without asking first.
 - **Do not** commit API keys, Supabase URLs, or secrets.
-- **Do not** use `expect`/`actual` unless truly necessary (barcode scanning, platform permissions).
+- **Do not** use `expect`/`actual` for business logic unless truly necessary. For platform-specific **UI** (camera, maps, native pickers), prefer `expect`/`actual` composables with `AndroidView`/`UIKitView` over separate Activities.
+- **Do not** use a raw `Channel` as a bridge between Android SDK callbacks and coroutines — use `suspendCancellableCoroutine` instead. It handles coroutine cancellation correctly and is the idiomatic one-shot conversion pattern.
 - **Do not** write `catch (e: Exception)` in a `suspend` function without rethrowing `CancellationException` first — swallowing it breaks structured concurrency. Pattern: `catch (e: CancellationException) { throw e }` before the broad catch.
+- Use `DisposableEffect` to tie resource lifecycles (camera, executor, listeners) to composable lifetime, not `onDestroy` or manual cleanup in Activities.

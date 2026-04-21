@@ -45,6 +45,7 @@ object TestTags {
         const val ErrorBanner = "add_book_error_banner"
         const val RetryButton = "add_book_retry_button"
         const val EnterManuallyButton = "add_book_enter_manually_button"
+        const val ScanButton = "add_book_scan_button"
     }
 
     object ManualEntry {
