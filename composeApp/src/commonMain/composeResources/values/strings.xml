@@ -56,4 +56,6 @@
     <string name="button_not_now">Not Now</string>
     <string name="cd_scan_barcode">Scan barcode</string>
     <string name="cd_close_scanner">Close scanner</string>
+    <string name="error_scan_failed">Unable to scan barcode. Please try again.</string>
+    <string name = "error_unavailable_hardware"> "This device does not support barcode scanning."</string>
 </resources>

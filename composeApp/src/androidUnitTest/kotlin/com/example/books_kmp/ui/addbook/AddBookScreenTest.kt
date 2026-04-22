@@ -432,4 +432,52 @@ class AddBookScreenTest {
         }
         composeTestRule.onNodeWithText("Too many requests. Please try again later.").assertIsDisplayed()
     }
+
+    @Test
+    fun `ScanUnknownError shows error banner and retry button`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(error = AddBookScreenError.ScanUnknownError),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToLibrary = {},
+                onNavigateToManualEntry = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.RetryButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `ScanCameraPermissionDenied shows error banner and no retry button`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(error = AddBookScreenError.ScanCameraPermissionDenied),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToLibrary = {},
+                onNavigateToManualEntry = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.RetryButton).assertDoesNotExist()
+    }
+
+    @Test
+    fun `ScanHardwareUnavailable shows error banner and no retry button`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(error = AddBookScreenError.ScanHardwareUnavailable),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToLibrary = {},
+                onNavigateToManualEntry = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.RetryButton).assertDoesNotExist()
+    }
 }

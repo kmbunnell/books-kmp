@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.library.AddBookError
+import com.example.books_kmp.domain.library.BarcodeScanError
 import com.example.books_kmp.domain.library.ConfirmAddBookUseCase
 import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.model.BookLookupData
@@ -31,6 +32,12 @@ sealed interface AddBookScreenError {
     data object RateLimited : AddBookScreenError
 
     data object NotFound : AddBookScreenError
+
+    data object ScanCameraPermissionDenied : AddBookScreenError
+
+    data object ScanHardwareUnavailable : AddBookScreenError
+
+    data object ScanUnknownError : AddBookScreenError
 }
 
 sealed interface AddBookIntent {
@@ -53,6 +60,8 @@ sealed interface AddBookIntent {
     data class BarcodeScanned(val isbn: String) : AddBookIntent
 
     data object ScanDismissed : AddBookIntent
+
+    data class ScanFailed(val error: BarcodeScanError) : AddBookIntent
 }
 
 sealed interface AddBookEffect {
@@ -92,10 +101,22 @@ class AddBookViewModel(
                         it.copy(isScanning = true, isbn = "", error = null, foundBook = null)
                     }
                 is AddBookIntent.BarcodeScanned -> {
-                    _uiState.update { it.copy(isScanning = false) }
+                    _uiState.update { it.copy(isScanning = false, isLoading = true, error = null, foundBook = null) }
                     handleLookupIsbn(intent.isbn)
                 }
                 AddBookIntent.ScanDismissed -> _uiState.update { it.copy(isScanning = false) }
+                is AddBookIntent.ScanFailed ->
+                    _uiState.update {
+                        it.copy(
+                            isScanning = false,
+                            error = when (intent.error) {
+                                BarcodeScanError.CameraPermissionDenied -> AddBookScreenError.ScanCameraPermissionDenied
+                                BarcodeScanError.HardwareUnavailable -> AddBookScreenError.ScanHardwareUnavailable
+                                is BarcodeScanError.Unknown -> AddBookScreenError.ScanUnknownError
+                                BarcodeScanError.Cancelled -> null
+                            },
+                        )
+                    }
             }
         }
     }
