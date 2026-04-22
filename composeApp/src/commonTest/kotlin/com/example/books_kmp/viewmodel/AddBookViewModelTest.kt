@@ -2,6 +2,7 @@ package com.example.books_kmp.viewmodel
 
 import app.cash.turbine.test
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.library.BarcodeScanError
 import com.example.books_kmp.domain.library.ConfirmAddBookUseCase
 import com.example.books_kmp.domain.library.FakeBookLookupService
 import com.example.books_kmp.domain.library.FakeBookRepository
@@ -315,5 +316,45 @@ class AddBookViewModelTest {
             viewModel.onIntent(AddBookIntent.BarcodeScanned("9780140449136"))
             assertFalse(viewModel.uiState.value.isScanning)
             assertEquals(validLookupData, viewModel.uiState.value.foundBook)
+        }
+
+    @Test
+    fun `ScanFailed with Unknown sets isScanning false and error to ScanUnknownError`() =
+        runTest {
+            viewModel.onIntent(AddBookIntent.StartScan)
+            viewModel.onIntent(AddBookIntent.ScanFailed(BarcodeScanError.Unknown(null)))
+            val state = viewModel.uiState.value
+            assertFalse(state.isScanning)
+            assertEquals(AddBookScreenError.ScanUnknownError, state.error)
+        }
+
+    @Test
+    fun `ScanFailed with CameraPermissionDenied sets isScanning false and error to ScanCameraPermissionDenied`() =
+        runTest {
+            viewModel.onIntent(AddBookIntent.StartScan)
+            viewModel.onIntent(AddBookIntent.ScanFailed(BarcodeScanError.CameraPermissionDenied))
+            val state = viewModel.uiState.value
+            assertFalse(state.isScanning)
+            assertEquals(AddBookScreenError.ScanCameraPermissionDenied, state.error)
+        }
+
+    @Test
+    fun `ScanFailed with HardwareUnavailable sets isScanning false and error to ScanHardwareUnavailable`() =
+        runTest {
+            viewModel.onIntent(AddBookIntent.StartScan)
+            viewModel.onIntent(AddBookIntent.ScanFailed(BarcodeScanError.HardwareUnavailable))
+            val state = viewModel.uiState.value
+            assertFalse(state.isScanning)
+            assertEquals(AddBookScreenError.ScanHardwareUnavailable, state.error)
+        }
+
+    @Test
+    fun `ScanFailed with Cancelled sets isScanning false and no error`() =
+        runTest {
+            viewModel.onIntent(AddBookIntent.StartScan)
+            viewModel.onIntent(AddBookIntent.ScanFailed(BarcodeScanError.Cancelled))
+            val state = viewModel.uiState.value
+            assertFalse(state.isScanning)
+            assertNull(state.error)
         }
 }

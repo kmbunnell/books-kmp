@@ -51,6 +51,7 @@ import bookskmp.composeapp.generated.resources.button_enter_manually
 import bookskmp.composeapp.generated.resources.button_look_up
 import bookskmp.composeapp.generated.resources.button_ok
 import bookskmp.composeapp.generated.resources.button_retry
+import bookskmp.composeapp.generated.resources.camera_permission_permanently_denied
 import bookskmp.composeapp.generated.resources.cd_book_cover
 import bookskmp.composeapp.generated.resources.cd_close
 import bookskmp.composeapp.generated.resources.cd_close_scanner
@@ -61,6 +62,8 @@ import bookskmp.composeapp.generated.resources.error_duplicate_title
 import bookskmp.composeapp.generated.resources.error_isbn_not_found
 import bookskmp.composeapp.generated.resources.error_network_generic
 import bookskmp.composeapp.generated.resources.error_rate_limited
+import bookskmp.composeapp.generated.resources.error_scan_failed
+import bookskmp.composeapp.generated.resources.error_unavailable_hardware
 import bookskmp.composeapp.generated.resources.label_isbn
 import bookskmp.composeapp.generated.resources.title_add_book
 import coil3.compose.AsyncImage
@@ -280,7 +283,7 @@ fun AddBookScreenContent(
                     onResult = { result ->
                         when (result) {
                             is Result.Success -> onIntent(AddBookIntent.BarcodeScanned(result.data))
-                            is Result.Failure -> onIntent(AddBookIntent.ScanDismissed)
+                            is Result.Failure -> onIntent(AddBookIntent.ScanFailed(result.error))
                         }
                     },
                 )
@@ -336,6 +339,9 @@ private fun ErrorSection(
                 AddBookScreenError.NotFound -> Res.string.error_isbn_not_found
                 AddBookScreenError.NetworkError -> Res.string.error_network_generic
                 AddBookScreenError.RateLimited -> Res.string.error_rate_limited
+                AddBookScreenError.ScanCameraPermissionDenied -> Res.string.camera_permission_permanently_denied
+                AddBookScreenError.ScanHardwareUnavailable -> Res.string.error_unavailable_hardware
+                AddBookScreenError.ScanUnknownError -> Res.string.error_scan_failed
             },
         )
     Spacer(modifier = Modifier.height(8.dp))
@@ -355,6 +361,15 @@ private fun ErrorSection(
         AddBookScreenError.RateLimited ->
             TextButton(
                 onClick = { onIntent(AddBookIntent.Retry) },
+                modifier = Modifier.testTag(TestTags.AddBook.RetryButton),
+            ) {
+                Text(stringResource(Res.string.button_retry))
+            }
+        AddBookScreenError.ScanCameraPermissionDenied,
+        AddBookScreenError.ScanHardwareUnavailable -> Unit
+        AddBookScreenError.ScanUnknownError ->
+            TextButton(
+                onClick = { onIntent(AddBookIntent.StartScan) },
                 modifier = Modifier.testTag(TestTags.AddBook.RetryButton),
             ) {
                 Text(stringResource(Res.string.button_retry))
