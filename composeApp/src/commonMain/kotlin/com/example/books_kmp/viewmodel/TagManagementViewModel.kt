@@ -6,7 +6,6 @@ import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.TagError
 import com.example.books_kmp.domain.tags.TagRepository
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,7 +39,7 @@ sealed interface TagManagementError {
 
     data object DuplicateName : TagManagementError
 
-    data class NetworkError(val cause: Throwable) : TagManagementError
+    data object NetworkError : TagManagementError
 }
 
 sealed interface TagManagementIntent {
@@ -63,8 +62,6 @@ sealed interface TagManagementIntent {
     data object DismissError : TagManagementIntent
 }
 
-sealed interface TagManagementEffect
-
 class TagManagementViewModel(
     private val tagRepository: TagRepository,
 ) : ViewModel() {
@@ -72,7 +69,11 @@ class TagManagementViewModel(
     val uiState: StateFlow<TagManagementUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch { loadTags() }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            loadTags()
+            _uiState.update { it.copy(isLoading = false) }
+        }
     }
 
     fun onIntent(intent: TagManagementIntent) {
@@ -124,30 +125,17 @@ class TagManagementViewModel(
     }
 
     private suspend fun loadTags() {
-        try {
-            when (val result = tagRepository.getTags()) {
-                is Result.Success -> {
-                    val tags = result.data
-                    _uiState.update { state ->
-                        state.copy(
-                            defaultTags = tags.filter { it.isDefault },
-                            customTags = tags.filter { !it.isDefault },
-                        )
-                    }
-                }
-                is Result.Failure -> {
-                    val cause =
-                        when (val err = result.error) {
-                            is TagError.NetworkError -> err.cause
-                            else -> RuntimeException(err.toString())
-                        }
-                    _uiState.update { it.copy(error = TagManagementError.NetworkError(cause)) }
+        when (val result = tagRepository.getTags()) {
+            is Result.Success -> {
+                val tags = result.data
+                _uiState.update { state ->
+                    state.copy(
+                        defaultTags = tags.filter { it.isDefault },
+                        customTags = tags.filter { !it.isDefault },
+                    )
                 }
             }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            _uiState.update { it.copy(error = TagManagementError.NetworkError(e)) }
+            is Result.Failure -> _uiState.update { it.copy(error = TagManagementError.NetworkError) }
         }
     }
 
@@ -164,69 +152,50 @@ class TagManagementViewModel(
                 is TagFormMode.Create -> tagRepository.createTag(form.draftName.trim())
                 is TagFormMode.Edit -> tagRepository.renameTag(mode.tag.id, form.draftName.trim())
             }
-        _uiState.update { it.copy(isLoading = false) }
         when (result) {
             is Result.Success -> {
                 _uiState.update { it.copy(tagFormState = null) }
                 loadTags()
+                _uiState.update { it.copy(isLoading = false) }
             }
             is Result.Failure -> {
+                _uiState.update { it.copy(isLoading = false) }
                 when (result.error) {
                     TagError.DuplicateName ->
                         _uiState.update { state ->
-                            state.copy(
-                                tagFormState =
-                                    state.tagFormState?.copy(
-                                        nameError = TagManagementError.DuplicateName,
-                                    ),
-                            )
+                            state.copy(tagFormState = state.tagFormState?.copy(nameError = TagManagementError.DuplicateName))
                         }
-                    is TagError.NetworkError -> {
-                        val err = result.error as TagError.NetworkError
-                        _uiState.update { it.copy(error = TagManagementError.NetworkError(err.cause)) }
-                    }
-                    TagError.NotFound ->
-                        _uiState.update {
-                            it.copy(
-                                error = TagManagementError.NetworkError(RuntimeException("Tag not found"))
-                            )
-                        }
+                    else -> _uiState.update { it.copy(error = TagManagementError.NetworkError) }
                 }
             }
         }
     }
 
     private suspend fun handleRequestDelete(tag: Tag) {
-        _uiState.update { it.copy(pendingDeleteTag = tag) }
+        if (_uiState.value.isLoading) return
+        _uiState.update { it.copy(isLoading = true) }
         when (val result = tagRepository.getBookCountForTag(tag.id)) {
             is Result.Success ->
-                _uiState.update { it.copy(pendingDeleteBookCount = result.data) }
-            is Result.Failure -> {
-                val cause =
-                    when (val err = result.error) {
-                        is TagError.NetworkError -> err.cause
-                        else -> RuntimeException(err.toString())
-                    }
-                _uiState.update { it.copy(error = TagManagementError.NetworkError(cause)) }
-            }
+                _uiState.update {
+                    it.copy(isLoading = false, pendingDeleteTag = tag, pendingDeleteBookCount = result.data)
+                }
+            is Result.Failure ->
+                _uiState.update { it.copy(isLoading = false, error = TagManagementError.NetworkError) }
         }
     }
 
     private suspend fun handleConfirmDelete() {
         val tag = _uiState.value.pendingDeleteTag ?: return
+        if (_uiState.value.isLoading) return
+        _uiState.update { it.copy(isLoading = true) }
         when (val result = tagRepository.deleteTag(tag.id)) {
             is Result.Success -> {
                 _uiState.update { it.copy(pendingDeleteTag = null, pendingDeleteBookCount = null) }
                 loadTags()
+                _uiState.update { it.copy(isLoading = false) }
             }
-            is Result.Failure -> {
-                val cause =
-                    when (val err = result.error) {
-                        is TagError.NetworkError -> err.cause
-                        else -> RuntimeException(err.toString())
-                    }
-                _uiState.update { it.copy(error = TagManagementError.NetworkError(cause)) }
-            }
+            is Result.Failure ->
+                _uiState.update { it.copy(isLoading = false, error = TagManagementError.NetworkError) }
         }
     }
 }

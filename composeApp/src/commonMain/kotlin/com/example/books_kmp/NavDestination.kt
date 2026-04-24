@@ -7,4 +7,5 @@ enum class NavDestination(val route: String) {
     Library("library"),
     AddBook("add_book"),
     ManualEntry("manual_entry"),
+    TagManagement("tag_management"),
 }

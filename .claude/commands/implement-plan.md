@@ -162,6 +162,8 @@ Wait for the user's response and follow their direction.
 
 ### If everything passes
 
+**ViewModel async state self-check:** Before running code review, walk through each `viewModelScope.launch` added in this implementation and confirm: `isLoading` is set `true` before the async call and `false` on every exit path (success + each failure branch); user-triggered actions have a re-entry guard. Fix any gaps now.
+
 Run `/code-review` now. Do not mark the plan Implemented or report complete until the review shows no Critical items. Fix any Critical items found, re-run affected tests, then report:
 
 > **Implementation complete.**

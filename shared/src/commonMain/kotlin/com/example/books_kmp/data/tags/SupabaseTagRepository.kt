@@ -6,6 +6,7 @@ import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.TagError
 import com.example.books_kmp.domain.tags.TagRepository
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Count
 import kotlinx.coroutines.CancellationException
@@ -23,11 +24,13 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
     }
 
     override suspend fun createTag(name: String): Result<Tag, TagError> {
+        val userId = supabase.auth.currentUserOrNull()?.id
+            ?: return Result.Failure(TagError.NetworkError(IllegalStateException("Not authenticated")))
         val dupResult = isDuplicate(name, excludeId = "")
         if (dupResult is Result.Failure) return dupResult
         if ((dupResult as Result.Success).data) return Result.Failure(TagError.DuplicateName)
         return try {
-            val dto = supabase.from(TABLE_TAGS).insert(TagDto(name = name.trim())) { select() }.decodeSingle<TagDto>()
+            val dto = supabase.from(TABLE_TAGS).insert(TagDto(name = name.trim(), userId = userId)) { select() }.decodeSingle<TagDto>()
             val tag = dto.toTag()
             cache = cache?.plus(tag)
             Result.Success(tag)

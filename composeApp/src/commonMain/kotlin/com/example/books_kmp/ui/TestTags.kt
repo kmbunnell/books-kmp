@@ -28,6 +28,7 @@ object TestTags {
     object Library {
         const val SignOutButton = "library_sign_out_button"
         const val AddBookFab = "library_add_book_fab"
+        const val ManageTagsButton = "library_manage_tags_button"
     }
 
     object AddBook {
@@ -62,5 +63,21 @@ object TestTags {
         const val RetryButton = "camera_permission_retry_button"
         const val OpenSettingsButton = "camera_permission_open_settings_button"
         const val DismissButton = "camera_permission_dismiss_button"
+    }
+
+    object TagManagement {
+        const val LoadingIndicator = "tag_management_loading"
+        const val DefaultSectionHeader = "tag_management_default_header"
+        const val CustomSectionHeader = "tag_management_custom_header"
+        const val AddTagButton = "tag_management_add_tag"
+
+        fun editButton(tagId: String) = "tag_edit_$tagId"
+
+        fun deleteButton(tagId: String) = "tag_delete_$tagId"
+
+        const val FormNameField = "tag_form_name_field"
+        const val FormSaveButton = "tag_form_save_button"
+        const val DeleteDialogConfirm = "tag_delete_dialog_confirm"
+        const val DeleteDialogCancel = "tag_delete_dialog_cancel"
     }
 }

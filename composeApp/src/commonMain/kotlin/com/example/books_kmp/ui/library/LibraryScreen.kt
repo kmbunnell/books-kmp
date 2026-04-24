@@ -3,6 +3,7 @@ package com.example.books_kmp.ui.library
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.cd_add_book
+import bookskmp.composeapp.generated.resources.cd_manage_tags
 import bookskmp.composeapp.generated.resources.cd_sign_out
 import bookskmp.composeapp.generated.resources.snackbar_book_added
 import bookskmp.composeapp.generated.resources.title_library
@@ -29,12 +31,14 @@ import org.jetbrains.compose.resources.stringResource
 fun LibraryScreen(
     onSignOut: () -> Unit,
     onNavigateToAddBook: () -> Unit = {},
+    onNavigateToTagManagement: () -> Unit = {},
     showBookAdded: Boolean = false,
     onBookAddedShown: () -> Unit = {},
 ) {
     LibraryScreenContent(
         onSignOut = onSignOut,
         onNavigateToAddBook = onNavigateToAddBook,
+        onNavigateToTagManagement = onNavigateToTagManagement,
         showBookAdded = showBookAdded,
         onBookAddedShown = onBookAddedShown,
     )
@@ -45,6 +49,7 @@ fun LibraryScreen(
 fun LibraryScreenContent(
     onSignOut: () -> Unit,
     onNavigateToAddBook: () -> Unit = {},
+    onNavigateToTagManagement: () -> Unit = {},
     showBookAdded: Boolean = false,
     onBookAddedShown: () -> Unit = {},
 ) {
@@ -63,6 +68,15 @@ fun LibraryScreenContent(
             TopAppBar(
                 title = { Text(stringResource(Res.string.title_library)) },
                 actions = {
+                    IconButton(
+                        onClick = onNavigateToTagManagement,
+                        modifier = Modifier.testTag(TestTags.Library.ManageTagsButton),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.LocalOffer,
+                            contentDescription = stringResource(Res.string.cd_manage_tags),
+                        )
+                    }
                     IconButton(
                         onClick = onSignOut,
                         modifier = Modifier.testTag(TestTags.Library.SignOutButton),

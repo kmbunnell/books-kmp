@@ -31,8 +31,9 @@ fun BookDto.toBook(): Book =
         coverImageUrl = coverImageUrl,
     )
 
-fun NewBook.toDto(): BookDto =
+fun NewBook.toDto(userId: String): BookDto =
     BookDto(
+        userId = userId,
         isbn = isbn,
         title = title,
         authors = authors,

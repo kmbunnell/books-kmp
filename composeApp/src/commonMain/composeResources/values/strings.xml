@@ -58,4 +58,22 @@
     <string name="cd_close_scanner">Close scanner</string>
     <string name="error_scan_failed">Unable to scan barcode. Please try again.</string>
     <string name = "error_unavailable_hardware"> "This device does not support barcode scanning."</string>
+    <string name="title_tag_management">Tag Management</string>
+    <string name="section_default_tags">Default Tags</string>
+    <string name="section_custom_tags">Custom Tags</string>
+    <string name="button_add_tag">Add tag</string>
+    <string name="title_new_tag">New Tag</string>
+    <string name="title_edit_tag">Edit Tag</string>
+    <string name="label_tag_name">Tag name</string>
+    <string name="error_tag_name_empty">Tag name cannot be empty</string>
+    <string name="error_tag_name_duplicate">A tag with this name already exists</string>
+    <string name="title_delete_tag">Delete tag?</string>
+    <string name="message_delete_tag">Delete "%1$s"? It is used by %2$d book(s).</string>
+    <string name="button_delete">Delete</string>
+    <string name="cd_manage_tags">Manage tags</string>
+    <string name="cd_edit_tag">Edit tag</string>
+    <string name="cd_delete_tag">Delete tag</string>
+    <string name="cd_expand_section">Expand section</string>
+    <string name="cd_collapse_section">Collapse section</string>
+    <string name="error_tag_operation_failed">Something went wrong. Please try again.</string>
 </resources>
