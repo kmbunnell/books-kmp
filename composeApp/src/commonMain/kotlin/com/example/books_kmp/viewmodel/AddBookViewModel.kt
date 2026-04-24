@@ -109,12 +109,15 @@ class AddBookViewModel(
                     _uiState.update {
                         it.copy(
                             isScanning = false,
-                            error = when (intent.error) {
-                                BarcodeScanError.CameraPermissionDenied -> AddBookScreenError.ScanCameraPermissionDenied
-                                BarcodeScanError.HardwareUnavailable -> AddBookScreenError.ScanHardwareUnavailable
-                                is BarcodeScanError.Unknown -> AddBookScreenError.ScanUnknownError
-                                BarcodeScanError.Cancelled -> null
-                            },
+                            error =
+                                when (intent.error) {
+                                    BarcodeScanError.CameraPermissionDenied ->
+                                        AddBookScreenError.ScanCameraPermissionDenied
+                                    BarcodeScanError.HardwareUnavailable ->
+                                        AddBookScreenError.ScanHardwareUnavailable
+                                    is BarcodeScanError.Unknown -> AddBookScreenError.ScanUnknownError
+                                    BarcodeScanError.Cancelled -> null
+                                },
                         )
                     }
             }

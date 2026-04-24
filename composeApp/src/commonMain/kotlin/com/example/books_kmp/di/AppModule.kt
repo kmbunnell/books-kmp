@@ -3,6 +3,7 @@ package com.example.books_kmp.di
 import com.example.books_kmp.auth.SupabaseAuthRepository
 import com.example.books_kmp.data.library.SupabaseBookRepository
 import com.example.books_kmp.data.remote.OpenLibraryApiClient
+import com.example.books_kmp.data.tags.SupabaseTagRepository
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.SignInUseCase
 import com.example.books_kmp.domain.auth.SignUpUseCase
@@ -12,6 +13,7 @@ import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.ConfirmAddBookUseCase
 import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
+import com.example.books_kmp.domain.tags.TagRepository
 import com.example.books_kmp.viewmodel.AddBookViewModel
 import com.example.books_kmp.viewmodel.AuthViewModel
 import com.example.books_kmp.viewmodel.ManualEntryViewModel
@@ -41,6 +43,7 @@ fun appModule(
         }
         single<AuthRepository> { SupabaseAuthRepository(get()) }
         single<BookRepository> { SupabaseBookRepository(get()) }
+        single<TagRepository> { SupabaseTagRepository(get()) }
         single { HttpClient() }
         single<BookLookupService> { OpenLibraryApiClient(get()) }
         factory { SignInUseCase(get()) }
