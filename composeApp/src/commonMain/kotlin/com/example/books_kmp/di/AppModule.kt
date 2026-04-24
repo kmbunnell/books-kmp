@@ -19,6 +19,7 @@ import com.example.books_kmp.viewmodel.AuthViewModel
 import com.example.books_kmp.viewmodel.ManualEntryViewModel
 import com.example.books_kmp.viewmodel.SignInViewModel
 import com.example.books_kmp.viewmodel.SignUpViewModel
+import com.example.books_kmp.viewmodel.TagManagementViewModel
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
@@ -57,4 +58,5 @@ fun appModule(
         viewModel { SignUpViewModel(get()) }
         viewModel { ManualEntryViewModel(get()) }
         viewModel { AddBookViewModel(get(), get()) }
+        viewModel { TagManagementViewModel(get()) }
     }

@@ -34,7 +34,7 @@ Presentation (MVI) → Domain ← Data
 
 - **Domain:** Pure Kotlin. Domain models, repository interfaces, use cases. Zero platform or framework imports.
 - **Data:** Repository implementations, data sources, DTOs, mappers. Depends on domain interfaces.
-- **Presentation:** Compose screens, ViewModels, UI state. ViewModels depend on use cases only — no business logic in ViewModels.
+- **Presentation:** Compose screens, ViewModels, UI state. ViewModels contain no business logic. They may call use cases **or** repository interfaces directly — use a use case only when there is real orchestration (multiple repos, validation, transformation) that belongs to neither the ViewModel nor the repository.
 
 **MVI pattern:** Each screen exposes `StateFlow<XxxUiState>` (immutable snapshot), accepts user actions as `sealed interface XxxIntent` via `viewModel.onIntent(intent)` — no ad-hoc methods per action — and emits side effects (navigation, toasts) through `SharedFlow<XxxEffect>` or `Channel<XxxEffect>`. ViewModels delegate to use cases; no business logic.
 
