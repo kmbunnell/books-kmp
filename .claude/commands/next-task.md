@@ -111,14 +111,14 @@ Cross-reference the ticket requirements against:
 - `CLAUDE.md` — architecture rules, MVI pattern, TDD requirements, code conventions
 - `docs/overview.md` — only for tech rationale, schema notes, or planned features
 
-**Pitfall scan:** Before writing the plan, check each implementation step for likely CLAUDE.md violations. If a step could tempt: returning a raw string instead of `Result<T, XxxError>`, manual dependency construction instead of Koin, string resolution in a ViewModel, a raw `Channel` instead of `suspendCancellableCoroutine`, or missing `CancellationException` rethrow — make the correct pattern explicit in that step rather than leaving it implicit.
+**Pitfall scan:** Before writing the plan, check each implementation step for likely CLAUDE.md violations. If a step could tempt: returning a raw string instead of `Result<T, XxxError>`, manual dependency construction instead of Koin, string resolution in a ViewModel, a raw `Channel` instead of `suspendCancellableCoroutine`, or missing `CancellationException` rethrow — make the correct pattern explicit in that step rather than leaving it implicit. Also check: for every `viewModelScope.launch` that calls a suspend function, does it set `isLoading = true` before the call and `false` on every exit path? For any user-triggered async action, is there a re-entry guard?
 
 Build a plan with these sections:
 
 1. **Summary** — One sentence: what this ticket does and why.
 2. **Requirements** — Bullet list of acceptance criteria from the ticket. Flag any that are ambiguous or incomplete as **[NEEDS CLARIFICATION]**.
 3. **Files to modify/create** — Exact file paths with a one-line rationale for each. Group by layer (domain, data, presentation).
-4. **Tests to write first (TDD)** — List the test files and key test cases that will be written before production code. Include both unit tests and Compose UI tests where applicable.
+4. **Tests to write first (TDD)** — List the test files and key test cases that will be written before production code. Include both unit tests and Compose UI tests where applicable. For each ViewModel async operation, the test list must include: (a) loading indicator shown while in-flight, (b) loading cleared on success, (c) loading cleared on failure, (d) a second intent while loading does not trigger a duplicate call.
 5. **Implementation steps** — Ordered list of what to build, in the sequence that satisfies TDD (test → implement → refactor per step).
 6. **Risks and regressions** — Anything that could break existing functionality, edge cases to watch for, or architectural concerns. If none, say "None identified."
 

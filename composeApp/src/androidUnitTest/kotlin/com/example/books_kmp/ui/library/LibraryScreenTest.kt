@@ -70,6 +70,27 @@ class LibraryScreenTest {
     }
 
     @Test
+    fun `manage tags button is displayed`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(onSignOut = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.ManageTagsButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `clicking manage tags button triggers onNavigateToTagManagement callback`() {
+        var navigateCalled = false
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                onSignOut = {},
+                onNavigateToTagManagement = { navigateCalled = true },
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.ManageTagsButton).performClick()
+        assertTrue(navigateCalled)
+    }
+
+    @Test
     fun `snackbar is shown when showBookAdded is true`() {
         composeTestRule.setContent {
             LibraryScreenContent(

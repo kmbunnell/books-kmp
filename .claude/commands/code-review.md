@@ -48,6 +48,12 @@ git diff --staged
 - [ ] No business logic in ViewModels — delegate to use cases only
 - [ ] String resolution only in Compose via `stringResource()` — never in ViewModel or use cases
 
+**ViewModel async state**
+- [ ] Every `viewModelScope.launch` that performs async work sets `isLoading = true` before the call and `false` on every exit path (success + each failure branch)
+- [ ] User-triggered async actions guard against re-entry (e.g. `if (_uiState.value.isLoading) return`)
+- [ ] `Result.Failure` branches use a single flat `when` — no nested `else -> when` re-binding the same value
+- [ ] Empty `sealed interface XxxEffect` with no implementations is removed
+
 **Error handling**
 - [ ] No `catch (e: Exception)` in `suspend` functions without rethrowing `CancellationException` first
 - [ ] No raw `Channel` bridging Android SDK callbacks — use `suspendCancellableCoroutine`
