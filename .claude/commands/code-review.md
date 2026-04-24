@@ -37,12 +37,42 @@ git diff --staged
 
 ## Evaluate against
 
-- **Architecture**: layer separation respected, no DTOs in presentation, no framework annotations in domain models
-- **TDD**: tests written alongside production code, every public use case/repo function has a test, descriptive test names
-- **KMP correctness**: no platform imports in `commonMain`, `expect`/`actual` only when necessary
-- **Kotlin quality**: no `!!`, sealed classes for finite states, explicit return types on public APIs
-- **DRY**: no duplicated logic or repeated Compose components
-- **Secrets**: no hardcoded keys or URLs
+**Architecture**
+- [ ] Layer boundaries respected: no DTOs in presentation, no framework annotations in domain models
+- [ ] Repository interfaces in domain, implementations in data
+- [ ] Use cases: single `operator fun invoke`, return `Result<T, XxxError>` — not raw strings, not custom `XxxResult` sealed interfaces
+- [ ] Error types are feature-specific sealed interfaces in their own files
+
+**MVI**
+- [ ] ViewModel exposes `StateFlow<XxxUiState>`, accepts `sealed interface XxxIntent` via `onIntent()`, emits via `SharedFlow/Channel<XxxEffect>`
+- [ ] No business logic in ViewModels — delegate to use cases only
+- [ ] String resolution only in Compose via `stringResource()` — never in ViewModel or use cases
+
+**Error handling**
+- [ ] No `catch (e: Exception)` in `suspend` functions without rethrowing `CancellationException` first
+- [ ] No raw `Channel` bridging Android SDK callbacks — use `suspendCancellableCoroutine`
+
+**Platform / CMP**
+- [ ] No platform imports (`android.*`, `UIKit`, etc.) in `commonMain`
+- [ ] `expect`/`actual` only for platform UI, not business logic
+- [ ] Camera/resource composables use `DisposableEffect` for cleanup
+- [ ] One-shot callbacks guarded by `AtomicBoolean.compareAndSet`
+
+**DI**
+- [ ] All dependencies wired through Koin modules — no manual construction outside DI
+
+**Strings**
+- [ ] No user-visible strings hardcoded in Kotlin — all in `commonMain/composeResources/values/strings.xml`
+
+**Tests**
+- [ ] Every public use case `invoke` and repository function with logic has a test
+- [ ] Hand-rolled fakes — no mocking libraries
+- [ ] `Turbine` used for Flow/StateFlow assertions
+
+**Kotlin quality**
+- [ ] No `!!`, sealed classes for finite states, explicit return types on public APIs
+- [ ] No duplicated logic or repeated Compose components
+- [ ] No hardcoded keys or URLs
 
 ## Report format
 
