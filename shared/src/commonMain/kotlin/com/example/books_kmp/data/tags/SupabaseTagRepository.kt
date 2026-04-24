@@ -58,6 +58,8 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
             Result.Success(tag)
         } catch (e: CancellationException) {
             throw e
+        } catch (e: NoSuchElementException) {
+            Result.Failure(TagError.NotFound)
         } catch (e: Exception) {
             Result.Failure(TagError.NetworkError(e))
         }

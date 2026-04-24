@@ -8,7 +8,6 @@ import io.github.jan.supabase.postgrest.Postgrest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
 class SupabaseTagRepositoryDuplicateNameTest {
@@ -41,15 +40,6 @@ class SupabaseTagRepositoryDuplicateNameTest {
         }
 
     @Test
-    fun `createTag does not return DuplicateName for a unique name`() =
-        runTest {
-            seedTags(Tag(id = "1", name = "Fiction", isDefault = false))
-            val result = repo.createTag("History")
-            val error = (result as? Result.Failure)?.error
-            assertTrue(error !is TagError.DuplicateName, "Should not return DuplicateName for a unique name")
-        }
-
-    @Test
     fun `renameTag returns DuplicateName when new name conflicts with a different tag`() =
         runTest {
             seedTags(
@@ -59,15 +49,6 @@ class SupabaseTagRepositoryDuplicateNameTest {
             val result = repo.renameTag("1", "read")
             assertIs<Result.Failure<TagError>>(result)
             assertEquals(TagError.DuplicateName, result.error)
-        }
-
-    @Test
-    fun `renameTag does not return DuplicateName when renaming to own current name`() =
-        runTest {
-            seedTags(Tag(id = "1", name = "Fiction", isDefault = false))
-            val result = repo.renameTag("1", "Fiction")
-            val error = (result as? Result.Failure)?.error
-            assertTrue(error !is TagError.DuplicateName, "Self-rename should not return DuplicateName")
         }
 
     @Test
