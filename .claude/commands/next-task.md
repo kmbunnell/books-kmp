@@ -111,6 +111,8 @@ Cross-reference the ticket requirements against:
 - `CLAUDE.md` — architecture rules, MVI pattern, TDD requirements, code conventions
 - `docs/overview.md` — only for tech rationale, schema notes, or planned features
 
+**Pitfall scan:** Before writing the plan, check each implementation step for likely CLAUDE.md violations. If a step could tempt: returning a raw string instead of `Result<T, XxxError>`, manual dependency construction instead of Koin, string resolution in a ViewModel, a raw `Channel` instead of `suspendCancellableCoroutine`, or missing `CancellationException` rethrow — make the correct pattern explicit in that step rather than leaving it implicit.
+
 Build a plan with these sections:
 
 1. **Summary** — One sentence: what this ticket does and why.

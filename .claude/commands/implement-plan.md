@@ -162,15 +162,14 @@ Wait for the user's response and follow their direction.
 
 ### If everything passes
 
-Report:
+Run `/code-review` now. Do not mark the plan Implemented or report complete until the review shows no Critical items. Fix any Critical items found, re-run affected tests, then report:
 
 > **Implementation complete.**
 > - All new tests pass (N tests)
 > - No regressions detected
 > - Build succeeds (Android + iOS compilation)
 > - Lint clean
->
-> Run `/code-review` for a self-review, then `/commit` when ready.
+> - Code review: no Critical items
 
 ## Step 7 — Update plan status
 
