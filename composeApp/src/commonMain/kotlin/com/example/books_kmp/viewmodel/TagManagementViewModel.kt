@@ -77,50 +77,48 @@ class TagManagementViewModel(
     }
 
     fun onIntent(intent: TagManagementIntent) {
-        viewModelScope.launch {
-            when (intent) {
-                TagManagementIntent.OpenCreateForm ->
-                    _uiState.update { it.copy(tagFormState = TagFormState(mode = TagFormMode.Create)) }
+        when (intent) {
+            TagManagementIntent.OpenCreateForm ->
+                _uiState.update { it.copy(tagFormState = TagFormState(mode = TagFormMode.Create)) }
 
-                is TagManagementIntent.OpenEditForm -> {
-                    if (intent.tag.isDefault) return@launch
-                    _uiState.update {
-                        it.copy(
-                            tagFormState =
-                                TagFormState(
-                                    mode = TagFormMode.Edit(intent.tag),
-                                    draftName = intent.tag.name,
-                                ),
-                        )
-                    }
+            is TagManagementIntent.OpenEditForm -> {
+                if (intent.tag.isDefault) return
+                _uiState.update {
+                    it.copy(
+                        tagFormState =
+                            TagFormState(
+                                mode = TagFormMode.Edit(intent.tag),
+                                draftName = intent.tag.name,
+                            ),
+                    )
+                }
+            }
+
+            is TagManagementIntent.UpdateFormName ->
+                _uiState.update { state ->
+                    state.copy(
+                        tagFormState =
+                            state.tagFormState?.copy(
+                                draftName = intent.name,
+                                nameError = null,
+                            ),
+                    )
                 }
 
-                is TagManagementIntent.UpdateFormName ->
-                    _uiState.update { state ->
-                        state.copy(
-                            tagFormState =
-                                state.tagFormState?.copy(
-                                    draftName = intent.name,
-                                    nameError = null,
-                                ),
-                        )
-                    }
+            TagManagementIntent.DismissForm ->
+                _uiState.update { it.copy(tagFormState = null) }
 
-                TagManagementIntent.SubmitForm -> handleSubmitForm()
+            TagManagementIntent.CancelDelete ->
+                _uiState.update { it.copy(pendingDeleteTag = null, pendingDeleteBookCount = null) }
 
-                TagManagementIntent.DismissForm ->
-                    _uiState.update { it.copy(tagFormState = null) }
+            TagManagementIntent.DismissError ->
+                _uiState.update { it.copy(error = null) }
 
-                is TagManagementIntent.RequestDeleteTag -> handleRequestDelete(intent.tag)
+            TagManagementIntent.SubmitForm -> viewModelScope.launch { handleSubmitForm() }
 
-                TagManagementIntent.ConfirmDeleteTag -> handleConfirmDelete()
+            is TagManagementIntent.RequestDeleteTag -> viewModelScope.launch { handleRequestDelete(intent.tag) }
 
-                TagManagementIntent.CancelDelete ->
-                    _uiState.update { it.copy(pendingDeleteTag = null, pendingDeleteBookCount = null) }
-
-                TagManagementIntent.DismissError ->
-                    _uiState.update { it.copy(error = null) }
-            }
+            TagManagementIntent.ConfirmDeleteTag -> viewModelScope.launch { handleConfirmDelete() }
         }
     }
 

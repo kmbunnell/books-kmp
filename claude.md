@@ -42,7 +42,7 @@ Presentation (MVI) → Domain ← Data
 - Domain models and DTOs are always separate classes. Map between them explicitly. Do not leak DTO annotations (`@Serializable`, column names) into domain models.
 - Repository interfaces live in the domain layer. Implementations live in the data layer.
 - Use cases are single-responsibility: one public `operator fun invoke(...)` or `suspend operator fun invoke(...)`.
-- Use cases, repositories, and platform gateways (including `expect` classes like `BarcodeScanner`) return `Result<T, XxxError>` — never a custom `XxxResult` sealed interface, and never a raw `String` message. The error type is a feature-specific sealed interface (e.g., `AddBookError`, `SignInError`, `BarcodeScanError`) defined in its own file. Success data goes in `Result.Success(data)`; all failure variants (including user-cancellation, which is a failure outcome from the caller's perspective) go in `Result.Failure(XxxError.Variant)`.
+- Use cases, repositories, and platform gateways (including `expect` classes like `BarcodeScanner`) return `Result<T, XxxError>` — never a custom `XxxResult` sealed interface, and never a raw `String` message. The error type is a feature-specific sealed interface (e.g., `AddBookError`, `SignInError`, `BarcodeScanError`) defined in its own file in the domain layer. Success data goes in `Result.Success(data)`; all failure variants (including user-cancellation, which is a failure outcome from the caller's perspective) go in `Result.Failure(XxxError.Variant)`.
 - Koin modules are the single place for dependency wiring. Never manually construct dependencies outside DI.
 - ViewModels emit typed errors via a feature-specific `XxxError` sealed interface — never localized strings. `UiState` field errors and `XxxEffect.ShowError` carry `XxxError` values. String resolution happens exclusively in Compose screens via `stringResource()`, resolved before any `LaunchedEffect`/`collect` block.
 
@@ -70,7 +70,7 @@ When a feature requires platform-specific UI (camera, maps, native pickers), use
 - `data class` for models, DTOs, and UI state.
 - Keep functions short (~30 lines max). Prefer explicit return types on public APIs.
 - Avoid `!!` — prefer `?.let`, `?:`, or explicit null checks with descriptive errors.
-- One file per class for use cases, ViewModels, and repository interfaces. Group related intents/state/effects with their ViewModel.
+- One file per class for use cases, ViewModels, and repository interfaces. Group related intents/state/effects/errors with their ViewModel.
 
 ---
 
@@ -90,3 +90,5 @@ When a feature requires platform-specific UI (camera, maps, native pickers), use
 - **Do not** use a raw `Channel` as a bridge between Android SDK callbacks and coroutines — use `suspendCancellableCoroutine` instead. It handles coroutine cancellation correctly and is the idiomatic one-shot conversion pattern.
 - **Do not** write `catch (e: Exception)` in a `suspend` function without rethrowing `CancellationException` first — swallowing it breaks structured concurrency. Pattern: `catch (e: CancellationException) { throw e }` before the broad catch.
 - Use `DisposableEffect` to tie resource lifecycles (camera, executor, listeners) to composable lifetime, not `onDestroy` or manual cleanup in Activities.
+- **Do not** return `Result.Failure` for a missing authenticated user in a repository — use `error("Not authenticated")` instead. A missing user is a precondition violation (unreachable if auth is working), not a recoverable failure. The `AuthViewModel` handles session expiry before any repository is called.
+- **Do not** wrap every `onIntent` branch in a single `viewModelScope.launch`. Pure `_uiState.update` calls are synchronous and need no coroutine. Only launch for intents that call `suspend` functions (repo calls, `_effects.emit()`). Mixing them delays state updates unnecessarily.
