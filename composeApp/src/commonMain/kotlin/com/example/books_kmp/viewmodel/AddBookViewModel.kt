@@ -81,45 +81,36 @@ class AddBookViewModel(
     val effects: SharedFlow<AddBookEffect> = _effects.asSharedFlow()
 
     fun onIntent(intent: AddBookIntent) {
-        viewModelScope.launch {
-            when (intent) {
-                is AddBookIntent.IsbnChanged -> _uiState.update { it.copy(isbn = intent.isbn) }
-                is AddBookIntent.LookupIsbn -> handleLookupIsbn(intent.isbn)
-                AddBookIntent.ConfirmBook -> handleConfirmBook()
-                AddBookIntent.CancelBookPreview -> _uiState.update { it.copy(foundBook = null, isbn = "") }
-                AddBookIntent.DismissDuplicateDialog ->
-                    _uiState.update {
-                        it.copy(
-                            showDuplicateDialog = false,
-                            isbn = ""
-                        )
-                    }
-                AddBookIntent.Retry -> handleLookupIsbn(_uiState.value.isbn)
-                AddBookIntent.EnterManually -> _effects.emit(AddBookEffect.NavigateToManualEntry)
-                AddBookIntent.StartScan ->
-                    _uiState.update {
-                        it.copy(isScanning = true, isbn = "", error = null, foundBook = null)
-                    }
-                is AddBookIntent.BarcodeScanned -> {
-                    _uiState.update { it.copy(isScanning = false, isLoading = true, error = null, foundBook = null) }
-                    handleLookupIsbn(intent.isbn)
+        when (intent) {
+            is AddBookIntent.IsbnChanged -> _uiState.update { it.copy(isbn = intent.isbn) }
+            AddBookIntent.CancelBookPreview -> _uiState.update { it.copy(foundBook = null, isbn = "") }
+            AddBookIntent.DismissDuplicateDialog ->
+                _uiState.update { it.copy(showDuplicateDialog = false, isbn = "") }
+            AddBookIntent.StartScan ->
+                _uiState.update { it.copy(isScanning = true, isbn = "", error = null, foundBook = null) }
+            AddBookIntent.ScanDismissed -> _uiState.update { it.copy(isScanning = false) }
+            is AddBookIntent.ScanFailed ->
+                _uiState.update {
+                    it.copy(
+                        isScanning = false,
+                        error =
+                            when (intent.error) {
+                                BarcodeScanError.CameraPermissionDenied ->
+                                    AddBookScreenError.ScanCameraPermissionDenied
+                                BarcodeScanError.HardwareUnavailable ->
+                                    AddBookScreenError.ScanHardwareUnavailable
+                                is BarcodeScanError.Unknown -> AddBookScreenError.ScanUnknownError
+                                BarcodeScanError.Cancelled -> null
+                            },
+                    )
                 }
-                AddBookIntent.ScanDismissed -> _uiState.update { it.copy(isScanning = false) }
-                is AddBookIntent.ScanFailed ->
-                    _uiState.update {
-                        it.copy(
-                            isScanning = false,
-                            error =
-                                when (intent.error) {
-                                    BarcodeScanError.CameraPermissionDenied ->
-                                        AddBookScreenError.ScanCameraPermissionDenied
-                                    BarcodeScanError.HardwareUnavailable ->
-                                        AddBookScreenError.ScanHardwareUnavailable
-                                    is BarcodeScanError.Unknown -> AddBookScreenError.ScanUnknownError
-                                    BarcodeScanError.Cancelled -> null
-                                },
-                        )
-                    }
+            is AddBookIntent.LookupIsbn -> viewModelScope.launch { handleLookupIsbn(intent.isbn) }
+            AddBookIntent.ConfirmBook -> viewModelScope.launch { handleConfirmBook() }
+            AddBookIntent.Retry -> viewModelScope.launch { handleLookupIsbn(_uiState.value.isbn) }
+            AddBookIntent.EnterManually -> viewModelScope.launch { _effects.emit(AddBookEffect.NavigateToManualEntry) }
+            is AddBookIntent.BarcodeScanned -> viewModelScope.launch {
+                _uiState.update { it.copy(isScanning = false, isLoading = true, error = null, foundBook = null) }
+                handleLookupIsbn(intent.isbn)
             }
         }
     }

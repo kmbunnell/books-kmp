@@ -24,8 +24,7 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
     }
 
     override suspend fun createTag(name: String): Result<Tag, TagError> {
-        val userId = supabase.auth.currentUserOrNull()?.id
-            ?: return Result.Failure(TagError.NetworkError(IllegalStateException("Not authenticated")))
+        val userId = supabase.auth.currentUserOrNull()?.id ?: error("Not authenticated")
         val dupResult = isDuplicate(name, excludeId = "")
         if (dupResult is Result.Failure) return dupResult
         if ((dupResult as Result.Success).data) return Result.Failure(TagError.DuplicateName)
