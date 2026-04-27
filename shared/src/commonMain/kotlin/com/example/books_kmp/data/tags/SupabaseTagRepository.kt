@@ -29,7 +29,10 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
         if (dupResult is Result.Failure) return dupResult
         if ((dupResult as Result.Success).data) return Result.Failure(TagError.DuplicateName)
         return try {
-            val dto = supabase.from(TABLE_TAGS).insert(TagDto(name = name.trim(), userId = userId)) { select() }.decodeSingle<TagDto>()
+            val dto =
+                supabase.from(TABLE_TAGS).insert(TagDto(name = name.trim(), userId = userId)) {
+                    select()
+                }.decodeSingle<TagDto>()
             val tag = dto.toTag()
             cache = cache?.plus(tag)
             Result.Success(tag)

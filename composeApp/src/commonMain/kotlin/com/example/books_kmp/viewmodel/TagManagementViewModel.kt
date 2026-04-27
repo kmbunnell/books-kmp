@@ -161,7 +161,9 @@ class TagManagementViewModel(
                 when (result.error) {
                     TagError.DuplicateName ->
                         _uiState.update { state ->
-                            state.copy(tagFormState = state.tagFormState?.copy(nameError = TagManagementError.DuplicateName))
+                            state.copy(
+                                tagFormState = state.tagFormState?.copy(nameError = TagManagementError.DuplicateName)
+                            )
                         }
                     else -> _uiState.update { it.copy(error = TagManagementError.NetworkError) }
                 }
