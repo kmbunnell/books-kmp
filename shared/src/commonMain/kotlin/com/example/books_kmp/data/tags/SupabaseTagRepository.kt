@@ -24,10 +24,10 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
     }
 
     override suspend fun createTag(name: String): Result<Tag, TagError> {
-        val userId = supabase.auth.currentUserOrNull()?.id ?: error("Not authenticated")
         val dupResult = isDuplicate(name, excludeId = "")
         if (dupResult is Result.Failure) return dupResult
         if ((dupResult as Result.Success).data) return Result.Failure(TagError.DuplicateName)
+        val userId = supabase.auth.currentUserOrNull()?.id ?: error("Not authenticated")
         return try {
             val dto =
                 supabase.from(TABLE_TAGS).insert(TagDto(name = name.trim(), userId = userId)) {
