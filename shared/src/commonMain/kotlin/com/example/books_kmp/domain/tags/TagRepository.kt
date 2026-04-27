@@ -26,4 +26,6 @@ interface TagRepository {
     ): Result<Unit, TagError>
 
     suspend fun getBookCountForTag(tagId: String): Result<Int, TagError>
+
+    suspend fun getTagsForBook(bookId: String): Result<List<Tag>, TagError>
 }
