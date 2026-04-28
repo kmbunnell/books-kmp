@@ -71,8 +71,9 @@
     <string name="message_delete_tag">Delete "%1$s"? It is used by %2$d book(s).</string>
     <string name="button_delete">Delete</string>
     <string name="cd_manage_tags">Manage tags</string>
-    <string name="cd_edit_tag">Edit tag</string>
-    <string name="cd_delete_tag">Delete tag</string>
+    <string name="cd_tag_options">Tag options</string>
+    <string name="menu_rename_tag">Rename</string>
+    <string name="menu_delete_tag">Delete</string>
     <string name="cd_expand_section">Expand section</string>
     <string name="cd_collapse_section">Collapse section</string>
     <string name="error_tag_operation_failed">Something went wrong. Please try again.</string>

@@ -1,6 +1,7 @@
 package com.example.books_kmp.ui.tags
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,11 +14,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,7 +31,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -51,14 +53,15 @@ import bookskmp.composeapp.generated.resources.button_cancel
 import bookskmp.composeapp.generated.resources.button_delete
 import bookskmp.composeapp.generated.resources.button_save
 import bookskmp.composeapp.generated.resources.cd_collapse_section
-import bookskmp.composeapp.generated.resources.cd_delete_tag
-import bookskmp.composeapp.generated.resources.cd_edit_tag
 import bookskmp.composeapp.generated.resources.cd_expand_section
 import bookskmp.composeapp.generated.resources.cd_navigate_up
+import bookskmp.composeapp.generated.resources.cd_tag_options
 import bookskmp.composeapp.generated.resources.error_tag_name_duplicate
 import bookskmp.composeapp.generated.resources.error_tag_name_empty
 import bookskmp.composeapp.generated.resources.error_tag_operation_failed
 import bookskmp.composeapp.generated.resources.label_tag_name
+import bookskmp.composeapp.generated.resources.menu_delete_tag
+import bookskmp.composeapp.generated.resources.menu_rename_tag
 import bookskmp.composeapp.generated.resources.message_delete_tag
 import bookskmp.composeapp.generated.resources.section_custom_tags
 import bookskmp.composeapp.generated.resources.section_default_tags
@@ -82,6 +85,8 @@ import com.example.books_kmp.viewmodel.TagManagementUiState
 import com.example.books_kmp.viewmodel.TagManagementViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+
+private const val MAX_TAG_NAME_LENGTH = 20
 
 @Composable
 fun TagManagementScreen(
@@ -150,7 +155,7 @@ fun TagManagementScreenContent(
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp),
             ) {
-                var defaultExpanded by rememberSaveable { mutableStateOf(true) }
+                var defaultExpanded by rememberSaveable { mutableStateOf(false) }
                 var customExpanded by rememberSaveable { mutableStateOf(true) }
 
                 // Default section
@@ -158,12 +163,13 @@ fun TagManagementScreenContent(
                     modifier =
                         Modifier
                             .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .clickable { defaultExpanded = !defaultExpanded }
                             .testTag(TestTags.TagManagement.DefaultSectionHeader),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(stringResource(Res.string.section_default_tags))
+                    Text(text=stringResource(Res.string.section_default_tags), modifier = Modifier.padding(start = 8.dp))
                     IconButton(onClick = { defaultExpanded = !defaultExpanded }) {
                         val icon = if (defaultExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
                         val cd = if (defaultExpanded) Res.string.cd_collapse_section else Res.string.cd_expand_section
@@ -173,9 +179,11 @@ fun TagManagementScreenContent(
                 AnimatedVisibility(visible = defaultExpanded) {
                     Column {
                         uiState.defaultTags.forEach { tag ->
-                            SuggestionChip(
-                                onClick = {},
-                                label = { Text(tag.name) },
+                            Text(
+                                text = tag.name,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 12.dp),
                             )
                         }
                     }
@@ -186,12 +194,13 @@ fun TagManagementScreenContent(
                     modifier =
                         Modifier
                             .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .clickable { customExpanded = !customExpanded }
                             .testTag(TestTags.TagManagement.CustomSectionHeader),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(stringResource(Res.string.section_custom_tags))
+                    Text(text=stringResource(Res.string.section_custom_tags), modifier = Modifier.padding(start = 8.dp))
                     IconButton(onClick = { customExpanded = !customExpanded }) {
                         val icon = if (customExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
                         val cd = if (customExpanded) Res.string.cd_collapse_section else Res.string.cd_expand_section
@@ -200,32 +209,47 @@ fun TagManagementScreenContent(
                 }
                 AnimatedVisibility(visible = customExpanded) {
                     Column {
+                        var expandedTagId by remember { mutableStateOf<String?>(null) }
                         uiState.customTags.forEach { tag ->
                             Row(
+                                modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                SuggestionChip(
-                                    onClick = {},
-                                    label = { Text(tag.name) },
-                                    modifier = Modifier.weight(1f),
+                                Text(
+                                    text = tag.name,
+                                    modifier = Modifier.weight(1f).padding(start = 8.dp),
                                 )
-                                IconButton(
-                                    onClick = { onIntent(OpenEditForm(tag)) },
-                                    modifier = Modifier.testTag(TestTags.TagManagement.editButton(tag.id)),
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Edit,
-                                        contentDescription = stringResource(Res.string.cd_edit_tag),
-                                    )
-                                }
-                                IconButton(
-                                    onClick = { onIntent(RequestDeleteTag(tag)) },
-                                    modifier = Modifier.testTag(TestTags.TagManagement.deleteButton(tag.id)),
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Delete,
-                                        contentDescription = stringResource(Res.string.cd_delete_tag),
-                                    )
+                                Box {
+                                    IconButton(
+                                        onClick = { expandedTagId = tag.id },
+                                        modifier = Modifier.testTag(TestTags.TagManagement.optionsButton(tag.id)),
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.MoreVert,
+                                            contentDescription = stringResource(Res.string.cd_tag_options),
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = expandedTagId == tag.id,
+                                        onDismissRequest = { expandedTagId = null },
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(Res.string.menu_rename_tag)) },
+                                            onClick = {
+                                                expandedTagId = null
+                                                onIntent(OpenEditForm(tag))
+                                            },
+                                            modifier = Modifier.testTag(TestTags.TagManagement.renameMenuItem(tag.id)),
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(Res.string.menu_delete_tag)) },
+                                            onClick = {
+                                                expandedTagId = null
+                                                onIntent(RequestDeleteTag(tag))
+                                            },
+                                            modifier = Modifier.testTag(TestTags.TagManagement.deleteMenuItem(tag.id)),
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -275,9 +299,15 @@ fun TagManagementScreenContent(
                 )
                 OutlinedTextField(
                     value = formState.draftName,
-                    onValueChange = { onIntent(UpdateFormName(it)) },
+                    onValueChange = { if (it.length <= MAX_TAG_NAME_LENGTH) onIntent(UpdateFormName(it)) },
                     label = { Text(stringResource(Res.string.label_tag_name)) },
-                    supportingText = nameErrorText?.let { { Text(it) } },
+                    supportingText = {
+                        if (nameErrorText != null) {
+                            Text(nameErrorText)
+                        } else {
+                            Text("${formState.draftName.length}/$MAX_TAG_NAME_LENGTH")
+                        }
+                    },
                     isError = nameErrorText != null,
                     modifier =
                         Modifier

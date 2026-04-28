@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.TagFormMode
@@ -32,7 +33,7 @@ class TagManagementScreenTest {
     private val customTag = Tag(id = "c1", name = "Favorites", isDefault = false)
 
     @Test
-    fun `default section shows chip rows with no edit or delete buttons`() {
+    fun `default section shows tag names with no options button`() {
         composeTestRule.setContent {
             TagManagementScreenContent(
                 uiState = TagManagementUiState(defaultTags = listOf(defaultTag)),
@@ -40,13 +41,12 @@ class TagManagementScreenTest {
                 onNavigateUp = {},
             )
         }
-        composeTestRule.onNodeWithText("Fiction").assertIsDisplayed()
-        composeTestRule.onNodeWithTag(TestTags.TagManagement.editButton("d1")).assertDoesNotExist()
-        composeTestRule.onNodeWithTag(TestTags.TagManagement.deleteButton("d1")).assertDoesNotExist()
+        composeTestRule.onNodeWithText("Fiction").assertDoesNotExist()
+        composeTestRule.onNodeWithTag(TestTags.TagManagement.optionsButton("d1")).assertDoesNotExist()
     }
 
     @Test
-    fun `custom section shows chip, edit button, and delete button per tag`() {
+    fun `custom section shows tag name and options button per tag`() {
         composeTestRule.setContent {
             TagManagementScreenContent(
                 uiState = TagManagementUiState(customTags = listOf(customTag)),
@@ -55,8 +55,7 @@ class TagManagementScreenTest {
             )
         }
         composeTestRule.onNodeWithText("Favorites").assertIsDisplayed()
-        composeTestRule.onNodeWithTag(TestTags.TagManagement.editButton("c1")).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(TestTags.TagManagement.deleteButton("c1")).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.TagManagement.optionsButton("c1")).assertIsDisplayed()
     }
 
     @Test
@@ -86,7 +85,7 @@ class TagManagementScreenTest {
     }
 
     @Test
-    fun `clicking edit button dispatches OpenEditForm with correct tag`() {
+    fun `clicking rename in options menu dispatches OpenEditForm with correct tag`() {
         val dispatched = mutableListOf<TagManagementIntent>()
         composeTestRule.setContent {
             TagManagementScreenContent(
@@ -95,12 +94,13 @@ class TagManagementScreenTest {
                 onNavigateUp = {},
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.TagManagement.editButton("c1")).performClick()
+        composeTestRule.onNodeWithTag(TestTags.TagManagement.optionsButton("c1")).performClick()
+        composeTestRule.onNodeWithTag(TestTags.TagManagement.renameMenuItem("c1")).performClick()
         assertEquals(TagManagementIntent.OpenEditForm(customTag), dispatched.last())
     }
 
     @Test
-    fun `clicking delete button dispatches RequestDeleteTag with correct tag`() {
+    fun `clicking delete in options menu dispatches RequestDeleteTag with correct tag`() {
         val dispatched = mutableListOf<TagManagementIntent>()
         composeTestRule.setContent {
             TagManagementScreenContent(
@@ -109,7 +109,8 @@ class TagManagementScreenTest {
                 onNavigateUp = {},
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.TagManagement.deleteButton("c1")).performClick()
+        composeTestRule.onNodeWithTag(TestTags.TagManagement.optionsButton("c1")).performClick()
+        composeTestRule.onNodeWithTag(TestTags.TagManagement.deleteMenuItem("c1")).performClick()
         assertEquals(TagManagementIntent.RequestDeleteTag(customTag), dispatched.last())
     }
 
@@ -311,6 +312,41 @@ class TagManagementScreenTest {
     }
 
     @Test
+    fun `form shows character count in supporting text`() {
+        composeTestRule.setContent {
+            TagManagementScreenContent(
+                uiState =
+                    TagManagementUiState(
+                        tagFormState = TagFormState(mode = TagFormMode.Create, draftName = "Hi"),
+                    ),
+                onIntent = {},
+                onNavigateUp = {},
+            )
+        }
+        composeTestRule.onNodeWithText("2/20").assertIsDisplayed()
+    }
+
+    @Test
+    fun `typing beyond max length does not dispatch UpdateFormName`() {
+        val dispatched = mutableListOf<TagManagementIntent>()
+        composeTestRule.setContent {
+            TagManagementScreenContent(
+                uiState =
+                    TagManagementUiState(
+                        tagFormState = TagFormState(
+                            mode = TagFormMode.Create,
+                            draftName = "12345678901234567890",
+                        ),
+                    ),
+                onIntent = { dispatched.add(it) },
+                onNavigateUp = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.TagManagement.FormNameField).performTextInput("x")
+        assertEquals(0, dispatched.size)
+    }
+
+    @Test
     fun `default section collapses and expands on header click`() {
         composeTestRule.setContent {
             TagManagementScreenContent(
@@ -319,10 +355,10 @@ class TagManagementScreenTest {
                 onNavigateUp = {},
             )
         }
-        composeTestRule.onNodeWithText("Fiction").assertIsDisplayed()
-        composeTestRule.onNodeWithTag(TestTags.TagManagement.DefaultSectionHeader).performClick()
         composeTestRule.onNodeWithText("Fiction").assertDoesNotExist()
         composeTestRule.onNodeWithTag(TestTags.TagManagement.DefaultSectionHeader).performClick()
         composeTestRule.onNodeWithText("Fiction").assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.TagManagement.DefaultSectionHeader).performClick()
+        composeTestRule.onNodeWithText("Fiction").assertDoesNotExist()
     }
 }

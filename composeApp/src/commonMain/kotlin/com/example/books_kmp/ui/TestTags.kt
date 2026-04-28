@@ -71,9 +71,11 @@ object TestTags {
         const val CustomSectionHeader = "tag_management_custom_header"
         const val AddTagButton = "tag_management_add_tag"
 
-        fun editButton(tagId: String) = "tag_edit_$tagId"
+        fun optionsButton(tagId: String) = "tag_options_$tagId"
 
-        fun deleteButton(tagId: String) = "tag_delete_$tagId"
+        fun renameMenuItem(tagId: String) = "tag_rename_$tagId"
+
+        fun deleteMenuItem(tagId: String) = "tag_delete_$tagId"
 
         const val FormNameField = "tag_form_name_field"
         const val FormSaveButton = "tag_form_save_button"
