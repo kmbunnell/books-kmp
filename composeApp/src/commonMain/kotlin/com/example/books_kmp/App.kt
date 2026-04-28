@@ -8,12 +8,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import androidx.savedstate.read
+import androidx.navigation.toRoute
 import com.example.books_kmp.ui.addbook.AddBookScreen
 import com.example.books_kmp.ui.auth.SignInScreen
 import com.example.books_kmp.ui.auth.SignUpScreen
@@ -59,41 +57,41 @@ fun App() {
         val uiState by authViewModel.uiState.collectAsState()
         var pendingBookAdded by rememberSaveable { mutableStateOf(false) } // move to libraryVM once it's created.
 
-        NavHost(navController = navController, startDestination = NavDestination.Splash.route) {
-            composable(NavDestination.Splash.route) {
+        NavHost(navController = navController, startDestination = Route.Splash) {
+            composable<Route.Splash> {
                 SplashScreen(
                     uiState = uiState,
                     onAuthenticated = {
-                        navController.navigate(NavDestination.Library.route) {
-                            popUpTo(NavDestination.Splash.route) { inclusive = true }
+                        navController.navigate(Route.Library) {
+                            popUpTo<Route.Splash> { inclusive = true }
                         }
                     },
                     onNotAuthenticated = {
-                        navController.navigate(NavDestination.SignIn.route) {
-                            popUpTo(NavDestination.Splash.route) { inclusive = true }
+                        navController.navigate(Route.SignIn) {
+                            popUpTo<Route.Splash> { inclusive = true }
                         }
                     },
                 )
             }
-            composable(NavDestination.SignIn.route) {
+            composable<Route.SignIn> {
                 NavigateToLibraryOnAuth(
                     isAuthenticated = uiState.isAuthenticated,
                     onAuthenticated = {
-                        navController.navigate(NavDestination.Library.route) {
-                            popUpTo(NavDestination.SignIn.route) { inclusive = true }
+                        navController.navigate(Route.Library) {
+                            popUpTo<Route.SignIn> { inclusive = true }
                         }
                     },
                 )
                 SignInScreen(
-                    onNavigateToSignUp = { navController.navigate(NavDestination.SignUp.route) },
+                    onNavigateToSignUp = { navController.navigate(Route.SignUp) },
                 )
             }
-            composable(NavDestination.SignUp.route) {
+            composable<Route.SignUp> {
                 NavigateToLibraryOnAuth(
                     isAuthenticated = uiState.isAuthenticated,
                     onAuthenticated = {
-                        navController.navigate(NavDestination.Library.route) {
-                            popUpTo(NavDestination.SignIn.route) { inclusive = true }
+                        navController.navigate(Route.Library) {
+                            popUpTo<Route.SignIn> { inclusive = true }
                         }
                     },
                 )
@@ -101,25 +99,25 @@ fun App() {
                     onNavigateToSignIn = { navController.popBackStack() },
                 )
             }
-            composable(NavDestination.Library.route) {
+            composable<Route.Library> {
                 NavigateToSignInOnSignOut(
                     isAuthenticated = uiState.isAuthenticated,
                     isLoading = uiState.isLoading,
                     onSignedOut = {
-                        navController.navigate(NavDestination.SignIn.route) {
-                            popUpTo(NavDestination.Library.route) { inclusive = true }
+                        navController.navigate(Route.SignIn) {
+                            popUpTo<Route.Library> { inclusive = true }
                         }
                     },
                 )
                 LibraryScreen(
                     onSignOut = { authViewModel.onIntent(AuthIntent.SignOut) },
-                    onNavigateToAddBook = { navController.navigate(NavDestination.AddBook.route) },
-                    onNavigateToTagManagement = { navController.navigate(NavDestination.TagManagement.route) },
+                    onNavigateToAddBook = { navController.navigate(Route.AddBook) },
+                    onNavigateToTagManagement = { navController.navigate(Route.TagManagement) },
                     showBookAdded = pendingBookAdded,
                     onBookAddedShown = { pendingBookAdded = false },
                 )
             }
-            composable(NavDestination.AddBook.route) {
+            composable<Route.AddBook> {
                 AddBookScreen(
                     onNavigateUp = { navController.popBackStack() },
                     onNavigateToLibrary = {
@@ -127,34 +125,31 @@ fun App() {
                         navController.popBackStack()
                     },
                     onNavigateToManualEntry = {
-                        navController.navigate(NavDestination.ManualEntry.route)
+                        navController.navigate(Route.ManualEntry)
                     },
                 )
             }
-            composable(NavDestination.ManualEntry.route) {
+            composable<Route.ManualEntry> {
                 ManualEntryScreen(
                     onNavigateToLibrary = {
-                        navController.navigate(NavDestination.Library.route) {
-                            popUpTo(NavDestination.ManualEntry.route) { inclusive = true }
+                        navController.navigate(Route.Library) {
+                            popUpTo<Route.ManualEntry> { inclusive = true }
                         }
                     },
                     onNavigateBack = { navController.popBackStack() },
                 )
             }
-            composable(NavDestination.TagManagement.route) {
+            composable<Route.TagManagement> {
                 TagManagementScreen(
                     onNavigateUp = { navController.popBackStack() },
                 )
             }
-            composable(
-                route = NavDestination.BookDetail.route,
-                arguments = listOf(navArgument("bookId") { type = NavType.StringType }),
-            ) { backStackEntry ->
-                val bookId = backStackEntry.arguments?.read { getStringOrNull("bookId") } ?: return@composable
+            composable<Route.BookDetail> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.BookDetail>()
                 BookDetailScreen(
-                    bookId = bookId,
+                    bookId = route.bookId,
                     onNavigateUp = { navController.popBackStack() },
-                    onNavigateToTagManagement = { navController.navigate(NavDestination.TagManagement.route) },
+                    onNavigateToTagManagement = { navController.navigate(Route.TagManagement) },
                 )
             }
         }
