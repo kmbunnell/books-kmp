@@ -55,8 +55,8 @@ class BookDetailViewModel(
 
     private fun load() {
         if (_uiState.value.isLoading) return
+        _uiState.update { it.copy(isLoading = true, loadFailed = false) }
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, loadFailed = false) }
             val tagsDeferred = async { tagRepository.getTags() }
             val appliedDeferred = async { tagRepository.getTagsForBook(bookId) }
             val tagsResult = tagsDeferred.await()
