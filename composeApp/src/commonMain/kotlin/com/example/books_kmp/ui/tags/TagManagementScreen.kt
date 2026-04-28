@@ -18,14 +18,14 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -169,7 +169,10 @@ fun TagManagementScreenContent(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(text=stringResource(Res.string.section_default_tags), modifier = Modifier.padding(start = 8.dp))
+                    Text(
+                        text = stringResource(Res.string.section_default_tags),
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
                     IconButton(onClick = { defaultExpanded = !defaultExpanded }) {
                         val icon = if (defaultExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
                         val cd = if (defaultExpanded) Res.string.cd_collapse_section else Res.string.cd_expand_section
@@ -181,9 +184,10 @@ fun TagManagementScreenContent(
                         uiState.defaultTags.forEach { tag ->
                             Text(
                                 text = tag.name,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp, vertical = 12.dp),
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp, vertical = 12.dp),
                             )
                         }
                     }
@@ -200,7 +204,10 @@ fun TagManagementScreenContent(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(text=stringResource(Res.string.section_custom_tags), modifier = Modifier.padding(start = 8.dp))
+                    Text(
+                        text = stringResource(Res.string.section_custom_tags),
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
                     IconButton(onClick = { customExpanded = !customExpanded }) {
                         val icon = if (customExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
                         val cd = if (customExpanded) Res.string.cd_collapse_section else Res.string.cd_expand_section
