@@ -8,13 +8,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.savedstate.read
 import com.example.books_kmp.ui.addbook.AddBookScreen
 import com.example.books_kmp.ui.auth.SignInScreen
 import com.example.books_kmp.ui.auth.SignUpScreen
 import com.example.books_kmp.ui.auth.SplashScreen
+import com.example.books_kmp.ui.bookdetail.BookDetailScreen
 import com.example.books_kmp.ui.library.LibraryScreen
 import com.example.books_kmp.ui.manualentry.ManualEntryScreen
 import com.example.books_kmp.ui.tags.TagManagementScreen
@@ -140,6 +144,17 @@ fun App() {
             composable(NavDestination.TagManagement.route) {
                 TagManagementScreen(
                     onNavigateUp = { navController.popBackStack() },
+                )
+            }
+            composable(
+                route = NavDestination.BookDetail.route,
+                arguments = listOf(navArgument("bookId") { type = NavType.StringType }),
+            ) { backStackEntry ->
+                val bookId = backStackEntry.arguments?.read { getStringOrNull("bookId") } ?: return@composable
+                BookDetailScreen(
+                    bookId = bookId,
+                    onNavigateUp = { navController.popBackStack() },
+                    onNavigateToTagManagement = { navController.navigate(NavDestination.TagManagement.route) },
                 )
             }
         }

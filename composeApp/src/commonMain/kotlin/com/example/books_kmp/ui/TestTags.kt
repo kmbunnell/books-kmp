@@ -65,6 +65,15 @@ object TestTags {
         const val DismissButton = "camera_permission_dismiss_button"
     }
 
+    object BookDetail {
+        fun tagChip(tagId: String) = "book_detail_chip_$tagId"
+
+        const val ManageTagsButton = "book_detail_manage_tags_button"
+        const val LoadingIndicator = "book_detail_loading"
+        const val LoadFailedMessage = "book_detail_load_failed_message"
+        const val RetryButton = "book_detail_retry_button"
+    }
+
     object TagManagement {
         const val LoadingIndicator = "tag_management_loading"
         const val DefaultSectionHeader = "tag_management_default_header"
