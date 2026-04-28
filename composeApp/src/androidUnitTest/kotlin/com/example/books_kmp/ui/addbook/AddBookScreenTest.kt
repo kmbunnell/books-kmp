@@ -40,7 +40,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -56,7 +55,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = { navigatedUp = true },
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -72,7 +70,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -87,7 +84,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -102,7 +98,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -117,7 +112,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -133,7 +127,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = { intents += it },
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -152,7 +145,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = { intents += it },
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -169,7 +161,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -185,7 +176,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -200,7 +190,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -215,7 +204,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -231,7 +219,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -248,7 +235,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -264,7 +250,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -281,7 +266,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -299,7 +283,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -315,7 +298,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -331,7 +313,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -347,7 +328,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -363,7 +343,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -379,7 +358,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -394,7 +372,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -410,7 +387,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -426,7 +402,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -441,7 +416,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -457,7 +431,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }
@@ -473,7 +446,6 @@ class AddBookScreenTest {
                 effects = emptyEffects,
                 onIntent = {},
                 onNavigateUp = {},
-                onNavigateToLibrary = {},
                 onNavigateToManualEntry = {},
             )
         }

@@ -5,9 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -55,7 +52,6 @@ fun App() {
         val navController = rememberNavController()
         val authViewModel: AuthViewModel = koinViewModel()
         val uiState by authViewModel.uiState.collectAsState()
-        var pendingBookAdded by rememberSaveable { mutableStateOf(false) } // move to libraryVM once it's created.
 
         NavHost(navController = navController, startDestination = Route.Splash) {
             composable<Route.Splash> {
@@ -113,17 +109,11 @@ fun App() {
                     onSignOut = { authViewModel.onIntent(AuthIntent.SignOut) },
                     onNavigateToAddBook = { navController.navigate(Route.AddBook) },
                     onNavigateToTagManagement = { navController.navigate(Route.TagManagement) },
-                    showBookAdded = pendingBookAdded,
-                    onBookAddedShown = { pendingBookAdded = false },
                 )
             }
             composable<Route.AddBook> {
                 AddBookScreen(
                     onNavigateUp = { navController.popBackStack() },
-                    onNavigateToLibrary = {
-                        pendingBookAdded = true
-                        navController.popBackStack()
-                    },
                     onNavigateToManualEntry = {
                         navController.navigate(Route.ManualEntry)
                     },
