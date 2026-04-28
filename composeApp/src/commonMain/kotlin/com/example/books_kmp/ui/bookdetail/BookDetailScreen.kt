@@ -97,16 +97,18 @@ internal fun BookDetailScreenContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
         ) {
             when {
                 uiState.isLoading -> {
                     CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .testTag(TestTags.BookDetail.LoadingIndicator),
+                        modifier =
+                            Modifier
+                                .align(Alignment.Center)
+                                .testTag(TestTags.BookDetail.LoadingIndicator),
                     )
                 }
                 uiState.loadFailed -> {
