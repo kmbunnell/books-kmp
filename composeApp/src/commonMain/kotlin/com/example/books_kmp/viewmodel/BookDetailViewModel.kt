@@ -29,6 +29,8 @@ sealed interface BookDetailIntent {
     data class ToggleTag(val tagId: String) : BookDetailIntent
 
     data object DismissTagToggleError : BookDetailIntent
+
+    data object Reload : BookDetailIntent
 }
 
 class BookDetailViewModel(
@@ -39,8 +41,22 @@ class BookDetailViewModel(
     val uiState: StateFlow<BookDetailUiState> = _uiState.asStateFlow()
 
     init {
+        load()
+    }
+
+    fun onIntent(intent: BookDetailIntent) {
+        when (intent) {
+            is BookDetailIntent.ToggleTag -> handleToggleTag(intent.tagId)
+            BookDetailIntent.DismissTagToggleError ->
+                _uiState.update { it.copy(tagToggleError = null) }
+            BookDetailIntent.Reload -> load()
+        }
+    }
+
+    private fun load() {
+        if (_uiState.value.isLoading) return
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, loadFailed = false) }
             val tagsDeferred = async { tagRepository.getTags() }
             val appliedDeferred = async { tagRepository.getTagsForBook(bookId) }
             val tagsResult = tagsDeferred.await()
@@ -56,14 +72,6 @@ class BookDetailViewModel(
             } else {
                 _uiState.update { it.copy(isLoading = false, loadFailed = true) }
             }
-        }
-    }
-
-    fun onIntent(intent: BookDetailIntent) {
-        when (intent) {
-            is BookDetailIntent.ToggleTag -> handleToggleTag(intent.tagId)
-            BookDetailIntent.DismissTagToggleError ->
-                _uiState.update { it.copy(tagToggleError = null) }
         }
     }
 

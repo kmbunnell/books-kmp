@@ -218,6 +218,34 @@ class BookDetailViewModelTest {
             assertNull(failVm.uiState.value.tagToggleError)
         }
 
+    // Reload
+
+    @Test
+    fun `Reload after failure clears loadFailed and populates state on second success`() =
+        runTest {
+            val failFirstRepo = FailFirstGetTagsRepo(repo)
+            val failVm = BookDetailViewModel(bookId, failFirstRepo)
+            advanceUntilIdle()
+            assertTrue(failVm.uiState.value.loadFailed)
+
+            failVm.onIntent(BookDetailIntent.Reload)
+            advanceUntilIdle()
+            assertFalse(failVm.uiState.value.loadFailed)
+            assertFalse(failVm.uiState.value.isLoading)
+            assertTrue(failVm.uiState.value.allTags.isNotEmpty())
+        }
+
+    @Test
+    fun `Reload is ignored while load is already in flight`() =
+        runTest {
+            val suspendingRepo = SuspendingGetTagsRepo(repo)
+            val suspendVm = BookDetailViewModel(bookId, suspendingRepo)
+            assertTrue(suspendVm.uiState.value.isLoading)
+
+            suspendVm.onIntent(BookDetailIntent.Reload)
+            assertEquals(1, suspendingRepo.getTagsCallCount)
+        }
+
     // ---- Test doubles ----
 
     /**
@@ -259,5 +287,28 @@ class BookDetailViewModelTest {
     private class FailingBookTagsRepo(delegate: FakeTagRepository) : TagRepository by delegate {
         override suspend fun getTagsForBook(bookId: String): Result<List<Tag>, TagError> =
             Result.Failure(TagError.NetworkError(RuntimeException("fail")))
+    }
+
+    private class FailFirstGetTagsRepo(private val delegate: FakeTagRepository) : TagRepository by delegate {
+        private var callCount = 0
+
+        // Only getTags() needs to fail for the whole load() to short-circuit
+        override suspend fun getTags(): Result<List<Tag>, TagError> {
+            return if (callCount++ == 0) {
+                Result.Failure(TagError.NetworkError(RuntimeException("fail")))
+            } else {
+                delegate.getTags()
+            }
+        }
+    }
+
+    private class SuspendingGetTagsRepo(private val delegate: FakeTagRepository) : TagRepository by delegate {
+        var getTagsCallCount = 0
+        private val deferred = CompletableDeferred<Result<List<Tag>, TagError>>()
+
+        override suspend fun getTags(): Result<List<Tag>, TagError> {
+            getTagsCallCount++
+            return deferred.await()
+        }
     }
 }

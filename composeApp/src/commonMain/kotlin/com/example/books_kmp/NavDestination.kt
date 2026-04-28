@@ -8,4 +8,9 @@ enum class NavDestination(val route: String) {
     AddBook("add_book"),
     ManualEntry("manual_entry"),
     TagManagement("tag_management"),
+    BookDetail("book_detail/{bookId}");
+
+    companion object {
+        fun bookDetailRoute(bookId: String) = "book_detail/$bookId"
+    }
 }
