@@ -216,7 +216,7 @@ fun TagManagementScreenContent(
                 }
                 AnimatedVisibility(visible = customExpanded) {
                     Column {
-                        var expandedTagId by remember { mutableStateOf<String?>(null) }
+                        var expandedTagId by rememberSaveable { mutableStateOf<String?>(null) }
                         uiState.customTags.forEach { tag ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
