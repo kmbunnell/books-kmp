@@ -333,10 +333,11 @@ class TagManagementScreenTest {
             TagManagementScreenContent(
                 uiState =
                     TagManagementUiState(
-                        tagFormState = TagFormState(
-                            mode = TagFormMode.Create,
-                            draftName = "12345678901234567890",
-                        ),
+                        tagFormState =
+                            TagFormState(
+                                mode = TagFormMode.Create,
+                                draftName = "12345678901234567890",
+                            ),
                     ),
                 onIntent = { dispatched.add(it) },
                 onNavigateUp = {},
