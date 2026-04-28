@@ -1,7 +1,6 @@
 package com.example.books_kmp.ui.bookdetail
 
 import android.app.Application
-import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected

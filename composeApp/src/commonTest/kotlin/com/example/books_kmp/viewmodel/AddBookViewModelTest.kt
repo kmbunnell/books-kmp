@@ -221,7 +221,7 @@ class AddBookViewModelTest {
         }
 
     @Test
-    fun `ConfirmBook calls ConfirmAddBookUseCase and emits NavigateToLibrary on success`() =
+    fun `ConfirmBook emits BookAdded and resets state on success`() =
         runTest {
             fakeService.lookupResult = Result.Success(validLookupData)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
@@ -230,8 +230,9 @@ class AddBookViewModelTest {
 
             viewModel.effects.test {
                 viewModel.onIntent(AddBookIntent.ConfirmBook)
-                assertIs<AddBookEffect.NavigateToLibrary>(awaitItem())
+                assertIs<AddBookEffect.BookAdded>(awaitItem())
             }
+            assertEquals(AddBookUiState(), viewModel.uiState.value)
         }
 
     @Test

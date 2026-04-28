@@ -65,7 +65,7 @@ sealed interface AddBookIntent {
 }
 
 sealed interface AddBookEffect {
-    data object NavigateToLibrary : AddBookEffect
+    data object BookAdded : AddBookEffect
 
     data object NavigateToManualEntry : AddBookEffect
 }
@@ -145,8 +145,8 @@ class AddBookViewModel(
         _uiState.update { it.copy(isLoading = true) }
         when (val result = confirmAddBookUseCase(lookup)) {
             is Result.Success -> {
-                _uiState.update { it.copy(isLoading = false) }
-                _effects.emit(AddBookEffect.NavigateToLibrary)
+                _uiState.update { AddBookUiState() }
+                _effects.emit(AddBookEffect.BookAdded)
             }
             is Result.Failure -> {
                 _uiState.update { it.copy(isLoading = false, error = AddBookScreenError.NetworkError) }

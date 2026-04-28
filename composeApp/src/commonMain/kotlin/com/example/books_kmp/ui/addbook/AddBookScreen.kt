@@ -27,6 +27,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -65,6 +67,7 @@ import bookskmp.composeapp.generated.resources.error_rate_limited
 import bookskmp.composeapp.generated.resources.error_scan_failed
 import bookskmp.composeapp.generated.resources.error_unavailable_hardware
 import bookskmp.composeapp.generated.resources.label_isbn
+import bookskmp.composeapp.generated.resources.snackbar_book_added
 import bookskmp.composeapp.generated.resources.title_add_book
 import coil3.compose.AsyncImage
 import com.example.books_kmp.domain.Result
@@ -84,7 +87,6 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun AddBookScreen(
     onNavigateUp: () -> Unit,
-    onNavigateToLibrary: () -> Unit,
     onNavigateToManualEntry: () -> Unit,
 ) {
     val viewModel: AddBookViewModel = koinViewModel()
@@ -94,7 +96,6 @@ fun AddBookScreen(
         effects = viewModel.effects,
         onIntent = viewModel::onIntent,
         onNavigateUp = onNavigateUp,
-        onNavigateToLibrary = onNavigateToLibrary,
         onNavigateToManualEntry = onNavigateToManualEntry,
     )
 }
@@ -106,16 +107,17 @@ fun AddBookScreenContent(
     effects: SharedFlow<AddBookEffect>,
     onIntent: (AddBookIntent) -> Unit,
     onNavigateUp: () -> Unit,
-    onNavigateToLibrary: () -> Unit,
     onNavigateToManualEntry: () -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarBookAdded = stringResource(Res.string.snackbar_book_added)
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
         effects.collect { effect ->
             when (effect) {
-                AddBookEffect.NavigateToLibrary -> onNavigateToLibrary()
+                AddBookEffect.BookAdded -> snackbarHostState.showSnackbar(snackbarBookAdded)
                 AddBookEffect.NavigateToManualEntry -> onNavigateToManualEntry()
             }
         }
@@ -140,6 +142,7 @@ fun AddBookScreenContent(
         }
 
         Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
                     title = { Text(stringResource(Res.string.title_add_book)) },
@@ -385,7 +388,6 @@ private fun AddBookScreenPreview_Empty() {
         effects = MutableSharedFlow(),
         onIntent = {},
         onNavigateUp = {},
-        onNavigateToLibrary = {},
         onNavigateToManualEntry = {},
     )
 }
@@ -398,7 +400,6 @@ private fun AddBookScreenPreview_Loading() {
         effects = MutableSharedFlow(),
         onIntent = {},
         onNavigateUp = {},
-        onNavigateToLibrary = {},
         onNavigateToManualEntry = {},
     )
 }
@@ -411,7 +412,6 @@ private fun AddBookScreenPreview_Error() {
         effects = MutableSharedFlow(),
         onIntent = {},
         onNavigateUp = {},
-        onNavigateToLibrary = {},
         onNavigateToManualEntry = {},
     )
 }
@@ -434,7 +434,6 @@ private fun AddBookScreenPreview_FoundBook() {
         effects = MutableSharedFlow(),
         onIntent = {},
         onNavigateUp = {},
-        onNavigateToLibrary = {},
         onNavigateToManualEntry = {},
     )
 }

@@ -29,6 +29,8 @@ object TestTags {
         const val SignOutButton = "library_sign_out_button"
         const val AddBookFab = "library_add_book_fab"
         const val ManageTagsButton = "library_manage_tags_button"
+
+        fun filterChip(tagId: String) = "library_filter_chip_$tagId"
     }
 
     object AddBook {

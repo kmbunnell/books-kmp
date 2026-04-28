@@ -17,6 +17,7 @@ import com.example.books_kmp.domain.tags.TagRepository
 import com.example.books_kmp.viewmodel.AddBookViewModel
 import com.example.books_kmp.viewmodel.AuthViewModel
 import com.example.books_kmp.viewmodel.BookDetailViewModel
+import com.example.books_kmp.viewmodel.LibraryViewModel
 import com.example.books_kmp.viewmodel.ManualEntryViewModel
 import com.example.books_kmp.viewmodel.SignInViewModel
 import com.example.books_kmp.viewmodel.SignUpViewModel
@@ -55,6 +56,7 @@ fun appModule(
         factory { ConfirmAddBookUseCase(get()) }
         factory { SaveManualBookUseCase(get()) }
         viewModel { AuthViewModel(get()) }
+        viewModel { LibraryViewModel(get()) }
         viewModel { SignInViewModel(get()) }
         viewModel { SignUpViewModel(get()) }
         viewModel { ManualEntryViewModel(get()) }
