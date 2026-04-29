@@ -2,8 +2,8 @@ package com.example.books_kmp.viewmodel
 
 import app.cash.turbine.test
 import com.example.books_kmp.domain.Result
-import com.example.books_kmp.domain.library.BarcodeScanError
 import com.example.books_kmp.domain.library.AddBookUseCase
+import com.example.books_kmp.domain.library.BarcodeScanError
 import com.example.books_kmp.domain.library.FakeBookLookupService
 import com.example.books_kmp.domain.library.FakeBookRepository
 import com.example.books_kmp.domain.library.LookupBookUseCase

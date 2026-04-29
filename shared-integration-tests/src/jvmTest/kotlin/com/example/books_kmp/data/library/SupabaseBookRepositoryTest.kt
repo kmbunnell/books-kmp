@@ -149,7 +149,9 @@ class SupabaseBookRepositoryTest {
     @Test
     fun `getBookByIsbn returns matching book when isbn exists`() =
         runTest {
-            assertIs<Result.Success<*>>(repository.addBook(testBook(isbn = "9780743273565", title = "The Great Gatsby")))
+            assertIs<Result.Success<*>>(
+                repository.addBook(testBook(isbn = "9780743273565", title = "The Great Gatsby"))
+            )
             val result = repository.getBookByIsbn("9780743273565")
             assertIs<Result.Success<*>>(result)
             assertNotNull(result.data)

@@ -9,10 +9,11 @@ class LookupBookUseCase(
     private val lookupService: BookLookupService,
 ) {
     suspend operator fun invoke(isbn: String): Result<BookLookupData, AddBookError> {
-        val isbnAlreadyExists = when (val result = bookRepository.isbnExists(isbn)) {
-            is Result.Failure -> return Result.Failure(AddBookError.NetworkError)
-            is Result.Success -> result.data
-        }
+        val isbnAlreadyExists =
+            when (val result = bookRepository.isbnExists(isbn)) {
+                is Result.Failure -> return Result.Failure(AddBookError.NetworkError)
+                is Result.Success -> result.data
+            }
         if (isbnAlreadyExists) return Result.Failure(AddBookError.Duplicate)
 
         return when (val result = lookupService.lookupByIsbn(isbn)) {

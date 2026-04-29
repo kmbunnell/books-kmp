@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.library.AddBookError
-import com.example.books_kmp.domain.library.BarcodeScanError
 import com.example.books_kmp.domain.library.AddBookUseCase
+import com.example.books_kmp.domain.library.BarcodeScanError
 import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.model.BookLookupData
 import kotlinx.coroutines.flow.MutableSharedFlow
