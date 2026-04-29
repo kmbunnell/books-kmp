@@ -48,7 +48,7 @@ fun LibraryScreen(
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            viewModel.onIntent(LibraryIntent.RefreshTags)
+            viewModel.onIntent(LibraryIntent.Refresh)
         }
     }
     LibraryScreenContent(

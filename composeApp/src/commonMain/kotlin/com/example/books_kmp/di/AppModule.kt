@@ -56,7 +56,7 @@ fun appModule(
         factory { ConfirmAddBookUseCase(get()) }
         factory { SaveManualBookUseCase(get()) }
         viewModel { AuthViewModel(get()) }
-        viewModel { LibraryViewModel(get()) }
+        viewModel { LibraryViewModel(get(), get()) }
         viewModel { SignInViewModel(get()) }
         viewModel { SignUpViewModel(get()) }
         viewModel { ManualEntryViewModel(get()) }

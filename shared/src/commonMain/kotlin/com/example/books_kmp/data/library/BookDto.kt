@@ -20,6 +20,14 @@ data class BookDto(
     val authors: List<String> = emptyList(),
     @SerialName("cover_image_url")
     val coverImageUrl: String? = null,
+    @SerialName("book_tags")
+    val bookTags: List<BookTagIdDto> = emptyList(),
+)
+
+@Serializable
+data class BookTagIdDto(
+    @SerialName("tag_id")
+    val tagId: String,
 )
 
 fun BookDto.toBook(): Book =
@@ -29,6 +37,7 @@ fun BookDto.toBook(): Book =
         title = title,
         authors = authors,
         coverImageUrl = coverImageUrl,
+        tags = bookTags.map { it.tagId },
     )
 
 fun NewBook.toDto(userId: String): BookDto =
