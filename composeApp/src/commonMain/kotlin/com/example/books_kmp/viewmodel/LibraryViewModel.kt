@@ -24,8 +24,11 @@ data class LibraryUiState(
 ) {
     val filteredBooks: List<Book>
         get() =
-            if (activeFilterTagIds.isEmpty()) books
-            else books.filter { book -> book.tags.any { it in activeFilterTagIds } }
+            if (activeFilterTagIds.isEmpty()) {
+                books
+            } else {
+                books.filter { book -> book.tags.any { it in activeFilterTagIds } }
+            }
 }
 
 sealed interface LibraryIntent {

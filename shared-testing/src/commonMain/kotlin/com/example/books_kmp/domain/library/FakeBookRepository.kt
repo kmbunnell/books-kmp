@@ -26,10 +26,11 @@ class FakeBookRepository(
     override suspend fun getBooksByUser(): Result<List<Book>, BookRepositoryError> {
         getBooksByUserCalled++
         getBooksByUserGate?.await()
-        return if (getBooksShouldFail)
+        return if (getBooksShouldFail) {
             Result.Failure(BookRepositoryError.NetworkError)
-        else
+        } else {
             Result.Success(books.toList())
+        }
     }
 
     override suspend fun getBookByIsbn(isbn: String): Result<Book?, BookRepositoryError> =
@@ -40,13 +41,14 @@ class FakeBookRepository(
         addBookGate?.await()
         if (addBookShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
         lastAddedBook = book
-        val saved = Book(
-            id = "fake-id",
-            isbn = book.isbn,
-            title = book.title,
-            authors = book.authors,
-            coverImageUrl = book.coverImageUrl,
-        )
+        val saved =
+            Book(
+                id = "fake-id",
+                isbn = book.isbn,
+                title = book.title,
+                authors = book.authors,
+                coverImageUrl = book.coverImageUrl,
+            )
         books.add(saved)
         return Result.Success(saved)
     }
