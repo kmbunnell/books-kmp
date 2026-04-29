@@ -8,9 +8,9 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlinx.coroutines.test.runTest
 
-class ConfirmAddBookUseCaseTest {
+class AddBookUseCaseTest {
     private val repo = FakeBookRepository()
-    private val useCase = ConfirmAddBookUseCase(repo)
+    private val useCase = AddBookUseCase(repo)
 
     private val lookupData =
         BookLookupData(
@@ -43,7 +43,7 @@ class ConfirmAddBookUseCaseTest {
         runTest {
             repo.addBookShouldFail = true
             val result = useCase(lookupData)
-            assertIs<Result.Failure<ConfirmAddBookError>>(result)
-            assertEquals(ConfirmAddBookError.NetworkError, result.error)
+            assertIs<Result.Failure<AddBookError>>(result)
+            assertEquals(AddBookError.NetworkError, result.error)
         }
 }
