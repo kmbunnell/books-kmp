@@ -12,6 +12,7 @@ import io.github.jan.supabase.postgrest.query.Columns
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import com.example.books_kmp.domain.Result
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -134,7 +135,7 @@ class SupabaseBookRepositoryTest {
         runTest {
             repository.addBook(testBook(isbn = "1111111111111", title = "Book One"))
             repository.addBook(testBook(isbn = "2222222222222", title = "Book Two"))
-            val books = repository.getBooksByUser()
+            val books = (repository.getBooksByUser() as Result.Success).data
             assertEquals(2, books.size)
             assertTrue(books.any { it.title == "Book One" })
             assertTrue(books.any { it.title == "Book Two" })

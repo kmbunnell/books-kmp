@@ -1,5 +1,7 @@
 package com.example.books_kmp.domain.library
 
+import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.library.LoadBooksError
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.NewBook
 import kotlinx.coroutines.CompletableDeferred
@@ -7,17 +9,29 @@ import kotlinx.coroutines.CompletableDeferred
 class FakeBookRepository(
     var addBookShouldThrow: Boolean = false,
     var isbnExistsShouldThrow: Boolean = false,
+    var getBooksShouldThrow: Boolean = false,
 ) : BookRepository {
     private val books = mutableListOf<Book>()
     var isbnExistsOverride: Boolean? = null
     var lastAddedBook: NewBook? = null
     var addBookCalled = false
+    var getBooksByUserCalled = 0
 
-    // Optional gate — tests set this to suspend addBook until completed,
-    // allowing deterministic observation of in-flight ViewModel state.
     var addBookGate: CompletableDeferred<Unit>? = null
+    var getBooksByUserGate: CompletableDeferred<Unit>? = null
 
-    override suspend fun getBooksByUser(): List<Book> = books.toList()
+    fun seedBooks(vararg booksToSeed: Book) {
+        books.addAll(booksToSeed)
+    }
+
+    override suspend fun getBooksByUser(): Result<List<Book>, LoadBooksError> {
+        getBooksByUserCalled++
+        getBooksByUserGate?.await()
+        return if (getBooksShouldThrow)
+            Result.Failure(LoadBooksError.NetworkError(RuntimeException("getBooksByUser failed")))
+        else
+            Result.Success(books.toList())
+    }
 
     override suspend fun getBookByIsbn(isbn: String): Book? = books.find { it.isbn == isbn }
 
