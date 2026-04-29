@@ -110,7 +110,7 @@ class LibraryViewModelTest {
     @Test
     fun `loadLibrary book failure sets loadFailed true and isLoading false, leaves lists empty`() =
         runTest {
-            bookRepo = FakeBookRepository(getBooksShouldThrow = true)
+            bookRepo = FakeBookRepository(getBooksShouldFail = true)
             val failVm = LibraryViewModel(bookRepo, repo)
             val state = failVm.uiState.value
             assertTrue(state.loadFailed)
@@ -141,11 +141,11 @@ class LibraryViewModelTest {
     @Test
     fun `Refresh after failure resets loadFailed to false and re-fetches both`() =
         runTest {
-            bookRepo = FakeBookRepository(getBooksShouldThrow = true)
+            bookRepo = FakeBookRepository(getBooksShouldFail = true)
             val retryVm = LibraryViewModel(bookRepo, repo)
             assertTrue(retryVm.uiState.value.loadFailed)
 
-            bookRepo.getBooksShouldThrow = false
+            bookRepo.getBooksShouldFail = false
             retryVm.onIntent(LibraryIntent.Refresh)
 
             assertFalse(retryVm.uiState.value.loadFailed)

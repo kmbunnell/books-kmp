@@ -39,11 +39,11 @@ class ConfirmAddBookUseCaseTest {
         }
 
     @Test
-    fun `invoke returns NetworkError when repository throws`() =
+    fun `invoke returns NetworkError when repository fails`() =
         runTest {
-            repo.addBookShouldThrow = true
+            repo.addBookShouldFail = true
             val result = useCase(lookupData)
             assertIs<Result.Failure<ConfirmAddBookError>>(result)
-            assertIs<ConfirmAddBookError.NetworkError>(result.error)
+            assertEquals(ConfirmAddBookError.NetworkError, result.error)
         }
 }

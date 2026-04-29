@@ -1,5 +1,6 @@
 package com.example.books_kmp.data.library
 
+import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.NewBook
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
@@ -12,8 +13,8 @@ import io.github.jan.supabase.postgrest.query.Columns
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import com.example.books_kmp.domain.Result
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -90,7 +91,8 @@ class SupabaseBookRepositoryTest {
         runTest {
             val book = testBook(isbn = "9780140449136")
             val result = repository.addBook(book)
-            assertTrue(result.id.isNotBlank(), "Expected a server-generated non-blank id")
+            assertIs<Result.Success<*>>(result)
+            assertTrue(result.data.id.isNotBlank(), "Expected a server-generated non-blank id")
         }
 
     @Test
@@ -104,12 +106,13 @@ class SupabaseBookRepositoryTest {
                     coverImageUrl = "https://covers.openlibrary.org/b/isbn/9780140449136-L.jpg",
                 )
             val result = repository.addBook(book)
-            assertEquals("The Iliad", result.title)
-            assertEquals(listOf("Homer"), result.authors)
-            assertEquals("9780140449136", result.isbn)
+            assertIs<Result.Success<*>>(result)
+            assertEquals("The Iliad", result.data.title)
+            assertEquals(listOf("Homer"), result.data.authors)
+            assertEquals("9780140449136", result.data.isbn)
             assertEquals(
                 "https://covers.openlibrary.org/b/isbn/9780140449136-L.jpg",
-                result.coverImageUrl,
+                result.data.coverImageUrl,
             )
         }
 
@@ -118,8 +121,9 @@ class SupabaseBookRepositoryTest {
         runTest {
             val book = testBook(isbn = null, title = "No ISBN Book")
             val result = repository.addBook(book)
-            assertNull(result.isbn)
-            assertEquals("No ISBN Book", result.title)
+            assertIs<Result.Success<*>>(result)
+            assertNull(result.data.isbn)
+            assertEquals("No ISBN Book", result.data.title)
         }
 
     @Test
@@ -127,14 +131,15 @@ class SupabaseBookRepositoryTest {
         runTest {
             val book = testBook(isbn = "9780140449136", coverImageUrl = null)
             val result = repository.addBook(book)
-            assertNull(result.coverImageUrl)
+            assertIs<Result.Success<*>>(result)
+            assertNull(result.data.coverImageUrl)
         }
 
     @Test
     fun `getBooksByUser returns only the authenticated user's books`() =
         runTest {
-            repository.addBook(testBook(isbn = "1111111111111", title = "Book One"))
-            repository.addBook(testBook(isbn = "2222222222222", title = "Book Two"))
+            assertIs<Result.Success<*>>(repository.addBook(testBook(isbn = "1111111111111", title = "Book One")))
+            assertIs<Result.Success<*>>(repository.addBook(testBook(isbn = "2222222222222", title = "Book Two")))
             val books = (repository.getBooksByUser() as Result.Success).data
             assertEquals(2, books.size)
             assertTrue(books.any { it.title == "Book One" })
@@ -144,24 +149,28 @@ class SupabaseBookRepositoryTest {
     @Test
     fun `getBookByIsbn returns matching book when isbn exists`() =
         runTest {
-            repository.addBook(testBook(isbn = "9780743273565", title = "The Great Gatsby"))
+            assertIs<Result.Success<*>>(repository.addBook(testBook(isbn = "9780743273565", title = "The Great Gatsby")))
             val result = repository.getBookByIsbn("9780743273565")
-            assertNotNull(result)
-            assertEquals("The Great Gatsby", result.title)
+            assertIs<Result.Success<*>>(result)
+            assertNotNull(result.data)
+            assertEquals("The Great Gatsby", result.data!!.title)
         }
 
     @Test
     fun `getBookByIsbn returns null when isbn is not found`() =
         runTest {
             val result = repository.getBookByIsbn("0000000000000")
-            assertNull(result)
+            assertIs<Result.Success<*>>(result)
+            assertNull(result.data)
         }
 
     @Test
     fun `isbnExists returns true when isbn matches a persisted book`() =
         runTest {
-            repository.addBook(testBook(isbn = "9780140449136", title = "The Iliad"))
-            assertTrue(repository.isbnExists("9780140449136"))
+            assertIs<Result.Success<*>>(repository.addBook(testBook(isbn = "9780140449136", title = "The Iliad")))
+            val result = repository.isbnExists("9780140449136")
+            assertIs<Result.Success<*>>(result)
+            assertTrue(result.data)
         }
 
     @Test
@@ -169,7 +178,7 @@ class SupabaseBookRepositoryTest {
         runTest {
             val authUser =
                 checkNotNull(supabase.auth.currentUserOrNull()) { "Must be authenticated before this test runs" }
-            repository.addBook(testBook(isbn = "9780140449136"))
+            assertIs<Result.Success<*>>(repository.addBook(testBook(isbn = "9780140449136")))
             val rows = supabase.from("books").select(Columns.list("user_id")).decodeList<UserIdRow>()
             assertEquals(1, rows.size)
             assertEquals(authUser.id, rows.first().userId)

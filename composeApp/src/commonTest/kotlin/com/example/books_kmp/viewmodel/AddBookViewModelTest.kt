@@ -241,7 +241,7 @@ class AddBookViewModelTest {
             fakeService.lookupResult = Result.Success(validLookupData)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
-            fakeRepo.addBookShouldThrow = true
+            fakeRepo.addBookShouldFail = true
             viewModel.onIntent(AddBookIntent.ConfirmBook)
             assertIs<AddBookScreenError.NetworkError>(viewModel.uiState.value.error)
         }
