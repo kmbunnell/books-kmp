@@ -5,7 +5,7 @@ sealed interface AddBookError {
 
     data object Duplicate : AddBookError
 
-    data class NetworkError(val cause: Throwable) : AddBookError
+    data object NetworkError : AddBookError
 
     data object RateLimited : AddBookError
 

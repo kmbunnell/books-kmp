@@ -7,7 +7,6 @@ import com.example.books_kmp.data.tags.SupabaseTagRepository
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.SignInUseCase
 import com.example.books_kmp.domain.auth.SignUpUseCase
-import com.example.books_kmp.domain.library.AddBookUseCase
 import com.example.books_kmp.domain.library.BookLookupService
 import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.ConfirmAddBookUseCase
@@ -51,7 +50,6 @@ fun appModule(
         single<BookLookupService> { OpenLibraryApiClient(get()) }
         factory { SignInUseCase(get()) }
         factory { SignUpUseCase(get()) }
-        factory { AddBookUseCase(get(), get()) }
         factory { LookupBookUseCase(get(), get()) }
         factory { ConfirmAddBookUseCase(get()) }
         factory { SaveManualBookUseCase(get()) }

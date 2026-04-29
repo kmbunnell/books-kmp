@@ -89,7 +89,7 @@ class ManualEntryViewModelTest {
     @Test
     fun `SaveBook failure emits ShowError effect`() =
         runTest {
-            fakeRepo.addBookShouldThrow = true
+            fakeRepo.addBookShouldFail = true
             val viewModel = ManualEntryViewModel(useCase)
             viewModel.effects.test {
                 viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
@@ -119,7 +119,7 @@ class ManualEntryViewModelTest {
         runTest {
             val gate = CompletableDeferred<Unit>()
             fakeRepo.addBookGate = gate
-            fakeRepo.addBookShouldThrow = true
+            fakeRepo.addBookShouldFail = true
             val viewModel = ManualEntryViewModel(useCase)
             backgroundScope.launch { viewModel.effects.collect {} }
 

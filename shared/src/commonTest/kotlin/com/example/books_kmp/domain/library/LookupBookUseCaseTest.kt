@@ -52,12 +52,10 @@ class LookupBookUseCaseTest {
     @Test
     fun `invoke returns NetworkError on connectivity failure`() =
         runTest {
-            val cause = RuntimeException("no network")
-            lookup.lookupResult = Result.Failure(BookLookupError.NetworkError(cause))
+            lookup.lookupResult = Result.Failure(BookLookupError.NetworkError(RuntimeException("no network")))
             val result = useCase("9780140449136")
             assertIs<Result.Failure<AddBookError>>(result)
-            assertIs<AddBookError.NetworkError>(result.error)
-            assertEquals(cause, result.error.cause)
+            assertEquals(AddBookError.NetworkError, result.error)
         }
 
     @Test
@@ -79,9 +77,9 @@ class LookupBookUseCaseTest {
         }
 
     @Test
-    fun `invoke returns NetworkError when isbnExists throws`() =
+    fun `invoke returns NetworkError when isbnExists fails`() =
         runTest {
-            repo.isbnExistsShouldThrow = true
+            repo.isbnExistsShouldFail = true
             val result = useCase("9780140449136")
             assertIs<Result.Failure<AddBookError>>(result)
             assertIs<AddBookError.NetworkError>(result.error)

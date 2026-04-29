@@ -7,7 +7,6 @@ import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.TagRepository
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,44 +65,31 @@ class LibraryViewModel(
         if (_uiState.value.isLoading) return
         _uiState.update { it.copy(isLoading = true, loadFailed = false) }
         viewModelScope.launch {
-            try {
-                coroutineScope {
-                    val booksDeferred = async { bookRepository.getBooksByUser() }
-                    val tagsDeferred = async { tagRepository.getTags() }
-                    val booksResult = booksDeferred.await()
-                    val tagsResult = tagsDeferred.await()
-                    if (booksResult is Result.Success && tagsResult is Result.Success) {
-                        val fetchedIds = tagsResult.data.map { it.id }.toSet()
-                        _uiState.update {
-                            it.copy(
-                                books = booksResult.data,
-                                tags = tagsResult.data,
-                                activeFilterTagIds = it.activeFilterTagIds intersect fetchedIds,
-                                isLoading = false,
-                                loadFailed = false,
-                            )
-                        }
-                    } else {
-                        _uiState.update {
-                            it.copy(
-                                books = emptyList(),
-                                tags = emptyList(),
-                                isLoading = false,
-                                loadFailed = true,
-                            )
-                        }
+            coroutineScope {
+                val booksDeferred = async { bookRepository.getBooksByUser() }
+                val tagsDeferred = async { tagRepository.getTags() }
+                val booksResult = booksDeferred.await()
+                val tagsResult = tagsDeferred.await()
+                if (booksResult is Result.Success && tagsResult is Result.Success) {
+                    val fetchedIds = tagsResult.data.map { it.id }.toSet()
+                    _uiState.update {
+                        it.copy(
+                            books = booksResult.data,
+                            tags = tagsResult.data,
+                            activeFilterTagIds = it.activeFilterTagIds intersect fetchedIds,
+                            isLoading = false,
+                            loadFailed = false,
+                        )
                     }
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        books = emptyList(),
-                        tags = emptyList(),
-                        isLoading = false,
-                        loadFailed = true,
-                    )
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            books = emptyList(),
+                            tags = emptyList(),
+                            isLoading = false,
+                            loadFailed = true,
+                        )
+                    }
                 }
             }
         }

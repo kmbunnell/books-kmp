@@ -5,11 +5,11 @@ import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.NewBook
 
 interface BookRepository {
-    suspend fun getBooksByUser(): Result<List<Book>, LoadBooksError>
+    suspend fun getBooksByUser(): Result<List<Book>, BookRepositoryError>
 
-    suspend fun getBookByIsbn(isbn: String): Book?
+    suspend fun getBookByIsbn(isbn: String): Result<Book?, BookRepositoryError>
 
-    suspend fun addBook(book: NewBook): Book
+    suspend fun addBook(book: NewBook): Result<Book, BookRepositoryError>
 
-    suspend fun isbnExists(isbn: String?): Boolean
+    suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError>
 }

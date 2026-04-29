@@ -5,7 +5,6 @@ import com.example.books_kmp.data.remote.OpenLibraryApiClient
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.SignInUseCase
 import com.example.books_kmp.domain.auth.SignUpUseCase
-import com.example.books_kmp.domain.library.AddBookUseCase
 import com.example.books_kmp.domain.library.BookLookupService
 import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.ConfirmAddBookUseCase
@@ -81,7 +80,6 @@ class AppModuleTest {
     fun `appModule resolves all use case bindings`() {
         assertNotNull(koin.get<SignInUseCase>())
         assertNotNull(koin.get<SignUpUseCase>())
-        assertNotNull(koin.get<AddBookUseCase>())
         assertNotNull(koin.get<LookupBookUseCase>())
         assertNotNull(koin.get<ConfirmAddBookUseCase>())
         assertNotNull(koin.get<SaveManualBookUseCase>())

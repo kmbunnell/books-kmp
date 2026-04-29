@@ -40,9 +40,9 @@ class SaveManualBookUseCaseTest {
         }
 
     @Test
-    fun `invoke returns Failure with SaveFailed when repository throws`() =
+    fun `invoke returns Failure with SaveFailed when repository fails`() =
         runTest {
-            repo.addBookShouldThrow = true
+            repo.addBookShouldFail = true
             val result = useCase("The Odyssey", "Homer")
             assertIs<Result.Failure<SaveManualBookError>>(result)
             assertEquals(SaveManualBookError.SaveFailed, result.error)
