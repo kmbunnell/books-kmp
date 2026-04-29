@@ -3,7 +3,7 @@ package com.example.books_kmp.viewmodel
 import app.cash.turbine.test
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.library.BarcodeScanError
-import com.example.books_kmp.domain.library.ConfirmAddBookUseCase
+import com.example.books_kmp.domain.library.AddBookUseCase
 import com.example.books_kmp.domain.library.FakeBookLookupService
 import com.example.books_kmp.domain.library.FakeBookRepository
 import com.example.books_kmp.domain.library.LookupBookUseCase
@@ -31,7 +31,7 @@ class AddBookViewModelTest {
     private lateinit var fakeRepo: FakeBookRepository
     private lateinit var fakeService: FakeBookLookupService
     private lateinit var lookupUseCase: LookupBookUseCase
-    private lateinit var confirmUseCase: ConfirmAddBookUseCase
+    private lateinit var addBookUseCase: AddBookUseCase
     private lateinit var viewModel: AddBookViewModel
 
     private val validLookupData =
@@ -48,8 +48,8 @@ class AddBookViewModelTest {
         fakeRepo = FakeBookRepository()
         fakeService = FakeBookLookupService()
         lookupUseCase = LookupBookUseCase(fakeRepo, fakeService)
-        confirmUseCase = ConfirmAddBookUseCase(fakeRepo)
-        viewModel = AddBookViewModel(lookupUseCase, confirmUseCase)
+        addBookUseCase = AddBookUseCase(fakeRepo)
+        viewModel = AddBookViewModel(lookupUseCase, addBookUseCase)
     }
 
     @AfterTest

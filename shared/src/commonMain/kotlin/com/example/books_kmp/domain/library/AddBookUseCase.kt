@@ -5,10 +5,10 @@ import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.domain.model.NewBook
 
-class ConfirmAddBookUseCase(
+class AddBookUseCase(
     private val bookRepository: BookRepository,
 ) {
-    suspend operator fun invoke(lookupData: BookLookupData): Result<Book, ConfirmAddBookError> {
+    suspend operator fun invoke(lookupData: BookLookupData): Result<Book, AddBookError> {
         val newBook =
             NewBook(
                 isbn = lookupData.isbn,
@@ -18,7 +18,7 @@ class ConfirmAddBookUseCase(
             )
         return when (val result = bookRepository.addBook(newBook)) {
             is Result.Success -> Result.Success(result.data)
-            is Result.Failure -> Result.Failure(ConfirmAddBookError.NetworkError)
+            is Result.Failure -> Result.Failure(AddBookError.NetworkError)
         }
     }
 }

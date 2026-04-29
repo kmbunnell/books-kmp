@@ -9,7 +9,7 @@ import com.example.books_kmp.domain.auth.SignInUseCase
 import com.example.books_kmp.domain.auth.SignUpUseCase
 import com.example.books_kmp.domain.library.BookLookupService
 import com.example.books_kmp.domain.library.BookRepository
-import com.example.books_kmp.domain.library.ConfirmAddBookUseCase
+import com.example.books_kmp.domain.library.AddBookUseCase
 import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
 import com.example.books_kmp.domain.tags.TagRepository
@@ -51,7 +51,7 @@ fun appModule(
         factory { SignInUseCase(get()) }
         factory { SignUpUseCase(get()) }
         factory { LookupBookUseCase(get(), get()) }
-        factory { ConfirmAddBookUseCase(get()) }
+        factory { AddBookUseCase(get()) }
         factory { SaveManualBookUseCase(get()) }
         viewModel { AuthViewModel(get()) }
         viewModel { LibraryViewModel(get(), get()) }

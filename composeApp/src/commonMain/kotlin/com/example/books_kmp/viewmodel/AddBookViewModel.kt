@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.library.AddBookError
 import com.example.books_kmp.domain.library.BarcodeScanError
-import com.example.books_kmp.domain.library.ConfirmAddBookUseCase
+import com.example.books_kmp.domain.library.AddBookUseCase
 import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.model.BookLookupData
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -72,7 +72,7 @@ sealed interface AddBookEffect {
 
 class AddBookViewModel(
     private val lookupBookUseCase: LookupBookUseCase,
-    private val confirmAddBookUseCase: ConfirmAddBookUseCase,
+    private val addBookUseCase: AddBookUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddBookUiState())
     val uiState: StateFlow<AddBookUiState> = _uiState.asStateFlow()
@@ -143,7 +143,7 @@ class AddBookViewModel(
     private suspend fun handleConfirmBook() {
         val lookup = _uiState.value.foundBook ?: return
         _uiState.update { it.copy(isLoading = true) }
-        when (val result = confirmAddBookUseCase(lookup)) {
+        when (val result = addBookUseCase(lookup)) {
             is Result.Success -> {
                 _uiState.update { AddBookUiState() }
                 _effects.emit(AddBookEffect.BookAdded)
