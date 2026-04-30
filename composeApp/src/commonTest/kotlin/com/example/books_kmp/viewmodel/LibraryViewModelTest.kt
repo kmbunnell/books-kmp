@@ -260,6 +260,202 @@ class LibraryViewModelTest {
             assertEquals(listOf(taggedBook1, taggedBook2), localVm.uiState.value.filteredBooks)
         }
 
+    // AND tag filter logic
+
+    @Test
+    fun `filteredBooks AND tag logic — selecting two tags returns only books that carry both`() =
+        runTest {
+            val bothTags = book1.copy(tags = listOf("t1", "t2"))
+            val onlyT1 = book2.copy(tags = listOf("t1"))
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(bothTags, onlyT1)
+            val localVm = LibraryViewModel(localRepo, repo)
+            localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
+            localVm.onIntent(LibraryIntent.ToggleFilter("t2"))
+            assertEquals(listOf(bothTags), localVm.uiState.value.filteredBooks)
+        }
+
+    @Test
+    fun `filteredBooks AND tag logic — selecting one tag returns books with that tag`() =
+        runTest {
+            val taggedBook1 = book1.copy(tags = listOf("t1"))
+            val taggedBook2 = book2.copy(tags = listOf("t2"))
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(taggedBook1, taggedBook2)
+            val localVm = LibraryViewModel(localRepo, repo)
+            localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
+            assertEquals(listOf(taggedBook1), localVm.uiState.value.filteredBooks)
+        }
+
+    @Test
+    fun `filteredBooks AND tag logic — selecting zero tags returns all books`() =
+        runTest {
+            val taggedBook1 = book1.copy(tags = listOf("t1"))
+            val taggedBook2 = book2.copy(tags = listOf("t2"))
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(taggedBook1, taggedBook2)
+            val localVm = LibraryViewModel(localRepo, repo)
+            assertEquals(listOf(taggedBook1, taggedBook2), localVm.uiState.value.filteredBooks)
+        }
+
+    @Test
+    fun `filteredBooks AND tag logic — deselecting one tag from two-tag selection widens result`() =
+        runTest {
+            val bothTags = book1.copy(tags = listOf("t1", "t2"))
+            val onlyT1 = book2.copy(tags = listOf("t1"))
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(bothTags, onlyT1)
+            val localVm = LibraryViewModel(localRepo, repo)
+            localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
+            localVm.onIntent(LibraryIntent.ToggleFilter("t2"))
+            assertEquals(listOf(bothTags), localVm.uiState.value.filteredBooks)
+            localVm.onIntent(LibraryIntent.ToggleFilter("t2"))
+            assertEquals(listOf(bothTags, onlyT1), localVm.uiState.value.filteredBooks)
+        }
+
+    // Text search
+
+    @Test
+    fun `filteredBooks text search — case-insensitive — harry matches title Harry Potter`() =
+        runTest {
+            val harryPotter = book1.copy(title = "Harry Potter")
+            val other = book2.copy(title = "Other Book")
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(harryPotter, other)
+            val localVm = LibraryViewModel(localRepo, repo)
+            localVm.onIntent(LibraryIntent.ChangeSearchQuery("harry"))
+            assertEquals(listOf(harryPotter), localVm.uiState.value.filteredBooks)
+        }
+
+    @Test
+    fun `filteredBooks text search — diacritic-insensitive — Bronte matches author Bronte with umlaut`() =
+        runTest {
+            val bronte = book1.copy(title = "Jane Eyre", authors = listOf("Charlotte Brontë"))
+            val other = book2.copy(title = "Other")
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(bronte, other)
+            val localVm = LibraryViewModel(localRepo, repo)
+            localVm.onIntent(LibraryIntent.ChangeSearchQuery("Bronte"))
+            assertEquals(listOf(bronte), localVm.uiState.value.filteredBooks)
+        }
+
+    @Test
+    fun `filteredBooks text search — partial match — Har matches Harry Potter`() =
+        runTest {
+            val harryPotter = book1.copy(title = "Harry Potter")
+            val other = book2.copy(title = "Other Book")
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(harryPotter, other)
+            val localVm = LibraryViewModel(localRepo, repo)
+            localVm.onIntent(LibraryIntent.ChangeSearchQuery("Har"))
+            assertEquals(listOf(harryPotter), localVm.uiState.value.filteredBooks)
+        }
+
+    @Test
+    fun `filteredBooks text search — blank query returns all books`() =
+        runTest {
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(book1, book2)
+            val localVm = LibraryViewModel(localRepo, repo)
+            localVm.onIntent(LibraryIntent.ChangeSearchQuery(""))
+            assertEquals(listOf(book1, book2), localVm.uiState.value.filteredBooks)
+        }
+
+    // Tag filter and text search combined
+
+    @Test
+    fun `filteredBooks tag filter and text search apply simultaneously`() =
+        runTest {
+            val taggedHarry = book1.copy(title = "Harry Potter", tags = listOf("t1"))
+            val taggedOther = book2.copy(title = "Other Book", tags = listOf("t1"))
+            val untaggedHarry =
+                Book(
+                    id = "b3",
+                    isbn = "333",
+                    title = "Harry Houdini",
+                    authors = listOf("Bio"),
+                    coverImageUrl = null,
+                    tags = listOf("t2")
+                )
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(taggedHarry, taggedOther, untaggedHarry)
+            val localVm = LibraryViewModel(localRepo, repo)
+            localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
+            localVm.onIntent(LibraryIntent.ChangeSearchQuery("harry"))
+            assertEquals(listOf(taggedHarry), localVm.uiState.value.filteredBooks)
+        }
+
+    // Sort
+
+    @Test
+    fun `filteredBooks TITLE_ASC produces A-Z order by full title`() =
+        runTest {
+            val bookA = book1.copy(title = "Zebra")
+            val bookB = book2.copy(title = "Apple")
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(bookA, bookB)
+            val localVm = LibraryViewModel(localRepo, repo)
+            localVm.onIntent(LibraryIntent.ChangeSortOrder(SortOrder.TITLE_ASC))
+            assertEquals(listOf(bookB, bookA), localVm.uiState.value.filteredBooks)
+        }
+
+    @Test
+    fun `filteredBooks AUTHOR_ASC sorts by last token of first author string`() =
+        runTest {
+            val bookZimmerman = book1.copy(title = "First", authors = listOf("Bob Zimmerman"))
+            val bookAdams = book2.copy(title = "Second", authors = listOf("John Adams"))
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(bookZimmerman, bookAdams)
+            val localVm = LibraryViewModel(localRepo, repo)
+            localVm.onIntent(LibraryIntent.ChangeSortOrder(SortOrder.AUTHOR_ASC))
+            assertEquals(listOf(bookAdams, bookZimmerman), localVm.uiState.value.filteredBooks)
+        }
+
+    // Clear filters
+
+    @Test
+    fun `ClearFilters resets activeFilterTagIds and searchQuery and filteredBooks returns full sorted list`() =
+        runTest {
+            val taggedBook1 = book1.copy(tags = listOf("t1"))
+            val taggedBook2 = book2.copy(tags = listOf("t2"))
+            val localRepo = FakeBookRepository()
+            localRepo.seedBooks(taggedBook1, taggedBook2)
+            val localVm = LibraryViewModel(localRepo, repo)
+            localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
+            localVm.onIntent(LibraryIntent.ChangeSearchQuery("Book One"))
+            localVm.onIntent(LibraryIntent.ClearFilters)
+            val state = localVm.uiState.value
+            assertTrue(state.activeFilterTagIds.isEmpty())
+            assertEquals("", state.searchQuery)
+            assertEquals(listOf(taggedBook1, taggedBook2), state.filteredBooks)
+        }
+
+    // Zero repo calls for filter/sort/search
+
+    @Test
+    fun `ChangeSortOrder triggers zero repository calls`() =
+        runTest {
+            val callsBefore = bookRepo.getBooksByUserCalled
+            vm.onIntent(LibraryIntent.ChangeSortOrder(SortOrder.AUTHOR_ASC))
+            assertEquals(callsBefore, bookRepo.getBooksByUserCalled)
+        }
+
+    @Test
+    fun `ChangeSearchQuery triggers zero repository calls`() =
+        runTest {
+            val callsBefore = bookRepo.getBooksByUserCalled
+            vm.onIntent(LibraryIntent.ChangeSearchQuery("test"))
+            assertEquals(callsBefore, bookRepo.getBooksByUserCalled)
+        }
+
+    @Test
+    fun `ClearFilters triggers zero repository calls`() =
+        runTest {
+            val callsBefore = bookRepo.getBooksByUserCalled
+            vm.onIntent(LibraryIntent.ClearFilters)
+            assertEquals(callsBefore, bookRepo.getBooksByUserCalled)
+        }
+
     private fun failingGetTagsRepo(): TagRepository =
         object : TagRepository {
             override suspend fun getTags() = Result.Failure<TagError>(TagError.NetworkError(RuntimeException("fail")))
