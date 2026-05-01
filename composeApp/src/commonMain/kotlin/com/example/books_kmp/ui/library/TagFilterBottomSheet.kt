@@ -17,8 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
-import bookskmp.composeapp.generated.resources.filter_sheet_done
 import bookskmp.composeapp.generated.resources.filter_sheet_clear_all
+import bookskmp.composeapp.generated.resources.filter_sheet_done
 import bookskmp.composeapp.generated.resources.filter_sheet_no_tags
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.ui.TestTags

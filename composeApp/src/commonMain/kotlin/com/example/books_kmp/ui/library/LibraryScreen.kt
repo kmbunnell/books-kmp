@@ -51,12 +51,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import bookskmp.composeapp.generated.resources.Res
+import bookskmp.composeapp.generated.resources.action_retry
 import bookskmp.composeapp.generated.resources.book_placeholder
 import bookskmp.composeapp.generated.resources.cd_add_book
 import bookskmp.composeapp.generated.resources.cd_book_cover_in_grid
 import bookskmp.composeapp.generated.resources.cd_filter_books
 import bookskmp.composeapp.generated.resources.cd_manage_tags
-import bookskmp.composeapp.generated.resources.action_retry
 import bookskmp.composeapp.generated.resources.cd_sign_out
 import bookskmp.composeapp.generated.resources.cd_sort_books
 import bookskmp.composeapp.generated.resources.error_library_load_failed
