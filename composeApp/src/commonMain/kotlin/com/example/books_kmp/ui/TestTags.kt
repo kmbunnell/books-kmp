@@ -34,8 +34,19 @@ object TestTags {
         const val SortMenuTitleAsc = "library_sort_title_asc"
         const val SortMenuAuthorAsc = "library_sort_author_asc"
         const val BookGrid = "library_book_grid"
+        const val FilterButton = "library_filter_button"
+        const val FilterBadge = "library_filter_badge"
+        const val FilterSheet = "library_filter_sheet"
+        const val FilterSheetClearAll = "library_filter_sheet_clear_all"
+        const val FilterSheetApply = "library_filter_sheet_apply"
+        const val FilterSheetNoTags = "library_filter_sheet_no_tags"
+        const val LibraryError = "library_error_message"
+        const val RetryButton = "library_retry_button"
+        const val EmptyLibrary = "library_empty_state"
+        const val AddFirstBookButton = "library_add_first_book_button"
+        const val EmptyFilter = "library_empty_filter_state"
 
-        fun filterChip(tagId: String) = "library_filter_chip_$tagId"
+        fun filterSheetChip(tagId: String) = "library_filter_sheet_chip_$tagId"
 
         fun bookItem(bookId: String) = "library_book_item_$bookId"
     }
