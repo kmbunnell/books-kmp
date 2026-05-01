@@ -29,8 +29,15 @@ object TestTags {
         const val SignOutButton = "library_sign_out_button"
         const val AddBookFab = "library_add_book_fab"
         const val ManageTagsButton = "library_manage_tags_button"
+        const val SearchBar = "library_search_bar"
+        const val SortButton = "library_sort_button"
+        const val SortMenuTitleAsc = "library_sort_title_asc"
+        const val SortMenuAuthorAsc = "library_sort_author_asc"
+        const val BookGrid = "library_book_grid"
 
         fun filterChip(tagId: String) = "library_filter_chip_$tagId"
+
+        fun bookItem(bookId: String) = "library_book_item_$bookId"
     }
 
     object AddBook {

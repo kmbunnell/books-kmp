@@ -111,7 +111,7 @@ Cross-reference the ticket requirements against:
 - `CLAUDE.md` — architecture rules, MVI pattern, TDD requirements, code conventions
 - `docs/overview.md` — only for tech rationale, schema notes, or planned features
 
-**Pitfall scan:** Before writing the plan, check each implementation step for likely CLAUDE.md violations. If a step could tempt: returning a raw string instead of `Result<T, XxxError>`, manual dependency construction instead of Koin, string resolution in a ViewModel, a raw `Channel` instead of `suspendCancellableCoroutine`, or missing `CancellationException` rethrow — make the correct pattern explicit in that step rather than leaving it implicit. Also check: for every `viewModelScope.launch` that calls a suspend function, does it set `isLoading = true` before the call and `false` on every exit path? For any user-triggered async action, is there a re-entry guard?
+**Pitfall scan:** Before writing the plan, check each implementation step for CLAUDE.md violations and make the correct pattern explicit in that step rather than leaving it implicit. Pay special attention to: `isLoading = true` before every async call and `false` on every exit path (success + each failure branch); `CancellationException` rethrown before any broad `catch (e: Exception)` in a `suspend` function.
 
 Build a plan with these sections:
 

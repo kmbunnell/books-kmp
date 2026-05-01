@@ -91,47 +91,21 @@ After all implementation steps are done, run all new test classes together in on
 
 If any fail, attempt one fix per failing test. If that doesn't resolve it, stop and check in with the user before proceeding to regression checks.
 
-## Step 3 — Regression check
+## Step 3 — Regression check, build, and lint
 
-Run the full test suite for affected modules:
-
-```bash
-./gradlew :composeApp:testDebugUnitTest 2>&1 | tail -100
-```
-
-If the project has a `shared` module with tests:
+Run regression tests, build, and iOS compilation in one call:
 
 ```bash
-./gradlew :shared:testDebugUnitTest 2>&1 | tail -100
+./gradlew :composeApp:testDebugUnitTest :composeApp:assembleDebug :composeApp:compileKotlinIosArm64 2>&1 | tail -150
 ```
 
-## Step 4 — Build affected modules
+Then format and verify lint (*skip and note if ktlint tasks are not found*):
 
 ```bash
-./gradlew :composeApp:assembleDebug 2>&1 | tail -100
+./gradlew ktlintFormat ktlintCheck 2>&1 | tail -100
 ```
 
-Then verify iOS compilation compiles cleanly:
-
-```bash
-./gradlew :composeApp:compileKotlinIosArm64 2>&1 | tail -100
-```
-
-## Step 5 — Lint and format
-
-*Assumes the project has the ktlint Gradle plugin configured. If `ktlintFormat` or `ktlintCheck` tasks are not found, skip this step and note it in the final report.*
-
-```bash
-./gradlew ktlintFormat 2>&1 | tail -100
-```
-
-Then verify:
-
-```bash
-./gradlew ktlintCheck 2>&1 | tail -100
-```
-
-If ktlintCheck still fails, read the output and fix remaining issues manually, then re-run ktlintCheck once more.
+If ktlintCheck still fails, fix remaining issues manually and re-run once more.
 
 ## Step 6 — Evaluate results
 
@@ -162,16 +136,47 @@ Wait for the user's response and follow their direction.
 
 ### If everything passes
 
-**ViewModel async state self-check:** Before running code review, walk through each `viewModelScope.launch` added in this implementation and confirm: `isLoading` is set `true` before the async call and `false` on every exit path (success + each failure branch); user-triggered actions have a re-entry guard. Fix any gaps now.
+**Inline code review:** Walk through the diff against this checklist. Fix any Critical items found, re-run affected tests, then report.
 
-Run `/code-review` now. Do not mark the plan Implemented or report complete until the review shows no Critical items. Fix any Critical items found, re-run affected tests, then report:
+**Architecture**
+- [ ] Layer boundaries respected: no DTOs in presentation, no framework annotations in domain models
+- [ ] Repository interfaces in domain, implementations in data
+- [ ] Use cases: single `operator fun invoke`, return `Result<T, XxxError>` — not raw strings, not custom sealed interfaces
+- [ ] Error types are feature-specific sealed interfaces in their own files
+
+**MVI**
+- [ ] ViewModel exposes `StateFlow<XxxUiState>`, accepts `sealed interface XxxIntent` via `onIntent()`, emits via `SharedFlow/Channel<XxxEffect>`
+- [ ] No business logic in ViewModels
+- [ ] String resolution only in Compose via `stringResource()` — never in ViewModel or use cases
+
+**ViewModel async state**
+- [ ] Every `viewModelScope.launch` sets `isLoading = true` before the call and `false` on every exit path (success + each failure branch)
+- [ ] User-triggered async actions guard against re-entry (`if (_uiState.value.isLoading) return`)
+- [ ] `Result.Failure` branches use a flat `when` — no nested re-binding
+- [ ] Empty `sealed interface XxxEffect` with no implementations is removed
+
+**Error handling**
+- [ ] No `catch (e: Exception)` in `suspend` functions without rethrowing `CancellationException` first
+- [ ] No raw `Channel` bridging Android SDK callbacks — use `suspendCancellableCoroutine`
+
+**Platform / DI / Strings**
+- [ ] No platform imports in `commonMain`; `expect`/`actual` only for platform UI
+- [ ] All dependencies wired through Koin — no manual construction
+- [ ] No user-visible strings hardcoded in Kotlin — all in `strings.xml`
+
+**Tests**
+- [ ] Every public use case `invoke` and repository function with logic has a test
+- [ ] Hand-rolled fakes — no mocking libraries; `Turbine` for Flow assertions
+
+**Kotlin quality**
+- [ ] No `!!`; sealed classes for finite states; explicit return types on public APIs; no hardcoded keys or URLs
 
 > **Implementation complete.**
 > - All new tests pass (N tests)
 > - No regressions detected
 > - Build succeeds (Android + iOS compilation)
 > - Lint clean
-> - Code review: no Critical items
+> - Inline review: no Critical items
 
 ## Step 7 — Update plan status
 
