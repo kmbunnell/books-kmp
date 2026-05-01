@@ -2,8 +2,6 @@ package com.example.books_kmp.ui.library
 
 import android.app.Application
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotSelected
-import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -115,64 +113,220 @@ class LibraryScreenTest {
         assertTrue(navigateCalled)
     }
 
+    // --- Filter button tests ---
+
     @Test
-    fun `filter bar chips shown for each tag`() {
+    fun `filter button is shown in TopAppBar`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {}, onSignOut = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.FilterButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `no badge shown when activeFilterTagIds is empty`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(tags = listOf(tag1, tag2)),
+                uiState = LibraryUiState(activeFilterTagIds = emptySet()),
                 onIntent = {},
                 onSignOut = {},
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.Library.filterChip("t1")).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(TestTags.Library.filterChip("t2")).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.Library.FilterBadge).assertDoesNotExist()
     }
 
     @Test
-    fun `active filter chip is selected`() {
+    fun `badge shown when activeFilterTagIds is non-empty`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(tags = listOf(tag1), activeFilterTagIds = setOf("t1")),
+                uiState = LibraryUiState(activeFilterTagIds = setOf("t1")),
                 onIntent = {},
                 onSignOut = {},
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.Library.filterChip("t1")).assertIsSelected()
+        composeTestRule.onNodeWithTag(TestTags.Library.FilterBadge).assertIsDisplayed()
     }
 
     @Test
-    fun `inactive filter chip is not selected`() {
+    fun `tapping filter button opens TagFilterBottomSheet`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {}, onSignOut = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.FilterButton).performClick()
+        composeTestRule.onNodeWithTag(TestTags.Library.FilterSheet).assertIsDisplayed()
+    }
+
+    // --- Error state tests ---
+
+    @Test
+    fun `when loadFailed is true error message is shown`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(tags = listOf(tag2), activeFilterTagIds = emptySet()),
+                uiState = LibraryUiState(loadFailed = true),
                 onIntent = {},
                 onSignOut = {},
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.Library.filterChip("t2")).assertIsNotSelected()
+        composeTestRule.onNodeWithTag(TestTags.Library.LibraryError).assertIsDisplayed()
     }
 
     @Test
-    fun `tapping chip dispatches ToggleFilter with correct tag id`() {
+    fun `when loadFailed is true retry button is shown`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(loadFailed = true),
+                onIntent = {},
+                onSignOut = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.RetryButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `when loadFailed is true book grid is not visible`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(loadFailed = true),
+                onIntent = {},
+                onSignOut = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.BookGrid).assertDoesNotExist()
+    }
+
+    @Test
+    fun `when loadFailed is true search bar is not visible`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(loadFailed = true),
+                onIntent = {},
+                onSignOut = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.SearchBar).assertDoesNotExist()
+    }
+
+    @Test
+    fun `when loadFailed is true filter button is not visible`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(loadFailed = true),
+                onIntent = {},
+                onSignOut = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.FilterButton).assertDoesNotExist()
+    }
+
+    @Test
+    fun `tapping retry dispatches LibraryIntent Refresh`() {
         val dispatched = mutableListOf<LibraryIntent>()
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(tags = listOf(tag1)),
+                uiState = LibraryUiState(loadFailed = true),
                 onIntent = { dispatched.add(it) },
                 onSignOut = {},
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.Library.filterChip("t1")).performClick()
-        assertEquals(LibraryIntent.ToggleFilter("t1"), dispatched.last())
+        composeTestRule.onNodeWithTag(TestTags.Library.RetryButton).performClick()
+        assertTrue(dispatched.contains(LibraryIntent.Refresh))
     }
 
-    // --- New tests for SHELVD-78 ---
+    // --- Empty-library state tests ---
+
+    @Test
+    fun `empty-library message shown when books empty and not loading or failed`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(books = emptyList(), isLoading = false, loadFailed = false),
+                onIntent = {},
+                onSignOut = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.EmptyLibrary).assertIsDisplayed()
+    }
+
+    @Test
+    fun `add first book button shown in empty-library state`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(books = emptyList(), isLoading = false, loadFailed = false),
+                onIntent = {},
+                onSignOut = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.AddFirstBookButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `tapping Add First Book calls onNavigateToAddBook`() {
+        var navigateCalled = false
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(books = emptyList(), isLoading = false, loadFailed = false),
+                onIntent = {},
+                onSignOut = {},
+                onNavigateToAddBook = { navigateCalled = true },
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.AddFirstBookButton).performClick()
+        assertTrue(navigateCalled)
+    }
+
+    // --- Empty-filter state tests ---
+
+    @Test
+    fun `empty-filter message shown when books non-empty but filteredBooks empty`() {
+        val state =
+            LibraryUiState(
+                books = listOf(book1),
+                filteredBooks = emptyList(),
+                isLoading = false,
+                loadFailed = false,
+            )
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = state, onIntent = {}, onSignOut = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.EmptyFilter).assertIsDisplayed()
+    }
+
+    @Test
+    fun `add first book button NOT shown in empty-filter state`() {
+        val state =
+            LibraryUiState(
+                books = listOf(book1),
+                filteredBooks = emptyList(),
+                isLoading = false,
+                loadFailed = false,
+            )
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = state, onIntent = {}, onSignOut = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.AddFirstBookButton).assertDoesNotExist()
+    }
+
+    @Test
+    fun `search bar shown in empty-filter state`() {
+        val state =
+            LibraryUiState(
+                books = listOf(book1),
+                filteredBooks = emptyList(),
+                isLoading = false,
+                loadFailed = false,
+            )
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = state, onIntent = {}, onSignOut = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.SearchBar).assertIsDisplayed()
+    }
+
+    // --- Grid/search tests ---
 
     @Test
     fun `grid is displayed when filteredBooks is non-empty`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(filteredBooks = listOf(book1)),
+                uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -184,7 +338,7 @@ class LibraryScreenTest {
     fun `grid shows one cell per book in filteredBooks`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(filteredBooks = listOf(book1, book2)),
+                uiState = LibraryUiState(books = listOf(book1, book2), filteredBooks = listOf(book1, book2)),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -197,7 +351,7 @@ class LibraryScreenTest {
     fun `each cell shows the book title`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(filteredBooks = listOf(book1)),
+                uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -210,7 +364,7 @@ class LibraryScreenTest {
     fun `each cell shows the first author`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(filteredBooks = listOf(book1)),
+                uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -224,7 +378,7 @@ class LibraryScreenTest {
         var navigatedId: String? = null
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(filteredBooks = listOf(book1)),
+                uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
                 onIntent = {},
                 onSignOut = {},
                 onNavigateToBookDetail = { navigatedId = it },
@@ -237,7 +391,11 @@ class LibraryScreenTest {
     @Test
     fun `search bar is displayed`() {
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {}, onSignOut = {})
+            LibraryScreenContent(
+                uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
+                onIntent = {},
+                onSignOut = {},
+            )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SearchBar).assertIsDisplayed()
     }
@@ -246,7 +404,7 @@ class LibraryScreenTest {
     fun `search bar displays current searchQuery from state`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(searchQuery = "Dune"),
+                uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1), searchQuery = "Dune"),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -259,7 +417,7 @@ class LibraryScreenTest {
         val dispatched = mutableListOf<LibraryIntent>()
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(searchQuery = ""),
+                uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1), searchQuery = ""),
                 onIntent = { dispatched.add(it) },
                 onSignOut = {},
             )
@@ -301,15 +459,15 @@ class LibraryScreenTest {
     }
 
     @Test
-    fun `grid is empty when filteredBooks is empty`() {
+    fun `book grid not shown when filteredBooks is empty but books non-empty`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(filteredBooks = emptyList()),
+                uiState = LibraryUiState(books = listOf(book1), filteredBooks = emptyList()),
                 onIntent = {},
                 onSignOut = {},
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.Library.BookGrid).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.Library.BookGrid).assertDoesNotExist()
         composeTestRule.onNodeWithTag(TestTags.Library.bookItem("b1")).assertDoesNotExist()
     }
 }

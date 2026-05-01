@@ -84,4 +84,13 @@
     <string name="sort_title_asc">Title (A–Z)</string>
     <string name="sort_author_asc">Author (A–Z)</string>
     <string name="cd_book_cover_in_grid">Book cover</string>
+    <string name="error_library_load_failed">Couldn\'t load your library. Please try again.</string>
+    <string name="action_retry">Retry</string>
+    <string name="library_empty_title">No books yet</string>
+    <string name="library_empty_add_first">Add your first book</string>
+    <string name="library_empty_filter">No books match your filters</string>
+    <string name="filter_sheet_no_tags">No tags yet. Add tags to filter your library.</string>
+    <string name="cd_filter_books">Filter by tag</string>
+    <string name="filter_sheet_clear_all">Clear All</string>
+    <string name="filter_sheet_done">Done</string>
 </resources>
