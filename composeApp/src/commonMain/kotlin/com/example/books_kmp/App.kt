@@ -109,6 +109,7 @@ fun App() {
                     onSignOut = { authViewModel.onIntent(AuthIntent.SignOut) },
                     onNavigateToAddBook = { navController.navigate(Route.AddBook) },
                     onNavigateToTagManagement = { navController.navigate(Route.TagManagement) },
+                    onNavigateToBookDetail = { bookId -> navController.navigate(Route.BookDetail(bookId)) },
                 )
             }
             composable<Route.AddBook> {
