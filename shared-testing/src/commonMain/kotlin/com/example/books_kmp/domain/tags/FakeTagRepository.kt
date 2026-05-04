@@ -81,5 +81,4 @@ class FakeTagRepository : TagRepository {
 
     override suspend fun getBookCountForTag(tagId: String): Result<Int, TagError> =
         Result.Success(bookTags.count { it.second == tagId })
-
 }

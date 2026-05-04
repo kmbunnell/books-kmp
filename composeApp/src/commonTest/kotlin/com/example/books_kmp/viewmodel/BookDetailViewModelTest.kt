@@ -35,7 +35,14 @@ class BookDetailViewModelTest {
 
     private val bookId = "book-1"
     private val testBook =
-        Book(id = bookId, isbn = null, title = "Test Book", authors = listOf("Author"), coverImageUrl = null, tags = listOf("t1", "t2"))
+        Book(
+            id = bookId,
+            isbn = null,
+            title = "Test Book",
+            authors = listOf("Author"),
+            coverImageUrl = null,
+            tags = listOf("t1", "t2")
+        )
     private val tag1 = Tag(id = "t1", name = "Fiction", isDefault = false)
     private val tag2 = Tag(id = "t2", name = "Read", isDefault = true)
     private val tag3 = Tag(id = "t3", name = "Favorites", isDefault = false)
