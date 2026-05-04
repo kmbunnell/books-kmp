@@ -480,6 +480,5 @@ class LibraryViewModelTest {
             ) = Result.Success(Unit)
 
             override suspend fun getBookCountForTag(tagId: String) = Result.Success(0)
-
         }
 }
