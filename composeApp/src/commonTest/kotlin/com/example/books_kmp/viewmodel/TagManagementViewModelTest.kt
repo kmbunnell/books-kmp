@@ -270,7 +270,5 @@ class TagManagementViewModelTest {
 
             override suspend fun getBookCountForTag(tagId: String) = Result.Success(0)
 
-            override suspend fun getTagsForBook(bookId: String): Result<List<Tag>, TagError> =
-                Result.Success(emptyList())
         }
 }

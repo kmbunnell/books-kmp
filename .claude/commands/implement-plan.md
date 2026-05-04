@@ -5,181 +5,136 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Agent, AskUserQuestion
 
 ## Purpose
 
-Read `.claude/plan.md` and implement every step, following TDD and the architecture rules in `CLAUDE.md`. Iterate until all new tests pass, verify no regressions, fix formatting, then report results.
+Read `.claude/plan.md` and implement every step following TDD and CLAUDE.md architecture rules. Checks are embedded in the TDD cycle per layer — no separate review pass at the end.
 
-## Token-efficiency rules (follow throughout)
+## Token-efficiency rules
 
-- **Do not re-read files you have already read** in this session unless they were modified since.
-- **Do not re-read `CLAUDE.md` or `docs/*.md`** — you already have those rules in your system context. Only re-read if the plan references a specific doc section you are unsure about.
-- **Batch related edits** — if multiple changes go into the same file, make them in one Edit call, not several.
-- **Minimize Gradle invocations** — each `./gradlew` call is expensive. Combine tasks where possible (e.g., `./gradlew :composeApp:testDebugUnitTest ktlintCheck`). Do not run the full build after every single file change.
-- **Fail fast** — if a Gradle command fails, read only the last 100 lines of output to diagnose. Do not dump the entire log.
-- **No exploratory searches** — the plan already lists files to modify/create. Go directly to those paths. Use Glob/Grep only if a path in the plan is ambiguous.
-- **No commentary between steps** — do not narrate what you are about to do. Just do it. Report only errors, decisions, and the final summary.
+- Do not re-read files already read this session unless modified since.
+- Do not re-read `CLAUDE.md` or `docs/*.md` — those rules are in your system context.
+- Batch all edits to a single file into one Edit call.
+- Combine Gradle tasks where possible. Never run a full build after every file change.
+- On Gradle failure, read only the last 100 lines of output.
+- No exploratory searches — the plan lists the files. Go directly to those paths.
 
-## Step 0 — Load the plan and verify state
+## Step 0 — Load plan and verify state
 
-Read `.claude/plan.md`. If it is empty or missing, stop immediately:
+Read `.claude/plan.md`. Stop if:
+- Missing or empty → "No plan found. Run `/next-task` first."
+- `**Status:** Implemented` → "Already implemented. Run `/next-task` for a new ticket."
+- `**Status:**` is not `Approved` → report the status and stop.
 
-> "No plan found. Run `/next-task` first to create an implementation plan."
-
-If the plan's `**Status:**` field is `Implemented`, stop immediately:
-
-> "This plan is already implemented. Run `/next-task` for a new ticket."
-
-Parse the plan fields:
-- **Ticket** — the Jira key
-- **Branch** — the expected git branch (e.g. `feature/SHELVD-42`)
-- **Status** — must be `Approved` to proceed
-
-Verify the current git branch matches the plan's **Branch**:
-
+Verify current branch matches the plan's **Branch**:
 ```bash
 git branch --show-current
 ```
+If mismatched or on `main`/`develop`, stop and report.
 
-If the current branch does NOT match the plan's branch, stop immediately:
+## Guardrails — stop and ask with `AskUserQuestion` if:
 
-> "You are on branch `<current>` but this plan targets `<plan-branch>`. Switch to `<plan-branch>` before implementing."
-
-If the current branch is `main` or `develop`, stop immediately even if no branch is in the plan:
-
-> "You are on `<branch>`. Do not implement directly on a protected branch. Create a feature branch first."
-
-Parse the plan sections: **Summary**, **Files to modify/create**, **Tests to write first**, **Implementation steps**, and **Done checklist**.
-
-## Guardrails — when to stop and check in
-
-**Stop and ask the user with `AskUserQuestion` if any of these occur:**
-
-- **Stuck on a test for 3 attempts** — do not silently move on. Report the failure and ask whether to skip, re-approach, or hand off.
-- **Scope creep** — if implementing a step requires changes to files not listed in the plan, or introduces new classes/interfaces the plan did not anticipate, stop and describe what you think is needed. Let the user decide whether to expand scope or adjust.
-- **Ambiguity in the plan** — if a step is unclear, references something that doesn't exist, or could be interpreted multiple ways, ask rather than guess.
-- **Cascading failures** — if fixing one test breaks another, or the same root cause is failing multiple tests, stop after the second unexpected failure and report the pattern.
-- **Architecture doubt** — if you are unsure whether an approach violates CLAUDE.md rules (layer boundaries, MVI pattern, DI wiring), ask before writing the code.
-- **More than 2 consecutive Gradle failures** — something systemic is wrong. Report what you've tried and ask the user.
-
-**General rule: when in doubt, check in. A 30-second pause is cheaper than 5 minutes of wrong-direction work.**
+- Stuck on a test after 3 attempts.
+- A step requires files or classes not listed in the plan (scope creep).
+- A plan step is ambiguous or references something that doesn't exist.
+- Fixing one test breaks another (cascading failure after the second unexpected break).
+- More than 2 consecutive Gradle failures.
+- Unsure whether an approach violates CLAUDE.md layer or MVI rules.
 
 ## Step 1 — TDD implementation loop
 
-For each implementation step in the plan, follow this cycle:
+For each implementation step in the plan:
 
-1. **Write the failing test(s)** listed for that step.
-2. **Run only the new test(s)** to confirm they fail (red):
+1. **Write the failing test(s).**
+2. **Run only the new test(s)** to confirm red:
    ```bash
    ./gradlew :composeApp:testDebugUnitTest --tests "full.qualified.TestClassName" 2>&1 | tail -100
    ```
-   If the test does not compile or fails for the wrong reason, fix the test before proceeding.
+   Fix the test if it doesn't compile or fails for the wrong reason.
 3. **Write the minimum production code** to make the test(s) pass.
-4. **Re-run the same test(s)** to confirm they pass (green).
-5. **Refactor** if needed — re-run the test(s) to confirm they still pass.
-6. Move to the next implementation step.
+4. **Refactor check** — before re-running tests, scan the file(s) just written against the checks for their layer (see below). Fix any violations now.
+5. **Re-run the same test(s)** to confirm green.
+6. Move to the next step.
 
-**If a test fails after writing production code:**
-- Read the failure output (last 100 lines only).
-- Fix the code. Do not rewrite the test to match broken code.
-- Re-run. Repeat up to 3 attempts per test. If still failing after 3 attempts, **stop and check in with the user** (see Guardrails above).
+On test failure after writing production code: read the last 100 lines, fix, re-run. After 3 failed attempts, stop and check in (see Guardrails).
+
+---
+
+### Refactor checks by layer
+
+Apply these checks in Step 4 based on which layer the file belongs to. Fix violations before moving on.
+
+**Domain** (use case, error type, repository interface)
+- [ ] Use case has a single public entry point: `operator fun invoke`
+- [ ] Returns `Result<T, XxxError>` — not `Boolean`, nullable, `String`, or a custom sealed interface
+- [ ] Error type is a feature-specific sealed interface in its own file
+- [ ] Zero framework or platform imports (`android.*`, Ktor, Supabase, etc.)
+
+**Data** (repository implementation, DTO, mapper)
+- [ ] Every `catch (e: Exception)` in a `suspend` function is preceded by `catch (e: CancellationException) { throw e }`
+- [ ] Missing authenticated user → `error("Not authenticated")`, not `Result.Failure`
+- [ ] All suspend I/O functions return `Result<T, E>`
+- [ ] No DTO annotations (`@Serializable`, column names) leaking into domain models
+
+**ViewModel**
+- [ ] Every `viewModelScope.launch` that calls a suspend function sets `isLoading = true` before the call and `false` on **every** exit path (success + each failure branch)
+- [ ] User-triggered async actions have a re-entry guard: `if (_uiState.value.isLoading) return`
+- [ ] Sync `_uiState.update` calls are **not** wrapped in `launch`
+- [ ] Single `onIntent(intent: XxxIntent)` method — no ad-hoc methods per action
+- [ ] No business logic; no string resolution
+
+**Compose screen**
+- [ ] All user-visible strings via `stringResource()` — none hardcoded in Kotlin source
+- [ ] Effects collected in `LaunchedEffect`, not inline in composition
+
+**DI (AppModule / Koin module)**
+- [ ] All new types registered — no manual construction outside Koin
+
+---
 
 ## Step 2 — Run all new tests together
 
-After all implementation steps are done, run all new test classes together in one Gradle invocation:
+After all implementation steps are done:
 
 ```bash
 ./gradlew :composeApp:testDebugUnitTest --tests "pkg.Test1" --tests "pkg.Test2" ... 2>&1 | tail -100
 ```
 
-If any fail, attempt one fix per failing test. If that doesn't resolve it, stop and check in with the user before proceeding to regression checks.
+One fix attempt per failing test. If still failing, stop and check in.
 
 ## Step 3 — Regression check, build, and lint
-
-Run regression tests, build, and iOS compilation in one call:
 
 ```bash
 ./gradlew :composeApp:testDebugUnitTest :composeApp:assembleDebug :composeApp:compileKotlinIosArm64 2>&1 | tail -150
 ```
 
-Then format and verify lint (*skip and note if ktlint tasks are not found*):
-
 ```bash
 ./gradlew ktlintFormat ktlintCheck 2>&1 | tail -100
 ```
 
-If ktlintCheck still fails, fix remaining issues manually and re-run once more.
+If `ktlintCheck` still fails after format, fix manually and re-run once.
 
-## Step 6 — Evaluate results
+## Step 4 — Evaluate and report
 
-Collect all outcomes into three categories:
-
-- **Passed** — tests pass, build succeeds, lint clean.
-- **Regressions** — existing tests that now fail (list each: test class, test name, failure reason).
-- **Stuck** — new tests that could not be made to pass after 3 attempts (list each with last error).
-
-### If regressions or stuck items exist
-
-Present the list to the user using `AskUserQuestion`:
+**If regressions or stuck tests exist**, use `AskUserQuestion`:
 
 > **Implementation complete with issues.**
 >
-> **Regressions (N):**
-> - `TestClass#testName` — reason
->
-> **Stuck (N):**
-> - `TestClass#testName` — reason
+> **Regressions (N):** `TestClass#testName` — reason
+> **Stuck (N):** `TestClass#testName` — last error
 >
 > How would you like to proceed?
-> 1. Fix regressions now (I'll attempt fixes)
+> 1. Fix regressions now
 > 2. Revert and re-plan
 > 3. Continue — I'll handle these manually
 
-Wait for the user's response and follow their direction.
-
-### If everything passes
-
-**Inline code review:** Walk through the diff against this checklist. Fix any Critical items found, re-run affected tests, then report.
-
-**Architecture**
-- [ ] Layer boundaries respected: no DTOs in presentation, no framework annotations in domain models
-- [ ] Repository interfaces in domain, implementations in data
-- [ ] Use cases: single `operator fun invoke`, return `Result<T, XxxError>` — not raw strings, not custom sealed interfaces
-- [ ] Error types are feature-specific sealed interfaces in their own files
-
-**MVI**
-- [ ] ViewModel exposes `StateFlow<XxxUiState>`, accepts `sealed interface XxxIntent` via `onIntent()`, emits via `SharedFlow/Channel<XxxEffect>`
-- [ ] No business logic in ViewModels
-- [ ] String resolution only in Compose via `stringResource()` — never in ViewModel or use cases
-
-**ViewModel async state**
-- [ ] Every `viewModelScope.launch` sets `isLoading = true` before the call and `false` on every exit path (success + each failure branch)
-- [ ] User-triggered async actions guard against re-entry (`if (_uiState.value.isLoading) return`)
-- [ ] `Result.Failure` branches use a flat `when` — no nested re-binding
-- [ ] Empty `sealed interface XxxEffect` with no implementations is removed
-
-**Error handling**
-- [ ] No `catch (e: Exception)` in `suspend` functions without rethrowing `CancellationException` first
-- [ ] No raw `Channel` bridging Android SDK callbacks — use `suspendCancellableCoroutine`
-
-**Platform / DI / Strings**
-- [ ] No platform imports in `commonMain`; `expect`/`actual` only for platform UI
-- [ ] All dependencies wired through Koin — no manual construction
-- [ ] No user-visible strings hardcoded in Kotlin — all in `strings.xml`
-
-**Tests**
-- [ ] Every public use case `invoke` and repository function with logic has a test
-- [ ] Hand-rolled fakes — no mocking libraries; `Turbine` for Flow assertions
-
-**Kotlin quality**
-- [ ] No `!!`; sealed classes for finite states; explicit return types on public APIs; no hardcoded keys or URLs
+**If everything passes**, report:
 
 > **Implementation complete.**
-> - All new tests pass (N tests)
-> - No regressions detected
-> - Build succeeds (Android + iOS compilation)
-> - Lint clean
-> - Inline review: no Critical items
+> - New tests: N passing
+> - No regressions
+> - Build: Android + iOS OK
+> - Lint: clean
 
-## Step 7 — Update plan status
+## Step 5 — Update plan status
 
-Edit `.claude/plan.md` and change `**Status:** Approved` to `**Status:** Implemented`.
+Edit `.claude/plan.md`: change `**Status:** Approved` → `**Status:** Implemented`.
 
-**Do not create a git commit. The user will decide when to commit.**
+**Do not create a git commit.**

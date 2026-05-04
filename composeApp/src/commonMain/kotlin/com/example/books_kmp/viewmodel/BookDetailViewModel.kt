@@ -3,6 +3,8 @@ package com.example.books_kmp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.library.BookRepository
+import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.TagRepository
 import kotlinx.coroutines.async
@@ -13,6 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class BookDetailUiState(
+    val book: Book? = null,
     val allTags: List<Tag> = emptyList(),
     val appliedTagIds: Set<String> = emptySet(),
     val inFlightTagIds: Set<String> = emptySet(),
@@ -36,6 +39,7 @@ sealed interface BookDetailIntent {
 class BookDetailViewModel(
     private val bookId: String,
     private val tagRepository: TagRepository,
+    private val bookRepository: BookRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(BookDetailUiState())
     val uiState: StateFlow<BookDetailUiState> = _uiState.asStateFlow()
@@ -58,14 +62,17 @@ class BookDetailViewModel(
         _uiState.update { it.copy(isLoading = true, loadFailed = false) }
         viewModelScope.launch {
             val tagsDeferred = async { tagRepository.getTags() }
-            val appliedDeferred = async { tagRepository.getTagsForBook(bookId) }
+            val bookDeferred = async { bookRepository.getBookById(bookId) }
             val tagsResult = tagsDeferred.await()
-            val appliedResult = appliedDeferred.await()
-            if (tagsResult is Result.Success && appliedResult is Result.Success) {
+            val bookResult = bookDeferred.await()
+            val book = (bookResult as? Result.Success)?.data
+            val tags = (tagsResult as? Result.Success)?.data
+            if (book != null && tags != null) {
                 _uiState.update {
                     it.copy(
-                        allTags = tagsResult.data,
-                        appliedTagIds = appliedResult.data.map { it.id }.toSet(),
+                        book = book,
+                        allTags = tags,
+                        appliedTagIds = book.tags.toSet(),
                         isLoading = false,
                     )
                 }

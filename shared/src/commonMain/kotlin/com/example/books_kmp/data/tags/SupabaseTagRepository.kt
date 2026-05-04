@@ -130,25 +130,6 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
             Result.Failure(TagError.NetworkError(e))
         }
 
-    override suspend fun getTagsForBook(bookId: String): Result<List<Tag>, TagError> =
-        try {
-            val tagIds =
-                supabase
-                    .from(TABLE_BOOK_TAGS)
-                    .select { filter { eq("book_id", bookId) } }
-                    .decodeList<BookTagDto>()
-                    .map { it.tagId }
-                    .toSet()
-            when (val tagsResult = getTags()) {
-                is Result.Failure -> tagsResult
-                is Result.Success -> Result.Success(tagsResult.data.filter { it.id in tagIds })
-            }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Result.Failure(TagError.NetworkError(e))
-        }
-
     private suspend fun fetchTags(): Result<List<Tag>, TagError> =
         try {
             Result.Success(supabase.from(TABLE_TAGS).select().decodeList<TagDto>().map { it.toTag() })

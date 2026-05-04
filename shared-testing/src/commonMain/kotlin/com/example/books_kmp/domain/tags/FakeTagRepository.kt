@@ -14,15 +14,10 @@ class FakeTagRepository : TagRepository {
     var deleteTagCalled = 0
     var addTagToBookCalled = 0
     var removeTagFromBookCalled = 0
-    var getTagsForBookCalled = 0
 
     fun seedTags(vararg initial: Tag) {
         tags.clear()
         tags.addAll(initial)
-    }
-
-    fun seedBookTags(vararg pairs: Pair<String, String>) {
-        bookTags.addAll(pairs)
     }
 
     override suspend fun getTags(): Result<List<Tag>, TagError> {
@@ -87,9 +82,4 @@ class FakeTagRepository : TagRepository {
     override suspend fun getBookCountForTag(tagId: String): Result<Int, TagError> =
         Result.Success(bookTags.count { it.second == tagId })
 
-    override suspend fun getTagsForBook(bookId: String): Result<List<Tag>, TagError> {
-        getTagsForBookCalled++
-        val ids = bookTags.filter { it.first == bookId }.map { it.second }.toSet()
-        return Result.Success(tags.filter { it.id in ids })
-    }
 }

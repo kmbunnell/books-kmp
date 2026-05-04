@@ -9,6 +9,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.BookDetailError
@@ -197,6 +198,20 @@ class BookDetailScreenTest {
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.RetryButton).performClick()
         assertTrue(dispatched.contains(BookDetailIntent.Reload))
+    }
+
+    @Test
+    fun `top app bar shows book title when book is loaded`() {
+        val book = Book(id = "b1", isbn = null, title = "Dune", authors = listOf("Frank Herbert"), coverImageUrl = null)
+        composeTestRule.setContent {
+            BookDetailScreenContent(
+                uiState = BookDetailUiState(book = book),
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToTagManagement = {},
+            )
+        }
+        composeTestRule.onNodeWithText("Dune").assertIsDisplayed()
     }
 
     @Test

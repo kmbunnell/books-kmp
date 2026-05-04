@@ -60,5 +60,5 @@ fun appModule(
         viewModel { ManualEntryViewModel(get()) }
         viewModel { AddBookViewModel(get(), get()) }
         viewModel { TagManagementViewModel(get()) }
-        viewModel { params -> BookDetailViewModel(params.get(), get()) }
+        viewModel { params -> BookDetailViewModel(params.get(), get(), get()) }
     }

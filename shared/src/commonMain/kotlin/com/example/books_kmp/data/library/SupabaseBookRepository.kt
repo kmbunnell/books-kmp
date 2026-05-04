@@ -9,6 +9,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.Count
 import kotlinx.coroutines.CancellationException
 
 class SupabaseBookRepository(private val supabase: SupabaseClient) : BookRepository {
@@ -33,9 +34,30 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
             Result.Failure(BookRepositoryError.NetworkError)
         }
 
+    // User scoping is enforced by RLS — no explicit user_id filter needed in queries below.
+
+    override suspend fun getBookById(id: String): Result<Book?, BookRepositoryError> =
+        try {
+            val dto =
+                supabase
+                    .from("books")
+                    .select(Columns.raw("*, book_tags(tag_id)")) { filter { eq("id", id) } }
+                    .decodeSingleOrNull<BookDto>()
+            Result.Success(dto?.toBook())
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.Failure(BookRepositoryError.NetworkError)
+        }
+
     override suspend fun getBookByIsbn(isbn: String): Result<Book?, BookRepositoryError> =
         try {
-            Result.Success(fetchBooks().find { it.isbn == isbn })
+            val dto =
+                supabase
+                    .from("books")
+                    .select(Columns.raw("*, book_tags(tag_id)")) { filter { eq("isbn", isbn) } }
+                    .decodeSingleOrNull<BookDto>()
+            Result.Success(dto?.toBook())
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -45,7 +67,15 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
     override suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError> {
         if (isbn == null) return Result.Success(false)
         return try {
-            Result.Success(fetchBooks().any { it.isbn == isbn })
+            val count =
+                supabase
+                    .from("books")
+                    .select {
+                        head = true
+                        count(Count.EXACT)
+                        filter { eq("isbn", isbn) }
+                    }.countOrNull() ?: 0
+            Result.Success(count > 0)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -53,7 +83,7 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
         }
     }
 
-    // TODO: each call fetches all user books from the network; add a cache layer when needed.
+    // TODO: add a cache layer when needed — each call fetches all user books from the network.
     private suspend fun fetchBooks(): List<Book> =
         supabase.from("books")
             .select(Columns.raw("*, book_tags(tag_id)"))
