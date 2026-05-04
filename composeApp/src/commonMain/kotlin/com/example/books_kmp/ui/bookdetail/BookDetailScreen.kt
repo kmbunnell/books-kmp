@@ -93,7 +93,7 @@ internal fun BookDetailScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.title_book_detail)) },
+                title = { Text(uiState.book?.title ?: stringResource(Res.string.title_book_detail)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
@@ -141,18 +141,22 @@ internal fun BookDetailScreenContent(
                 }
                 else -> {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        AsyncImage(
-                            model = null,
-                            contentDescription = stringResource(Res.string.cd_book_cover),
-                            placeholder = painterResource(Res.drawable.book_placeholder),
-                            error = painterResource(Res.drawable.book_placeholder),
-                            contentScale = ContentScale.Crop,
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .testTag(TestTags.BookDetail.CoverImage),
-                        )
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                        ) {
+                            AsyncImage(
+                                model = uiState.book?.coverImageUrl,
+                                contentDescription = stringResource(Res.string.cd_book_cover),
+                                placeholder = painterResource(Res.drawable.book_placeholder),
+                                error = painterResource(Res.drawable.book_placeholder),
+                                contentScale = ContentScale.Fit,
+                                modifier =
+                                    Modifier
+                                        .height(200.dp)
+                                        .testTag(TestTags.BookDetail.CoverImage),
+                            )
+                        }
                         Column(
                             modifier =
                                 Modifier

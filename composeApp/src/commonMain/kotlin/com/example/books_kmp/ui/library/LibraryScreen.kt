@@ -214,7 +214,7 @@ fun LibraryScreenContent(
                     modifier = Modifier.padding(innerPadding),
                 )
             }
-            uiState.isLoading -> {
+            uiState.isLoading && uiState.books.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize().padding(innerPadding),
                     contentAlignment = Alignment.Center,

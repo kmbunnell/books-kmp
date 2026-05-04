@@ -9,6 +9,7 @@ class FakeBookRepository(
     var addBookShouldFail: Boolean = false,
     var isbnExistsShouldFail: Boolean = false,
     var getBooksShouldFail: Boolean = false,
+    var getBookByIdShouldFail: Boolean = false,
 ) : BookRepository {
     private val books = mutableListOf<Book>()
     var isbnExistsOverride: Boolean? = null
@@ -35,6 +36,11 @@ class FakeBookRepository(
 
     override suspend fun getBookByIsbn(isbn: String): Result<Book?, BookRepositoryError> =
         Result.Success(books.find { it.isbn == isbn })
+
+    override suspend fun getBookById(id: String): Result<Book?, BookRepositoryError> {
+        if (getBookByIdShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
+        return Result.Success(books.find { it.id == id })
+    }
 
     override suspend fun addBook(book: NewBook): Result<Book, BookRepositoryError> {
         addBookCalled = true
