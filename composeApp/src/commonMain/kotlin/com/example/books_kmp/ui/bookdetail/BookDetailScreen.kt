@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -28,18 +32,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
+import bookskmp.composeapp.generated.resources.book_placeholder
 import bookskmp.composeapp.generated.resources.button_manage_tags
 import bookskmp.composeapp.generated.resources.button_retry
+import bookskmp.composeapp.generated.resources.cd_book_cover
 import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.error_book_detail_load_failed
 import bookskmp.composeapp.generated.resources.error_tag_operation_failed
+import bookskmp.composeapp.generated.resources.title_book_detail
+import coil3.compose.AsyncImage
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.BookDetailIntent
 import com.example.books_kmp.viewmodel.BookDetailUiState
 import com.example.books_kmp.viewmodel.BookDetailViewModel
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -83,7 +93,7 @@ internal fun BookDetailScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {},
+                title = { Text(stringResource(Res.string.title_book_detail)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
@@ -130,23 +140,42 @@ internal fun BookDetailScreenContent(
                     }
                 }
                 else -> {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            uiState.allTags.forEach { tag ->
-                                FilterChip(
-                                    selected = tag.id in uiState.appliedTagIds,
-                                    enabled = tag.id !in uiState.inFlightTagIds,
-                                    onClick = { onIntent(BookDetailIntent.ToggleTag(tag.id)) },
-                                    label = { Text(tag.name) },
-                                    modifier = Modifier.testTag(TestTags.BookDetail.tagChip(tag.id)),
-                                )
-                            }
-                        }
-                        TextButton(
-                            onClick = onNavigateToTagManagement,
-                            modifier = Modifier.testTag(TestTags.BookDetail.ManageTagsButton),
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        AsyncImage(
+                            model = null,
+                            contentDescription = stringResource(Res.string.cd_book_cover),
+                            placeholder = painterResource(Res.drawable.book_placeholder),
+                            error = painterResource(Res.drawable.book_placeholder),
+                            contentScale = ContentScale.Crop,
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .testTag(TestTags.BookDetail.CoverImage),
+                        )
+                        Column(
+                            modifier =
+                                Modifier
+                                    .verticalScroll(rememberScrollState())
+                                    .padding(horizontal = 16.dp),
                         ) {
-                            Text(stringResource(Res.string.button_manage_tags))
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                uiState.allTags.forEach { tag ->
+                                    FilterChip(
+                                        selected = tag.id in uiState.appliedTagIds,
+                                        enabled = tag.id !in uiState.inFlightTagIds,
+                                        onClick = { onIntent(BookDetailIntent.ToggleTag(tag.id)) },
+                                        label = { Text(tag.name) },
+                                        modifier = Modifier.testTag(TestTags.BookDetail.tagChip(tag.id)),
+                                    )
+                                }
+                            }
+                            TextButton(
+                                onClick = onNavigateToTagManagement,
+                                modifier = Modifier.testTag(TestTags.BookDetail.ManageTagsButton),
+                            ) {
+                                Text(stringResource(Res.string.button_manage_tags))
+                            }
                         }
                     }
                 }
