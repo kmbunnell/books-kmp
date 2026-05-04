@@ -93,4 +93,5 @@
     <string name="cd_filter_books">Filter by tag</string>
     <string name="filter_sheet_clear_all">Clear All</string>
     <string name="filter_sheet_done">Done</string>
+    <string name="title_book_detail">Book Detail</string>
 </resources>

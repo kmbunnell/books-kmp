@@ -198,4 +198,44 @@ class BookDetailScreenTest {
         composeTestRule.onNodeWithTag(TestTags.BookDetail.RetryButton).performClick()
         assertTrue(dispatched.contains(BookDetailIntent.Reload))
     }
+
+    @Test
+    fun `top app bar shows placeholder title`() {
+        composeTestRule.setContent {
+            BookDetailScreenContent(
+                uiState = BookDetailUiState(),
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToTagManagement = {},
+            )
+        }
+        composeTestRule.onNodeWithText("Book Detail").assertIsDisplayed()
+    }
+
+    @Test
+    fun `cover image placeholder is shown in content state`() {
+        composeTestRule.setContent {
+            BookDetailScreenContent(
+                uiState = BookDetailUiState(allTags = listOf(tag1)),
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToTagManagement = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.BookDetail.CoverImage).assertIsDisplayed()
+    }
+
+    @Test
+    fun `tag section renders below cover image in content state`() {
+        composeTestRule.setContent {
+            BookDetailScreenContent(
+                uiState = BookDetailUiState(allTags = listOf(tag1)),
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToTagManagement = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.BookDetail.CoverImage).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.BookDetail.ManageTagsButton).assertIsDisplayed()
+    }
 }

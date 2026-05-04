@@ -92,6 +92,7 @@ object TestTags {
         const val LoadingIndicator = "book_detail_loading"
         const val LoadFailedMessage = "book_detail_load_failed_message"
         const val RetryButton = "book_detail_retry_button"
+        const val CoverImage = "book_detail_cover_image"
     }
 
     object TagManagement {
