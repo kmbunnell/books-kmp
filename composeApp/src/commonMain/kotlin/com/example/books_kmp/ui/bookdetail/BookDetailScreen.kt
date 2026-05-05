@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -43,6 +44,7 @@ import bookskmp.composeapp.generated.resources.cd_book_cover
 import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.error_book_detail_load_failed
 import bookskmp.composeapp.generated.resources.error_tag_operation_failed
+import bookskmp.composeapp.generated.resources.section_tags
 import bookskmp.composeapp.generated.resources.title_book_detail
 import coil3.compose.AsyncImage
 import com.example.books_kmp.ui.TestTags
@@ -163,6 +165,14 @@ internal fun BookDetailScreenContent(
                                     .verticalScroll(rememberScrollState())
                                     .padding(horizontal = 16.dp),
                         ) {
+                            Text(
+                                text = stringResource(Res.string.section_tags),
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier =
+                                    Modifier
+                                        .padding(top = 16.dp, bottom = 4.dp)
+                                        .testTag(TestTags.BookDetail.TagsSectionLabel),
+                            )
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 uiState.allTags.forEach { tag ->
                                     FilterChip(

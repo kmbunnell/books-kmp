@@ -71,7 +71,7 @@ class BookDetailViewModel(
                 _uiState.update {
                     it.copy(
                         book = book,
-                        allTags = tags,
+                        allTags = tags.sortedBy { it.name },
                         appliedTagIds = book.tags.toSet(),
                         isLoading = false,
                     )
