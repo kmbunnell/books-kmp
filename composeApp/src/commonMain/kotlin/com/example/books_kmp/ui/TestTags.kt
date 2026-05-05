@@ -88,6 +88,7 @@ object TestTags {
     object BookDetail {
         fun tagChip(tagId: String) = "book_detail_chip_$tagId"
 
+        const val TagsSectionLabel = "book_detail_tags_label"
         const val ManageTagsButton = "book_detail_manage_tags_button"
         const val LoadingIndicator = "book_detail_loading"
         const val LoadFailedMessage = "book_detail_load_failed_message"

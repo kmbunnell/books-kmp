@@ -114,6 +114,15 @@ class BookDetailViewModelTest {
             assertTrue(nullVm.uiState.value.loadFailed)
         }
 
+    @Test
+    fun `allTags sorted alphabetically in state`() =
+        runTest {
+            // setUp seeds [Fiction (t1), Read (t2), Favorites (t3)]
+            // sorted by name: Favorites, Fiction, Read
+            val allTags = vm.uiState.value.allTags
+            assertEquals(listOf(tag3, tag1, tag2), allTags)
+        }
+
     // ToggleTag — applying (not currently applied)
 
     @Test
