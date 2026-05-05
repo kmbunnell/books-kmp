@@ -12,7 +12,9 @@ import com.example.books_kmp.domain.library.BookLookupService
 import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
+import com.example.books_kmp.domain.tags.DefaultToggleBookTagUseCase
 import com.example.books_kmp.domain.tags.TagRepository
+import com.example.books_kmp.domain.tags.ToggleBookTagUseCase
 import com.example.books_kmp.viewmodel.AddBookViewModel
 import com.example.books_kmp.viewmodel.AuthViewModel
 import com.example.books_kmp.viewmodel.BookDetailViewModel
@@ -53,6 +55,7 @@ fun appModule(
         factory { LookupBookUseCase(get(), get()) }
         factory { AddBookUseCase(get()) }
         factory { SaveManualBookUseCase(get()) }
+        factory<ToggleBookTagUseCase> { DefaultToggleBookTagUseCase(get(), get()) }
         viewModel { AuthViewModel(get()) }
         viewModel { LibraryViewModel(get(), get()) }
         viewModel { SignInViewModel(get()) }
@@ -60,5 +63,5 @@ fun appModule(
         viewModel { ManualEntryViewModel(get()) }
         viewModel { AddBookViewModel(get(), get()) }
         viewModel { TagManagementViewModel(get()) }
-        viewModel { params -> BookDetailViewModel(params.get(), get(), get()) }
+        viewModel { params -> BookDetailViewModel(params.get(), get(), get(), get()) }
     }
