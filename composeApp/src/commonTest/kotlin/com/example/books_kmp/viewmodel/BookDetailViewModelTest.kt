@@ -6,9 +6,12 @@ import com.example.books_kmp.domain.library.BookRepositoryError
 import com.example.books_kmp.domain.library.FakeBookRepository
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
+import com.example.books_kmp.domain.tags.DefaultToggleBookTagUseCase
 import com.example.books_kmp.domain.tags.FakeTagRepository
 import com.example.books_kmp.domain.tags.TagError
 import com.example.books_kmp.domain.tags.TagRepository
+import com.example.books_kmp.domain.tags.ToggleBookTagError
+import com.example.books_kmp.domain.tags.ToggleBookTagUseCase
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -54,7 +57,7 @@ class BookDetailViewModelTest {
         repo.seedTags(tag1, tag2, tag3)
         bookRepo = FakeBookRepository()
         bookRepo.seedBooks(testBook)
-        vm = BookDetailViewModel(bookId, repo, bookRepo)
+        vm = BookDetailViewModel(bookId, repo, bookRepo, DefaultToggleBookTagUseCase(repo, bookRepo))
     }
 
     @AfterTest
@@ -89,7 +92,13 @@ class BookDetailViewModelTest {
     @Test
     fun `init sets loadFailed true when getTags returns failure`() =
         runTest {
-            val failVm = BookDetailViewModel(bookId, FailingLoadRepo(repo), bookRepo)
+            val failVm =
+                BookDetailViewModel(
+                    bookId,
+                    FailingLoadRepo(repo),
+                    bookRepo,
+                    successToggleUseCase(),
+                )
             advanceUntilIdle()
             assertTrue(failVm.uiState.value.loadFailed)
             assertFalse(failVm.uiState.value.isLoading)
@@ -99,7 +108,13 @@ class BookDetailViewModelTest {
     fun `init sets loadFailed true when getBookById returns failure`() =
         runTest {
             val failBookRepo = FakeBookRepository(getBookByIdShouldFail = true)
-            val failVm = BookDetailViewModel(bookId, repo, failBookRepo)
+            val failVm =
+                BookDetailViewModel(
+                    bookId,
+                    repo,
+                    failBookRepo,
+                    successToggleUseCase(),
+                )
             advanceUntilIdle()
             assertTrue(failVm.uiState.value.loadFailed)
             assertFalse(failVm.uiState.value.isLoading)
@@ -109,7 +124,13 @@ class BookDetailViewModelTest {
     fun `init sets loadFailed true when book not found (getBookById returns null)`() =
         runTest {
             val emptyBookRepo = FakeBookRepository()
-            val nullVm = BookDetailViewModel(bookId, repo, emptyBookRepo)
+            val nullVm =
+                BookDetailViewModel(
+                    bookId,
+                    repo,
+                    emptyBookRepo,
+                    successToggleUseCase(),
+                )
             advanceUntilIdle()
             assertTrue(nullVm.uiState.value.loadFailed)
         }
@@ -134,14 +155,15 @@ class BookDetailViewModelTest {
         }
 
     @Test
-    fun `ToggleTag adds tagId to inFlightTagIds before repo call`() =
+    fun `ToggleTag adds tagId to inFlightTagIds before use case completes`() =
         runTest {
-            val suspendingRepo = SuspendingAddRepo(repo)
-            val suspendVm = BookDetailViewModel(bookId, suspendingRepo, bookRepo)
+            val suspendingUseCase = SuspendingToggleUseCase()
+            val suspendVm = BookDetailViewModel(bookId, repo, bookRepo, suspendingUseCase)
             advanceUntilIdle() // finish init
             suspendVm.onIntent(BookDetailIntent.ToggleTag(tag3.id))
-            // The synchronous update runs before the launched coroutine suspends
+            // The synchronous optimistic update runs before the launched coroutine suspends
             assertTrue(suspendVm.uiState.value.inFlightTagIds.contains(tag3.id))
+            suspendingUseCase.deferred.complete(Result.Success(Unit))
         }
 
     @Test
@@ -164,8 +186,7 @@ class BookDetailViewModelTest {
     @Test
     fun `ToggleTag on failure removes tagId from inFlightTagIds`() =
         runTest {
-            val failRepo = FailingAddRepo(repo)
-            val failVm = BookDetailViewModel(bookId, failRepo, bookRepo)
+            val failVm = BookDetailViewModel(bookId, repo, bookRepo, failingToggleUseCase())
             advanceUntilIdle()
             failVm.onIntent(BookDetailIntent.ToggleTag(tag3.id))
             advanceUntilIdle()
@@ -175,8 +196,7 @@ class BookDetailViewModelTest {
     @Test
     fun `ToggleTag on failure restores appliedTagIds snapshot`() =
         runTest {
-            val failRepo = FailingAddRepo(repo)
-            val failVm = BookDetailViewModel(bookId, failRepo, bookRepo)
+            val failVm = BookDetailViewModel(bookId, repo, bookRepo, failingToggleUseCase())
             advanceUntilIdle()
             val snapshotBefore = failVm.uiState.value.appliedTagIds
             failVm.onIntent(BookDetailIntent.ToggleTag(tag3.id))
@@ -187,8 +207,7 @@ class BookDetailViewModelTest {
     @Test
     fun `ToggleTag on failure sets tagToggleError non-null`() =
         runTest {
-            val failRepo = FailingAddRepo(repo)
-            val failVm = BookDetailViewModel(bookId, failRepo, bookRepo)
+            val failVm = BookDetailViewModel(bookId, repo, bookRepo, failingToggleUseCase())
             advanceUntilIdle()
             failVm.onIntent(BookDetailIntent.ToggleTag(tag3.id))
             advanceUntilIdle()
@@ -216,8 +235,7 @@ class BookDetailViewModelTest {
     @Test
     fun `ToggleTag remove on failure restores appliedTagIds`() =
         runTest {
-            val failRepo = FailingRemoveRepo(repo)
-            val failVm = BookDetailViewModel(bookId, failRepo, bookRepo)
+            val failVm = BookDetailViewModel(bookId, repo, bookRepo, failingToggleUseCase())
             advanceUntilIdle()
             val snapshotBefore = failVm.uiState.value.appliedTagIds
             failVm.onIntent(BookDetailIntent.ToggleTag(tag1.id))
@@ -228,19 +246,19 @@ class BookDetailViewModelTest {
     // In-flight guard
 
     @Test
-    fun `ToggleTag while same tagId in-flight makes no state change and no additional repo call`() =
+    fun `ToggleTag while same tagId in-flight makes no state change and no additional use case call`() =
         runTest {
-            val suspendingRepo = SuspendingAddRepo(repo)
-            val suspendVm = BookDetailViewModel(bookId, suspendingRepo, bookRepo)
+            val suspendingUseCase = SuspendingToggleUseCase()
+            val suspendVm = BookDetailViewModel(bookId, repo, bookRepo, suspendingUseCase)
             advanceUntilIdle()
             suspendVm.onIntent(BookDetailIntent.ToggleTag(tag3.id))
             val stateAfterFirst = suspendVm.uiState.value
-            val addCalledAfterFirst = suspendingRepo.addTagToBookCalled
+            val callCountAfterFirst = suspendingUseCase.callCount
             // Second intent while in-flight — should be no-op
             suspendVm.onIntent(BookDetailIntent.ToggleTag(tag3.id))
             assertEquals(stateAfterFirst, suspendVm.uiState.value)
-            assertEquals(addCalledAfterFirst, suspendingRepo.addTagToBookCalled)
-            suspendingRepo.addDeferred.complete(Result.Success(Unit))
+            assertEquals(callCountAfterFirst, suspendingUseCase.callCount)
+            suspendingUseCase.deferred.complete(Result.Success(Unit))
         }
 
     // DismissTagToggleError
@@ -248,8 +266,7 @@ class BookDetailViewModelTest {
     @Test
     fun `DismissTagToggleError clears tagToggleError`() =
         runTest {
-            val failRepo = FailingAddRepo(repo)
-            val failVm = BookDetailViewModel(bookId, failRepo, bookRepo)
+            val failVm = BookDetailViewModel(bookId, repo, bookRepo, failingToggleUseCase())
             advanceUntilIdle()
             failVm.onIntent(BookDetailIntent.ToggleTag(tag3.id))
             advanceUntilIdle()
@@ -264,7 +281,13 @@ class BookDetailViewModelTest {
     fun `Reload after failure clears loadFailed and populates state on second success`() =
         runTest {
             val failFirstRepo = FailFirstGetTagsRepo(repo)
-            val failVm = BookDetailViewModel(bookId, failFirstRepo, bookRepo)
+            val failVm =
+                BookDetailViewModel(
+                    bookId,
+                    failFirstRepo,
+                    bookRepo,
+                    successToggleUseCase(),
+                )
             advanceUntilIdle()
             assertTrue(failVm.uiState.value.loadFailed)
 
@@ -279,7 +302,13 @@ class BookDetailViewModelTest {
     fun `Reload clears loadFailed and repopulates book on second success`() =
         runTest {
             val failFirstBookRepo = FailFirstBookRepo(bookRepo)
-            val failVm = BookDetailViewModel(bookId, repo, failFirstBookRepo)
+            val failVm =
+                BookDetailViewModel(
+                    bookId,
+                    repo,
+                    failFirstBookRepo,
+                    successToggleUseCase(),
+                )
             advanceUntilIdle()
             assertTrue(failVm.uiState.value.loadFailed)
 
@@ -293,7 +322,13 @@ class BookDetailViewModelTest {
     fun `Reload is ignored while load is already in flight`() =
         runTest {
             val suspendingRepo = SuspendingGetTagsRepo(repo)
-            val suspendVm = BookDetailViewModel(bookId, suspendingRepo, bookRepo)
+            val suspendVm =
+                BookDetailViewModel(
+                    bookId,
+                    suspendingRepo,
+                    bookRepo,
+                    successToggleUseCase(),
+                )
             assertTrue(suspendVm.uiState.value.isLoading)
 
             suspendVm.onIntent(BookDetailIntent.Reload)
@@ -302,35 +337,24 @@ class BookDetailViewModelTest {
 
     // ---- Test doubles ----
 
-    /**
-     * Delegates everything but makes addTagToBook actually suspend (via CompletableDeferred.await)
-     * so the test can observe in-flight state before the coroutine resumes.
-     */
-    private class SuspendingAddRepo(delegate: FakeTagRepository) : TagRepository by delegate {
-        var addTagToBookCalled = 0
-        val addDeferred = CompletableDeferred<Result<Unit, TagError>>()
+    private fun successToggleUseCase(): ToggleBookTagUseCase =
+        ToggleBookTagUseCase { _, _, _ -> Result.Success(Unit) }
 
-        override suspend fun addTagToBook(
+    private fun failingToggleUseCase(): ToggleBookTagUseCase =
+        ToggleBookTagUseCase { _, _, _ -> Result.Failure(ToggleBookTagError.NetworkError) }
+
+    private inner class SuspendingToggleUseCase : ToggleBookTagUseCase {
+        var callCount = 0
+        val deferred = CompletableDeferred<Result<Unit, ToggleBookTagError>>()
+
+        override suspend fun invoke(
             bookId: String,
-            tagId: String
-        ): Result<Unit, TagError> {
-            addTagToBookCalled++
-            return addDeferred.await()
+            tagId: String,
+            wasApplied: Boolean,
+        ): Result<Unit, ToggleBookTagError> {
+            callCount++
+            return deferred.await()
         }
-    }
-
-    private class FailingAddRepo(delegate: FakeTagRepository) : TagRepository by delegate {
-        override suspend fun addTagToBook(
-            bookId: String,
-            tagId: String
-        ): Result<Unit, TagError> = Result.Failure(TagError.NetworkError(RuntimeException("fail")))
-    }
-
-    private class FailingRemoveRepo(delegate: FakeTagRepository) : TagRepository by delegate {
-        override suspend fun removeTagFromBook(
-            bookId: String,
-            tagId: String
-        ): Result<Unit, TagError> = Result.Failure(TagError.NetworkError(RuntimeException("fail")))
     }
 
     private class FailingLoadRepo(delegate: FakeTagRepository) : TagRepository by delegate {
@@ -341,7 +365,6 @@ class BookDetailViewModelTest {
     private class FailFirstGetTagsRepo(private val delegate: FakeTagRepository) : TagRepository by delegate {
         private var callCount = 0
 
-        // Only getTags() needs to fail for the whole load() to short-circuit
         override suspend fun getTags(): Result<List<Tag>, TagError> {
             return if (callCount++ == 0) {
                 Result.Failure(TagError.NetworkError(RuntimeException("fail")))

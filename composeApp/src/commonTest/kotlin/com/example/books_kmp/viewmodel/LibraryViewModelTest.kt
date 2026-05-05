@@ -430,6 +430,18 @@ class LibraryViewModelTest {
             assertEquals(listOf(taggedBook1, taggedBook2), state.filteredBooks)
         }
 
+    // booksFlow reactive update
+
+    @Test
+    fun `booksFlow emission updates books and filteredBooks in Library state`() =
+        runTest {
+            advanceUntilIdle()
+            bookRepo.applyTagDelta(book1.id, "t1", wasApplied = false)
+            advanceUntilIdle()
+            val updatedBook = vm.uiState.value.books.find { it.id == "b1" }
+            assertEquals(listOf("t1"), updatedBook?.tags)
+        }
+
     // Zero repo calls for filter/sort/search
 
     @Test

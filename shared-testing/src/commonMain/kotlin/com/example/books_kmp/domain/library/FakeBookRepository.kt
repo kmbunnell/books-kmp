@@ -4,6 +4,9 @@ import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.NewBook
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class FakeBookRepository(
     var addBookShouldFail: Boolean = false,
@@ -12,10 +15,15 @@ class FakeBookRepository(
     var getBookByIdShouldFail: Boolean = false,
 ) : BookRepository {
     private val books = mutableListOf<Book>()
+    private val _booksFlow = MutableStateFlow<List<Book>?>(null)
+    override val booksFlow: StateFlow<List<Book>?> = _booksFlow.asStateFlow()
+
     var isbnExistsOverride: Boolean? = null
     var lastAddedBook: NewBook? = null
     var addBookCalled = false
     var getBooksByUserCalled = 0
+    var applyTagDeltaCalled = 0
+    var lastApplyTagDeltaArgs: Triple<String, String, Boolean>? = null
 
     var addBookGate: CompletableDeferred<Unit>? = null
     var getBooksByUserGate: CompletableDeferred<Unit>? = null
@@ -30,8 +38,25 @@ class FakeBookRepository(
         return if (getBooksShouldFail) {
             Result.Failure(BookRepositoryError.NetworkError)
         } else {
-            Result.Success(books.toList())
+            val result = books.toList()
+            _booksFlow.value = result
+            Result.Success(result)
         }
+    }
+
+    override fun applyTagDelta(
+        bookId: String,
+        tagId: String,
+        wasApplied: Boolean,
+    ) {
+        applyTagDeltaCalled++
+        lastApplyTagDeltaArgs = Triple(bookId, tagId, wasApplied)
+        val current = _booksFlow.value ?: return
+        _booksFlow.value =
+            current.map { book ->
+                if (book.id != bookId) book
+                else book.copy(tags = if (wasApplied) book.tags - tagId else book.tags + tagId)
+            }
     }
 
     override suspend fun getBookByIsbn(isbn: String): Result<Book?, BookRepositoryError> =

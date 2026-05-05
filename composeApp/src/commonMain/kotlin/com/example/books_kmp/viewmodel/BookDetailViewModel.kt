@@ -7,6 +7,7 @@ import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.TagRepository
+import com.example.books_kmp.domain.tags.ToggleBookTagUseCase
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +41,7 @@ class BookDetailViewModel(
     private val bookId: String,
     private val tagRepository: TagRepository,
     private val bookRepository: BookRepository,
+    private val toggleBookTagUseCase: ToggleBookTagUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(BookDetailUiState())
     val uiState: StateFlow<BookDetailUiState> = _uiState.asStateFlow()
@@ -96,14 +98,7 @@ class BookDetailViewModel(
         }
 
         viewModelScope.launch {
-            val result =
-                if (wasApplied) {
-                    tagRepository.removeTagFromBook(bookId, tagId)
-                } else {
-                    tagRepository.addTagToBook(bookId, tagId)
-                }
-
-            when (result) {
+            when (toggleBookTagUseCase(bookId, tagId, wasApplied)) {
                 is Result.Success ->
                     _uiState.update { it.copy(inFlightTagIds = it.inFlightTagIds - tagId) }
                 is Result.Failure ->

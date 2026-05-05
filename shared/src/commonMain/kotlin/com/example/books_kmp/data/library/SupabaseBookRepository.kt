@@ -11,8 +11,28 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Count
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class SupabaseBookRepository(private val supabase: SupabaseClient) : BookRepository {
+    private val booksCache = MutableStateFlow<List<Book>?>(null)
+    override val booksFlow: StateFlow<List<Book>?> = booksCache.asStateFlow()
+
+    override fun applyTagDelta(
+        bookId: String,
+        tagId: String,
+        wasApplied: Boolean,
+    ) {
+        booksCache.update { current ->
+            current?.map { book ->
+                if (book.id != bookId) book
+                else book.copy(tags = if (wasApplied) book.tags - tagId else book.tags + tagId)
+            }
+        }
+    }
+
     override suspend fun addBook(book: NewBook): Result<Book, BookRepositoryError> {
         val userId = supabase.auth.currentUserOrNull()?.id ?: error("Not authenticated")
         return try {
@@ -27,7 +47,9 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
 
     override suspend fun getBooksByUser(): Result<List<Book>, BookRepositoryError> =
         try {
-            Result.Success(fetchBooks())
+            val books = fetchBooks()
+            booksCache.value = books
+            Result.Success(books)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

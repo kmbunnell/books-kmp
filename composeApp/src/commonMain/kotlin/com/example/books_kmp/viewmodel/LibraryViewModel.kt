@@ -13,6 +13,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -50,6 +51,23 @@ class LibraryViewModel(
 
     init {
         loadLibrary()
+        viewModelScope.launch {
+            bookRepository.booksFlow.filterNotNull().collect { books ->
+                _uiState.update { state ->
+                    if (state.loadFailed || state.isLoading) return@update state
+                    state.copy(
+                        books = books,
+                        filteredBooks =
+                            computeFilteredBooks(
+                                books,
+                                state.activeFilterTagIds,
+                                state.sortOrder,
+                                state.searchQuery
+                            ),
+                    )
+                }
+            }
+        }
     }
 
     fun onIntent(intent: LibraryIntent) {
