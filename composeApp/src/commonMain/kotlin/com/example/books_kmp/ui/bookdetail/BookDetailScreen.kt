@@ -30,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,9 +39,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.book_placeholder
@@ -111,7 +111,6 @@ internal fun BookDetailScreenContent(
     val messageDeleteBook = stringResource(Res.string.message_delete_book)
     val buttonConfirmDelete = stringResource(Res.string.button_confirm_delete)
     val buttonCancel = stringResource(Res.string.button_cancel)
-
 
     LaunchedEffect(uiState.tagToggleError, uiState.deleteError) {
         if (uiState.tagToggleError != null) {
@@ -207,9 +206,10 @@ internal fun BookDetailScreenContent(
                                     text = title,
                                     style = MaterialTheme.typography.headlineSmall,
                                     textAlign = TextAlign.Center,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 16.dp),
                                 )
                             }
                         }

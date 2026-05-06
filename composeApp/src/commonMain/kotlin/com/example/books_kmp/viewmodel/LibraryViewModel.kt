@@ -30,9 +30,13 @@ data class LibraryUiState(
 
 sealed interface LibraryIntent {
     data class ToggleFilter(val tagId: String) : LibraryIntent
+
     data class ChangeSortOrder(val order: SortOrder) : LibraryIntent
+
     data class ChangeSearchQuery(val query: String) : LibraryIntent
+
     data object ClearFilters : LibraryIntent
+
     data object Refresh : LibraryIntent
 }
 
