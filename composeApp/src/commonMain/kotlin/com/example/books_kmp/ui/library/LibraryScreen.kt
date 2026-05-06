@@ -1,8 +1,6 @@
 package com.example.books_kmp.ui.library
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +9,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -19,11 +16,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.SwapVert
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -36,11 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -63,24 +53,19 @@ import androidx.lifecycle.repeatOnLifecycle
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.action_retry
 import bookskmp.composeapp.generated.resources.book_placeholder
-import bookskmp.composeapp.generated.resources.button_cancel
-import bookskmp.composeapp.generated.resources.button_confirm_delete
 import bookskmp.composeapp.generated.resources.cd_add_book
 import bookskmp.composeapp.generated.resources.cd_book_cover_in_grid
 import bookskmp.composeapp.generated.resources.cd_filter_books
 import bookskmp.composeapp.generated.resources.cd_manage_tags
 import bookskmp.composeapp.generated.resources.cd_sign_out
 import bookskmp.composeapp.generated.resources.cd_sort_books
-import bookskmp.composeapp.generated.resources.error_delete_book_failed
 import bookskmp.composeapp.generated.resources.error_library_load_failed
 import bookskmp.composeapp.generated.resources.hint_search_books
 import bookskmp.composeapp.generated.resources.library_empty_add_first
 import bookskmp.composeapp.generated.resources.library_empty_filter
 import bookskmp.composeapp.generated.resources.library_empty_title
-import bookskmp.composeapp.generated.resources.message_delete_book
 import bookskmp.composeapp.generated.resources.sort_author_asc
 import bookskmp.composeapp.generated.resources.sort_title_asc
-import bookskmp.composeapp.generated.resources.title_delete_book
 import bookskmp.composeapp.generated.resources.title_library
 import coil3.compose.AsyncImage
 import com.example.books_kmp.domain.model.Book
@@ -130,31 +115,8 @@ fun LibraryScreenContent(
 ) {
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
-    var expandedMenuBookId by remember { mutableStateOf<String?>(null) }
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    val titleDeleteBook = stringResource(Res.string.title_delete_book)
-    val messageDeleteBook = stringResource(Res.string.message_delete_book)
-    val buttonConfirmDelete = stringResource(Res.string.button_confirm_delete)
-    val buttonCancel = stringResource(Res.string.button_cancel)
-    val errorDeleteBookFailed = stringResource(Res.string.error_delete_book_failed)
-
-    LaunchedEffect(uiState.deleteError) {
-        if (uiState.deleteError != null) {
-            snackbarHostState.showSnackbar(errorDeleteBookFailed)
-            onIntent(LibraryIntent.DismissDeleteError)
-        }
-    }
 
     Scaffold(
-        snackbarHost = {
-            SnackbarHost(snackbarHostState) { data ->
-                Snackbar(
-                    snackbarData = data,
-                    modifier = Modifier.testTag(TestTags.Library.DeleteErrorSnackbar),
-                )
-            }
-        },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.title_library)) },
@@ -297,15 +259,7 @@ fun LibraryScreenContent(
                             BookGridItem(
                                 book = book,
                                 onClick = { onNavigateToBookDetail(book.id) },
-                                onLongClick = { expandedMenuBookId = book.id },
-                                isMenuExpanded = expandedMenuBookId == book.id,
-                                onMenuDismiss = { expandedMenuBookId = null },
-                                onDeleteClick = {
-                                    expandedMenuBookId = null
-                                    onIntent(LibraryIntent.DeleteBook(book.id))
-                                },
                                 modifier = Modifier.testTag(TestTags.Library.bookItem(book.id)),
-                                bookId = book.id,
                             )
                         }
                     }
@@ -320,30 +274,6 @@ fun LibraryScreenContent(
                 onTagSelected = { onIntent(LibraryIntent.ToggleFilter(it)) },
                 onClearAll = { onIntent(LibraryIntent.ClearFilters) },
                 onDismiss = { showFilterSheet = false },
-            )
-        }
-
-        if (uiState.bookPendingDeleteId != null) {
-            AlertDialog(
-                onDismissRequest = { onIntent(LibraryIntent.DismissDelete) },
-                title = { Text(titleDeleteBook) },
-                text = { Text(messageDeleteBook) },
-                confirmButton = {
-                    TextButton(
-                        onClick = { onIntent(LibraryIntent.ConfirmDelete) },
-                        modifier = Modifier.testTag(TestTags.Library.DeleteConfirmButton),
-                    ) {
-                        Text(buttonConfirmDelete)
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { onIntent(LibraryIntent.DismissDelete) },
-                        modifier = Modifier.testTag(TestTags.Library.DeleteCancelButton),
-                    ) {
-                        Text(buttonCancel)
-                    }
-                },
             )
         }
     }
@@ -441,73 +371,40 @@ private fun EmptyFilterContent(
 private fun BookGridItem(
     book: Book,
     onClick: () -> Unit,
-    onLongClick: () -> Unit,
-    isMenuExpanded: Boolean,
-    onMenuDismiss: () -> Unit,
-    onDeleteClick: () -> Unit,
-    bookId: String,
     modifier: Modifier = Modifier,
 ) {
-    Box {
-        Column(
+    Column(
+        modifier =
+            modifier
+                .padding(4.dp)
+                .clickable(onClick = onClick, role = Role.Button),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        AsyncImage(
+            model = book.coverImageUrl,
+            contentDescription = stringResource(Res.string.cd_book_cover_in_grid),
+            placeholder = painterResource(Res.drawable.book_placeholder),
+            error = painterResource(Res.drawable.book_placeholder),
+            contentScale = ContentScale.Crop,
             modifier =
-                modifier
-                    .padding(4.dp)
-                    .combinedClickable(
-                        onClick = onClick,
-                        onLongClick = onLongClick,
-                        role = Role.Button,
-                    ),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            AsyncImage(
-                model = book.coverImageUrl,
-                contentDescription = stringResource(Res.string.cd_book_cover_in_grid),
-                placeholder = painterResource(Res.drawable.book_placeholder),
-                error = painterResource(Res.drawable.book_placeholder),
-                contentScale = ContentScale.Crop,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(2f / 3f)
-                        .clip(RoundedCornerShape(4.dp)),
-            )
-            Text(
-                text = book.title,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                text = book.authors.firstOrNull() ?: "",
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-        if (isMenuExpanded) {
-            Box(
-                modifier =
-                    Modifier
-                        .matchParentSize()
-                        .background(Color.Black.copy(alpha = 0.55f))
-                        .clickable(onClick = onMenuDismiss),
-                contentAlignment = Alignment.Center,
-            ) {
-                IconButton(
-                    onClick = onDeleteClick,
-                    modifier = Modifier.testTag(TestTags.Library.deleteMenuItem(bookId)),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = stringResource(Res.string.button_confirm_delete),
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(32.dp),
-                    )
-                }
-            }
-        }
+                Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(2f / 3f)
+                    .clip(RoundedCornerShape(4.dp)),
+        )
+        Text(
+            text = book.title,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            text = book.authors.firstOrNull() ?: "",
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }

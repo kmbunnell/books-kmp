@@ -26,33 +26,14 @@ data class LibraryUiState(
     val searchQuery: String = "",
     val isLoading: Boolean = false,
     val loadFailed: Boolean = false,
-    val bookPendingDeleteId: String? = null,
-    val isDeleting: Boolean = false,
-    val deleteError: LibraryError? = null,
 )
-
-sealed interface LibraryError {
-    data object DeleteFailed : LibraryError
-}
 
 sealed interface LibraryIntent {
     data class ToggleFilter(val tagId: String) : LibraryIntent
-
     data class ChangeSortOrder(val order: SortOrder) : LibraryIntent
-
     data class ChangeSearchQuery(val query: String) : LibraryIntent
-
     data object ClearFilters : LibraryIntent
-
     data object Refresh : LibraryIntent
-
-    data class DeleteBook(val bookId: String) : LibraryIntent
-
-    data object ConfirmDelete : LibraryIntent
-
-    data object DismissDelete : LibraryIntent
-
-    data object DismissDeleteError : LibraryIntent
 }
 
 enum class SortOrder { TITLE_ASC, AUTHOR_ASC }
@@ -135,30 +116,6 @@ class LibraryViewModel(
                     )
                 }
             LibraryIntent.Refresh -> loadLibrary()
-            is LibraryIntent.DeleteBook ->
-                _uiState.update { it.copy(bookPendingDeleteId = intent.bookId) }
-            LibraryIntent.DismissDelete ->
-                _uiState.update { it.copy(bookPendingDeleteId = null) }
-            LibraryIntent.DismissDeleteError ->
-                _uiState.update { it.copy(deleteError = null) }
-            LibraryIntent.ConfirmDelete -> handleDelete()
-        }
-    }
-
-    private fun handleDelete() {
-        val bookId = _uiState.value.bookPendingDeleteId ?: return
-        if (_uiState.value.isDeleting) return
-        _uiState.update { it.copy(isDeleting = true) }
-        viewModelScope.launch {
-            when (bookRepository.deleteBook(bookId)) {
-                is Result.Success -> {
-                    _uiState.update { it.copy(isDeleting = false, bookPendingDeleteId = null) }
-                    loadLibrary()
-                }
-                is Result.Failure -> {
-                    _uiState.update { it.copy(isDeleting = false, deleteError = LibraryError.DeleteFailed) }
-                }
-            }
         }
     }
 

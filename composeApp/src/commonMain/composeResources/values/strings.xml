@@ -93,7 +93,8 @@
     <string name="cd_filter_books">Filter by tag</string>
     <string name="filter_sheet_clear_all">Clear All</string>
     <string name="filter_sheet_done">Done</string>
-    <string name="title_book_detail">Book Detail</string>
+    <string name="cd_delete_book">Delete book</string>
+    <string name="title_book_detail">Tag Book</string>
     <string name="section_tags">Tags</string>
     <string name="title_delete_book">Delete book?</string>
     <string name="message_delete_book">Remove this book from your library? This cannot be undone.</string>

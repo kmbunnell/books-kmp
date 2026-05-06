@@ -9,9 +9,11 @@ import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.TagRepository
 import com.example.books_kmp.domain.tags.ToggleBookTagUseCase
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -23,18 +25,28 @@ data class BookDetailUiState(
     val tagToggleError: BookDetailError? = null,
     val isLoading: Boolean = false,
     val loadFailed: Boolean = false,
+    val showDeleteConfirm: Boolean = false,
+    val isDeleting: Boolean = false,
+    val deleteError: BookDetailError? = null,
 )
 
 sealed interface BookDetailError {
     data object ToggleFailed : BookDetailError
+    data object DeleteFailed : BookDetailError
 }
 
 sealed interface BookDetailIntent {
     data class ToggleTag(val tagId: String) : BookDetailIntent
-
     data object DismissTagToggleError : BookDetailIntent
-
     data object Reload : BookDetailIntent
+    data object DeleteBook : BookDetailIntent
+    data object ConfirmDelete : BookDetailIntent
+    data object DismissDelete : BookDetailIntent
+    data object DismissDeleteError : BookDetailIntent
+}
+
+sealed interface BookDetailEffect {
+    data object NavigateUp : BookDetailEffect
 }
 
 class BookDetailViewModel(
@@ -46,6 +58,9 @@ class BookDetailViewModel(
     private val _uiState = MutableStateFlow(BookDetailUiState())
     val uiState: StateFlow<BookDetailUiState> = _uiState.asStateFlow()
 
+    private val _effects = Channel<BookDetailEffect>(Channel.BUFFERED)
+    val effects = _effects.receiveAsFlow()
+
     init {
         load()
     }
@@ -56,6 +71,13 @@ class BookDetailViewModel(
             BookDetailIntent.DismissTagToggleError ->
                 _uiState.update { it.copy(tagToggleError = null) }
             BookDetailIntent.Reload -> load()
+            BookDetailIntent.DeleteBook ->
+                _uiState.update { it.copy(showDeleteConfirm = true) }
+            BookDetailIntent.DismissDelete ->
+                _uiState.update { it.copy(showDeleteConfirm = false) }
+            BookDetailIntent.DismissDeleteError ->
+                _uiState.update { it.copy(deleteError = null) }
+            BookDetailIntent.ConfirmDelete -> handleDelete()
         }
     }
 
@@ -108,6 +130,20 @@ class BookDetailViewModel(
                             appliedTagIds = if (wasApplied) it.appliedTagIds + tagId else it.appliedTagIds - tagId,
                             tagToggleError = BookDetailError.ToggleFailed,
                         )
+                    }
+            }
+        }
+    }
+
+    private fun handleDelete() {
+        if (_uiState.value.isDeleting) return
+        _uiState.update { it.copy(isDeleting = true, showDeleteConfirm = false) }
+        viewModelScope.launch {
+            when (bookRepository.deleteBook(bookId)) {
+                is Result.Success -> _effects.send(BookDetailEffect.NavigateUp)
+                is Result.Failure ->
+                    _uiState.update {
+                        it.copy(isDeleting = false, deleteError = BookDetailError.DeleteFailed)
                     }
             }
         }

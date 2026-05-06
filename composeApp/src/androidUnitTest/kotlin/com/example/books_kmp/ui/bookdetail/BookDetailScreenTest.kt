@@ -266,4 +266,91 @@ class BookDetailScreenTest {
         composeTestRule.onNodeWithTag(TestTags.BookDetail.CoverImage).assertIsDisplayed()
         composeTestRule.onNodeWithTag(TestTags.BookDetail.ManageTagsButton).assertIsDisplayed()
     }
+
+    // --- Delete book ---
+
+    @Test
+    fun `delete button is shown in toolbar`() {
+        composeTestRule.setContent {
+            BookDetailScreenContent(
+                uiState = BookDetailUiState(),
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToTagManagement = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `tapping delete button dispatches DeleteBook intent`() {
+        val dispatched = mutableListOf<BookDetailIntent>()
+        composeTestRule.setContent {
+            BookDetailScreenContent(
+                uiState = BookDetailUiState(),
+                onIntent = { dispatched.add(it) },
+                onNavigateUp = {},
+                onNavigateToTagManagement = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteButton).performClick()
+        assertTrue(dispatched.contains(BookDetailIntent.DeleteBook))
+    }
+
+    @Test
+    fun `confirmation dialog shown when showDeleteConfirm is true`() {
+        composeTestRule.setContent {
+            BookDetailScreenContent(
+                uiState = BookDetailUiState(showDeleteConfirm = true),
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToTagManagement = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteConfirmButton).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteCancelButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `confirm delete button dispatches ConfirmDelete`() {
+        val dispatched = mutableListOf<BookDetailIntent>()
+        composeTestRule.setContent {
+            BookDetailScreenContent(
+                uiState = BookDetailUiState(showDeleteConfirm = true),
+                onIntent = { dispatched.add(it) },
+                onNavigateUp = {},
+                onNavigateToTagManagement = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteConfirmButton).performClick()
+        assertTrue(dispatched.contains(BookDetailIntent.ConfirmDelete))
+    }
+
+    @Test
+    fun `cancel delete button dispatches DismissDelete`() {
+        val dispatched = mutableListOf<BookDetailIntent>()
+        composeTestRule.setContent {
+            BookDetailScreenContent(
+                uiState = BookDetailUiState(showDeleteConfirm = true),
+                onIntent = { dispatched.add(it) },
+                onNavigateUp = {},
+                onNavigateToTagManagement = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteCancelButton).performClick()
+        assertTrue(dispatched.contains(BookDetailIntent.DismissDelete))
+    }
+
+    @Test
+    fun `snackbar shown when deleteError is non-null`() {
+        composeTestRule.setContent {
+            BookDetailScreenContent(
+                uiState = BookDetailUiState(deleteError = BookDetailError.DeleteFailed),
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToTagManagement = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteErrorSnackbar).assertIsDisplayed()
+    }
 }
