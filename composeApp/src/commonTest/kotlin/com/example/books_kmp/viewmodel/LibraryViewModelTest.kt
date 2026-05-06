@@ -468,6 +468,91 @@ class LibraryViewModelTest {
             assertEquals(callsBefore, bookRepo.getBooksByUserCalled)
         }
 
+    // --- Delete book tests ---
+
+    @Test
+    fun `DeleteBook sets bookPendingDeleteId`() =
+        runTest {
+            vm.onIntent(LibraryIntent.DeleteBook("b1"))
+            assertEquals("b1", vm.uiState.value.bookPendingDeleteId)
+        }
+
+    @Test
+    fun `DismissDelete clears bookPendingDeleteId`() =
+        runTest {
+            vm.onIntent(LibraryIntent.DeleteBook("b1"))
+            vm.onIntent(LibraryIntent.DismissDelete)
+            assertEquals(null, vm.uiState.value.bookPendingDeleteId)
+        }
+
+    @Test
+    fun `ConfirmDelete sets isDeleting true while in-flight`() =
+        runTest {
+            val gate = CompletableDeferred<Unit>()
+            bookRepo.deleteBookGate = gate
+            vm.onIntent(LibraryIntent.DeleteBook("b1"))
+            vm.onIntent(LibraryIntent.ConfirmDelete)
+            assertTrue(vm.uiState.value.isDeleting)
+            gate.complete(Unit)
+            advanceUntilIdle()
+        }
+
+    @Test
+    fun `ConfirmDelete on success clears isDeleting and bookPendingDeleteId`() =
+        runTest {
+            vm.onIntent(LibraryIntent.DeleteBook("b1"))
+            vm.onIntent(LibraryIntent.ConfirmDelete)
+            advanceUntilIdle()
+            assertFalse(vm.uiState.value.isDeleting)
+            assertEquals(null, vm.uiState.value.bookPendingDeleteId)
+        }
+
+    @Test
+    fun `ConfirmDelete on success triggers library reload`() =
+        runTest {
+            val callsBefore = bookRepo.getBooksByUserCalled
+            vm.onIntent(LibraryIntent.DeleteBook("b1"))
+            vm.onIntent(LibraryIntent.ConfirmDelete)
+            advanceUntilIdle()
+            assertTrue(bookRepo.getBooksByUserCalled > callsBefore)
+        }
+
+    @Test
+    fun `ConfirmDelete on failure clears isDeleting and sets deleteError`() =
+        runTest {
+            bookRepo.deleteBookShouldFail = true
+            vm.onIntent(LibraryIntent.DeleteBook("b1"))
+            vm.onIntent(LibraryIntent.ConfirmDelete)
+            advanceUntilIdle()
+            assertFalse(vm.uiState.value.isDeleting)
+            assertEquals(LibraryError.DeleteFailed, vm.uiState.value.deleteError)
+        }
+
+    @Test
+    fun `ConfirmDelete while already deleting is a no-op`() =
+        runTest {
+            val gate = CompletableDeferred<Unit>()
+            bookRepo.deleteBookGate = gate
+            vm.onIntent(LibraryIntent.DeleteBook("b1"))
+            vm.onIntent(LibraryIntent.ConfirmDelete)
+            vm.onIntent(LibraryIntent.ConfirmDelete)
+            gate.complete(Unit)
+            advanceUntilIdle()
+            assertEquals(1, bookRepo.deleteBookCalled)
+        }
+
+    @Test
+    fun `DismissDeleteError clears deleteError`() =
+        runTest {
+            bookRepo.deleteBookShouldFail = true
+            vm.onIntent(LibraryIntent.DeleteBook("b1"))
+            vm.onIntent(LibraryIntent.ConfirmDelete)
+            advanceUntilIdle()
+            assertEquals(LibraryError.DeleteFailed, vm.uiState.value.deleteError)
+            vm.onIntent(LibraryIntent.DismissDeleteError)
+            assertEquals(null, vm.uiState.value.deleteError)
+        }
+
     private fun failingGetTagsRepo(): TagRepository =
         object : TagRepository {
             override suspend fun getTags() = Result.Failure<TagError>(TagError.NetworkError(RuntimeException("fail")))

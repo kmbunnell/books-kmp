@@ -46,9 +46,15 @@ object TestTags {
         const val AddFirstBookButton = "library_add_first_book_button"
         const val EmptyFilter = "library_empty_filter_state"
 
+        const val DeleteConfirmButton = "library_delete_confirm"
+        const val DeleteCancelButton = "library_delete_cancel"
+        const val DeleteErrorSnackbar = "library_delete_error_snackbar"
+
         fun filterSheetChip(tagId: String) = "library_filter_sheet_chip_$tagId"
 
         fun bookItem(bookId: String) = "library_book_item_$bookId"
+
+        fun deleteMenuItem(bookId: String) = "library_delete_menu_item_$bookId"
     }
 
     object AddBook {

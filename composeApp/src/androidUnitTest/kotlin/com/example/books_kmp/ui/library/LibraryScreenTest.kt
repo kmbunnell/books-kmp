@@ -4,12 +4,15 @@ import android.app.Application
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.ui.TestTags
+import com.example.books_kmp.viewmodel.LibraryError
 import com.example.books_kmp.viewmodel.LibraryIntent
 import com.example.books_kmp.viewmodel.LibraryUiState
 import com.example.books_kmp.viewmodel.SortOrder
@@ -456,6 +459,82 @@ class LibraryScreenTest {
         composeTestRule.onNodeWithTag(TestTags.Library.SortButton).performClick()
         composeTestRule.onNodeWithTag(TestTags.Library.SortMenuAuthorAsc).performClick()
         assertEquals(LibraryIntent.ChangeSortOrder(SortOrder.AUTHOR_ASC), dispatched.last())
+    }
+
+    // --- Delete book tests ---
+
+    @Test
+    fun `long-pressing book card shows delete overlay`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
+                onIntent = {},
+                onSignOut = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.bookItem("b1")).performTouchInput { longClick() }
+        composeTestRule.onNodeWithTag(TestTags.Library.deleteMenuItem("b1")).assertIsDisplayed()
+    }
+
+    @Test
+    fun `tapping delete overlay icon dispatches DeleteBook intent with correct id`() {
+        val dispatched = mutableListOf<LibraryIntent>()
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
+                onIntent = { dispatched.add(it) },
+                onSignOut = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.bookItem("b1")).performTouchInput { longClick() }
+        composeTestRule.onNodeWithTag(TestTags.Library.deleteMenuItem("b1")).performClick()
+        assertTrue(dispatched.any { it is LibraryIntent.DeleteBook && it.bookId == "b1" })
+    }
+
+    @Test
+    fun `confirmation dialog shown when bookPendingDeleteId is non-null`() {
+        val state = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1), bookPendingDeleteId = "b1")
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = state, onIntent = {}, onSignOut = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.DeleteConfirmButton).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.Library.DeleteCancelButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `confirm button dispatches ConfirmDelete`() {
+        val dispatched = mutableListOf<LibraryIntent>()
+        val state = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1), bookPendingDeleteId = "b1")
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = state, onIntent = { dispatched.add(it) }, onSignOut = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.DeleteConfirmButton).performClick()
+        assertTrue(dispatched.contains(LibraryIntent.ConfirmDelete))
+    }
+
+    @Test
+    fun `cancel button dispatches DismissDelete`() {
+        val dispatched = mutableListOf<LibraryIntent>()
+        val state = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1), bookPendingDeleteId = "b1")
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = state, onIntent = { dispatched.add(it) }, onSignOut = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.DeleteCancelButton).performClick()
+        assertTrue(dispatched.contains(LibraryIntent.DismissDelete))
+    }
+
+    @Test
+    fun `snackbar shown when deleteError is non-null`() {
+        val state =
+            LibraryUiState(
+                books = listOf(book1),
+                filteredBooks = listOf(book1),
+                deleteError = LibraryError.DeleteFailed
+            )
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = state, onIntent = {}, onSignOut = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.DeleteErrorSnackbar).assertIsDisplayed()
     }
 
     @Test
