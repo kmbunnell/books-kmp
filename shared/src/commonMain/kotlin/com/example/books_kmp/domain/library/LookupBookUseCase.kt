@@ -21,7 +21,7 @@ class LookupBookUseCase(
                 Result.Failure(
                     when (result.error) {
                         is BookLookupError.NotFound -> AddBookError.NotFound
-                        is BookLookupError.NetworkError -> AddBookError.NetworkError
+                        BookLookupError.NetworkError -> AddBookError.NetworkError
                         is BookLookupError.RateLimited -> AddBookError.RateLimited
                         is BookLookupError.MalformedResponse -> AddBookError.MalformedResponse
                     },
