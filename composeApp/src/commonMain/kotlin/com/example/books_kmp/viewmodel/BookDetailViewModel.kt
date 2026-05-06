@@ -32,16 +32,23 @@ data class BookDetailUiState(
 
 sealed interface BookDetailError {
     data object ToggleFailed : BookDetailError
+
     data object DeleteFailed : BookDetailError
 }
 
 sealed interface BookDetailIntent {
     data class ToggleTag(val tagId: String) : BookDetailIntent
+
     data object DismissTagToggleError : BookDetailIntent
+
     data object Reload : BookDetailIntent
+
     data object DeleteBook : BookDetailIntent
+
     data object ConfirmDelete : BookDetailIntent
+
     data object DismissDelete : BookDetailIntent
+
     data object DismissDeleteError : BookDetailIntent
 }
 
