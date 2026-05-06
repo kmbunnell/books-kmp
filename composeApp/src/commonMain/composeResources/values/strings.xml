@@ -95,4 +95,8 @@
     <string name="filter_sheet_done">Done</string>
     <string name="title_book_detail">Book Detail</string>
     <string name="section_tags">Tags</string>
+    <string name="title_delete_book">Delete book?</string>
+    <string name="message_delete_book">Remove this book from your library? This cannot be undone.</string>
+    <string name="button_confirm_delete">Delete</string>
+    <string name="error_delete_book_failed">Failed to delete book. Please try again.</string>
 </resources>

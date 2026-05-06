@@ -337,8 +337,7 @@ class BookDetailViewModelTest {
 
     // ---- Test doubles ----
 
-    private fun successToggleUseCase(): ToggleBookTagUseCase =
-        ToggleBookTagUseCase { _, _, _ -> Result.Success(Unit) }
+    private fun successToggleUseCase(): ToggleBookTagUseCase = ToggleBookTagUseCase { _, _, _ -> Result.Success(Unit) }
 
     private fun failingToggleUseCase(): ToggleBookTagUseCase =
         ToggleBookTagUseCase { _, _, _ -> Result.Failure(ToggleBookTagError.NetworkError) }

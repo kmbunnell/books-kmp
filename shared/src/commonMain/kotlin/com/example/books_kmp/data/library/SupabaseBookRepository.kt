@@ -27,8 +27,11 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
     ) {
         booksCache.update { current ->
             current?.map { book ->
-                if (book.id != bookId) book
-                else book.copy(tags = if (wasApplied) book.tags - tagId else book.tags + tagId)
+                when {
+                    book.id != bookId -> book
+                    wasApplied -> book.copy(tags = book.tags - tagId)
+                    else -> book.copy(tags = book.tags + tagId)
+                }
             }
         }
     }
@@ -104,6 +107,16 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
             Result.Failure(BookRepositoryError.NetworkError)
         }
     }
+
+    override suspend fun deleteBook(bookId: String): Result<Unit, BookRepositoryError> =
+        try {
+            supabase.from("books").delete { filter { eq("id", bookId) } }
+            Result.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.Failure(BookRepositoryError.NetworkError)
+        }
 
     // TODO: add a cache layer when needed — each call fetches all user books from the network.
     private suspend fun fetchBooks(): List<Book> =

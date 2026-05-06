@@ -27,6 +27,9 @@ class FakeBookRepository(
 
     var addBookGate: CompletableDeferred<Unit>? = null
     var getBooksByUserGate: CompletableDeferred<Unit>? = null
+    var deleteBookGate: CompletableDeferred<Unit>? = null
+    var deleteBookShouldFail = false
+    var deleteBookCalled = 0
 
     fun seedBooks(vararg booksToSeed: Book) {
         books.addAll(booksToSeed)
@@ -54,8 +57,11 @@ class FakeBookRepository(
         val current = _booksFlow.value ?: return
         _booksFlow.value =
             current.map { book ->
-                if (book.id != bookId) book
-                else book.copy(tags = if (wasApplied) book.tags - tagId else book.tags + tagId)
+                if (book.id != bookId) {
+                    book
+                } else {
+                    book.copy(tags = if (wasApplied) book.tags - tagId else book.tags + tagId)
+                }
             }
     }
 
@@ -82,6 +88,15 @@ class FakeBookRepository(
             )
         books.add(saved)
         return Result.Success(saved)
+    }
+
+    override suspend fun deleteBook(bookId: String): Result<Unit, BookRepositoryError> {
+        deleteBookCalled++
+        deleteBookGate?.await()
+        if (deleteBookShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
+        books.removeAll { it.id == bookId }
+        _booksFlow.value = books.toList()
+        return Result.Success(Unit)
     }
 
     override suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError> {
