@@ -224,7 +224,7 @@ class BookDetailScreenTest {
                 onNavigateToTagManagement = {},
             )
         }
-        composeTestRule.onNodeWithText("Book Detail").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Tag Book").assertIsDisplayed()
     }
 
     @Test
