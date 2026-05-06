@@ -6,4 +6,6 @@ import com.example.books_kmp.domain.model.BookLookupError
 
 interface BookLookupService {
     suspend fun lookupByIsbn(isbn: String): Result<BookLookupData, BookLookupError>
+
+    suspend fun lookupByTitle(title: String): Result<List<BookLookupData>, BookLookupError>
 }

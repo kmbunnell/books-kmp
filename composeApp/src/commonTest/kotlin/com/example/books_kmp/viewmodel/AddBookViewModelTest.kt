@@ -163,7 +163,7 @@ class AddBookViewModelTest {
     @Test
     fun `LookupIsbn with NetworkError sets error to NetworkError and clears isLoading`() =
         runTest {
-            fakeService.lookupResult = Result.Failure(BookLookupError.NetworkError(RuntimeException("err")))
+            fakeService.lookupResult = Result.Failure(BookLookupError.NetworkError)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
             val state = viewModel.uiState.value
@@ -201,7 +201,7 @@ class AddBookViewModelTest {
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
             assertNotNull(viewModel.uiState.value.foundBook)
 
-            fakeService.lookupResult = Result.Failure(BookLookupError.NetworkError(RuntimeException("err")))
+            fakeService.lookupResult = Result.Failure(BookLookupError.NetworkError)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780553380163"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780553380163"))
             assertNull(viewModel.uiState.value.foundBook)
@@ -210,7 +210,7 @@ class AddBookViewModelTest {
     @Test
     fun `Retry re-invokes lookup with current isbn state and sets foundBook on success`() =
         runTest {
-            fakeService.lookupResult = Result.Failure(BookLookupError.NetworkError(RuntimeException("err")))
+            fakeService.lookupResult = Result.Failure(BookLookupError.NetworkError)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
             assertNull(viewModel.uiState.value.foundBook)
