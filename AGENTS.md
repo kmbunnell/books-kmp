@@ -1,5 +1,3 @@
-# CLAUDE.md — Books-KMP (Kotlin Multiplatform)
-
 ## Project Overview
 
 Books-KMP is a cross-platform mobile book library app built with **Kotlin Multiplatform (KMP)** and **Compose Multiplatform (CMP)**, backed by **Supabase** (auth, database, RLS). Users scan or enter ISBNs to populate book metadata from the Open Library API, then organize their collection with a flexible tagging system.
@@ -64,32 +62,3 @@ When a feature requires platform-specific UI (camera, maps, native pickers), use
 - **Do not** start a separate `Activity` for UI flows that can live in the nav graph or as a composable overlay. The bridge/channel pattern for Activity→coroutine handoff is superseded by composable lifecycle ownership.
 
 ---
-
-## Code Style & Conventions
-
-- Naming: `AddBookUseCase`, `BookRepository`, `LibraryViewModel`, `LibraryUiState`, `LibraryIntent`, `LibraryEffect`.
-- `sealed class` / `sealed interface` for finite states (auth status, scan results, UI state, intents, effects).
-- `data class` for models, DTOs, and UI state.
-- Keep functions short (~30 lines max). Prefer explicit return types on public APIs.
-- Avoid `!!` — prefer `?.let`, `?:`, or explicit null checks with descriptive errors.
-- One file per class for use cases, ViewModels, and repository interfaces. ViewModel-level intents, state, effects, and errors co-locate in the ViewModel file; domain-layer errors (use case/repo) each get their own file.
-
----
-
-## Strings & Resources
-
-- All user-visible strings must be defined in `composeApp/src/commonMain/composeResources/values/strings.xml` and accessed via `stringResource(Res.string.xxx)` in composables. Never hardcode display strings in Kotlin source.
-- Do not add strings to `androidMain/res/values/strings.xml` — that file is Android-only and invisible to iOS. The only exception is `app_name`, which is required by `AndroidManifest.xml`.
-
----
-
-## Common Pitfalls
-
-- **Present the best architectural solution, not merely one that satisfies acceptance criteria.** Evaluate trade-offs before proposing a plan — if a cleaner design exists, recommend it even if a simpler path would compile and pass tests.
-- **Do not** create new packages or directories without asking first.
-- **Do not** commit API keys, Supabase URLs, or secrets.
-- **Do not** use `expect`/`actual` for business logic unless truly necessary; for platform-specific UI, see the Platform UI section above.
-- **Do not** use a raw `Channel` as a bridge between Android SDK callbacks and coroutines — use `suspendCancellableCoroutine` instead. It handles coroutine cancellation correctly and is the idiomatic one-shot conversion pattern.
-- **Do not** write `catch (e: Exception)` in a `suspend` function without rethrowing `CancellationException` first — swallowing it breaks structured concurrency. Pattern: `catch (e: CancellationException) { throw e }` before the broad catch.
-- **Do not** return `Result.Failure` for a missing authenticated user in a repository — use `error("Not authenticated")` instead. A missing user is a precondition violation (unreachable if auth is working), not a recoverable failure. The `AuthViewModel` handles session expiry before any repository is called.
-- **Do not** wrap every `onIntent` branch in a single `viewModelScope.launch`. Pure `_uiState.update` calls are synchronous and need no coroutine. Only launch for intents that call `suspend` functions (repo calls, `_effects.emit()`). Mixing them delays state updates unnecessarily.
