@@ -52,7 +52,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.action_retry
-import bookskmp.composeapp.generated.resources.book_placeholder
 import bookskmp.composeapp.generated.resources.cd_add_book
 import bookskmp.composeapp.generated.resources.cd_book_cover_in_grid
 import bookskmp.composeapp.generated.resources.cd_filter_books
@@ -64,6 +63,7 @@ import bookskmp.composeapp.generated.resources.hint_search_books
 import bookskmp.composeapp.generated.resources.library_empty_add_first
 import bookskmp.composeapp.generated.resources.library_empty_filter
 import bookskmp.composeapp.generated.resources.library_empty_title
+import bookskmp.composeapp.generated.resources.placeholder
 import bookskmp.composeapp.generated.resources.sort_author_asc
 import bookskmp.composeapp.generated.resources.sort_title_asc
 import bookskmp.composeapp.generated.resources.title_library
@@ -383,8 +383,8 @@ private fun BookGridItem(
         AsyncImage(
             model = book.coverImageUrl,
             contentDescription = stringResource(Res.string.cd_book_cover_in_grid),
-            placeholder = painterResource(Res.drawable.book_placeholder),
-            error = painterResource(Res.drawable.book_placeholder),
+            placeholder = painterResource(Res.drawable.placeholder),
+            error = painterResource(Res.drawable.placeholder),
             contentScale = ContentScale.Crop,
             modifier =
                 Modifier

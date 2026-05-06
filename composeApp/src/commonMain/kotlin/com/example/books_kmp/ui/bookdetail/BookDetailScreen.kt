@@ -45,7 +45,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
-import bookskmp.composeapp.generated.resources.book_placeholder
 import bookskmp.composeapp.generated.resources.button_cancel
 import bookskmp.composeapp.generated.resources.button_confirm_delete
 import bookskmp.composeapp.generated.resources.button_manage_tags
@@ -57,6 +56,7 @@ import bookskmp.composeapp.generated.resources.error_book_detail_load_failed
 import bookskmp.composeapp.generated.resources.error_delete_book_failed
 import bookskmp.composeapp.generated.resources.error_tag_operation_failed
 import bookskmp.composeapp.generated.resources.message_delete_book
+import bookskmp.composeapp.generated.resources.placeholder
 import bookskmp.composeapp.generated.resources.section_tags
 import bookskmp.composeapp.generated.resources.title_book_detail
 import bookskmp.composeapp.generated.resources.title_delete_book
@@ -220,8 +220,8 @@ internal fun BookDetailScreenContent(
                             AsyncImage(
                                 model = uiState.book?.coverImageUrl,
                                 contentDescription = stringResource(Res.string.cd_book_cover),
-                                placeholder = painterResource(Res.drawable.book_placeholder),
-                                error = painterResource(Res.drawable.book_placeholder),
+                                placeholder = painterResource(Res.drawable.placeholder),
+                                error = painterResource(Res.drawable.placeholder),
                                 contentScale = ContentScale.Fit,
                                 onSuccess = { coverLoaded = true },
                                 modifier =
