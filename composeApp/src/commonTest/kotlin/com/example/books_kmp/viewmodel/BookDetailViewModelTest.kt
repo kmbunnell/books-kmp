@@ -22,6 +22,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -333,6 +334,83 @@ class BookDetailViewModelTest {
 
             suspendVm.onIntent(BookDetailIntent.Reload)
             assertEquals(1, suspendingRepo.getTagsCallCount)
+        }
+
+    // --- Delete book ---
+
+    @Test
+    fun `DeleteBook sets showDeleteConfirm true`() =
+        runTest {
+            vm.onIntent(BookDetailIntent.DeleteBook)
+            assertTrue(vm.uiState.value.showDeleteConfirm)
+        }
+
+    @Test
+    fun `DismissDelete clears showDeleteConfirm`() =
+        runTest {
+            vm.onIntent(BookDetailIntent.DeleteBook)
+            vm.onIntent(BookDetailIntent.DismissDelete)
+            assertFalse(vm.uiState.value.showDeleteConfirm)
+        }
+
+    @Test
+    fun `ConfirmDelete sets isDeleting true while in-flight`() =
+        runTest {
+            val gate = CompletableDeferred<Unit>()
+            bookRepo.deleteBookGate = gate
+            vm.onIntent(BookDetailIntent.DeleteBook)
+            vm.onIntent(BookDetailIntent.ConfirmDelete)
+            assertTrue(vm.uiState.value.isDeleting)
+            gate.complete(Unit)
+            advanceUntilIdle()
+        }
+
+    @Test
+    fun `ConfirmDelete on success emits NavigateUp effect`() =
+        runTest {
+            val effects = mutableListOf<BookDetailEffect>()
+            val job = launch { vm.effects.collect { effects.add(it) } }
+            vm.onIntent(BookDetailIntent.DeleteBook)
+            vm.onIntent(BookDetailIntent.ConfirmDelete)
+            advanceUntilIdle()
+            job.cancel()
+            assertTrue(effects.contains(BookDetailEffect.NavigateUp))
+        }
+
+    @Test
+    fun `ConfirmDelete on failure clears isDeleting and sets deleteError`() =
+        runTest {
+            bookRepo.deleteBookShouldFail = true
+            vm.onIntent(BookDetailIntent.DeleteBook)
+            vm.onIntent(BookDetailIntent.ConfirmDelete)
+            advanceUntilIdle()
+            assertFalse(vm.uiState.value.isDeleting)
+            assertEquals(BookDetailError.DeleteFailed, vm.uiState.value.deleteError)
+        }
+
+    @Test
+    fun `ConfirmDelete while already deleting is a no-op`() =
+        runTest {
+            val gate = CompletableDeferred<Unit>()
+            bookRepo.deleteBookGate = gate
+            vm.onIntent(BookDetailIntent.DeleteBook)
+            vm.onIntent(BookDetailIntent.ConfirmDelete)
+            vm.onIntent(BookDetailIntent.ConfirmDelete)
+            gate.complete(Unit)
+            advanceUntilIdle()
+            assertEquals(1, bookRepo.deleteBookCalled)
+        }
+
+    @Test
+    fun `DismissDeleteError clears deleteError`() =
+        runTest {
+            bookRepo.deleteBookShouldFail = true
+            vm.onIntent(BookDetailIntent.DeleteBook)
+            vm.onIntent(BookDetailIntent.ConfirmDelete)
+            advanceUntilIdle()
+            assertEquals(BookDetailError.DeleteFailed, vm.uiState.value.deleteError)
+            vm.onIntent(BookDetailIntent.DismissDeleteError)
+            assertNull(vm.uiState.value.deleteError)
         }
 
     // ---- Test doubles ----

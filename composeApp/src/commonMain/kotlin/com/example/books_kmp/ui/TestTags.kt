@@ -46,15 +46,9 @@ object TestTags {
         const val AddFirstBookButton = "library_add_first_book_button"
         const val EmptyFilter = "library_empty_filter_state"
 
-        const val DeleteConfirmButton = "library_delete_confirm"
-        const val DeleteCancelButton = "library_delete_cancel"
-        const val DeleteErrorSnackbar = "library_delete_error_snackbar"
-
         fun filterSheetChip(tagId: String) = "library_filter_sheet_chip_$tagId"
 
         fun bookItem(bookId: String) = "library_book_item_$bookId"
-
-        fun deleteMenuItem(bookId: String) = "library_delete_menu_item_$bookId"
     }
 
     object AddBook {
@@ -100,6 +94,10 @@ object TestTags {
         const val LoadFailedMessage = "book_detail_load_failed_message"
         const val RetryButton = "book_detail_retry_button"
         const val CoverImage = "book_detail_cover_image"
+        const val DeleteButton = "book_detail_delete_button"
+        const val DeleteConfirmButton = "book_detail_delete_confirm"
+        const val DeleteCancelButton = "book_detail_delete_cancel"
+        const val DeleteErrorSnackbar = "book_detail_delete_error_snackbar"
     }
 
     object TagManagement {
