@@ -44,7 +44,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -490,10 +489,11 @@ private fun BookGridItem(
         }
         if (isMenuExpanded) {
             Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(Color.Black.copy(alpha = 0.55f))
-                    .clickable(onClick = onMenuDismiss),
+                modifier =
+                    Modifier
+                        .matchParentSize()
+                        .background(Color.Black.copy(alpha = 0.55f))
+                        .clickable(onClick = onMenuDismiss),
                 contentAlignment = Alignment.Center,
             ) {
                 IconButton(
