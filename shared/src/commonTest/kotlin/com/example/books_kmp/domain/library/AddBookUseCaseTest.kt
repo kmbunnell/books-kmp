@@ -1,6 +1,7 @@
 package com.example.books_kmp.domain.library
 
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.BookLookupData
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -45,5 +46,67 @@ class AddBookUseCaseTest {
             val result = useCase(lookupData)
             assertIs<Result.Failure<AddBookError>>(result)
             assertEquals(AddBookError.NetworkError, result.error)
+        }
+
+    @Test
+    fun `isbn is null, no duplicate title — inserts successfully`() =
+        runTest {
+            val noIsbnData =
+                BookLookupData(isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+            val result = useCase(noIsbnData)
+            assertIs<Result.Success<*>>(result)
+        }
+
+    @Test
+    fun `isbn is null, duplicate title exists — returns DuplicateTitle error`() =
+        runTest {
+            repo.seedBooks(
+                Book(
+                    id = "existing-id",
+                    isbn = null,
+                    title = "The Iliad",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                ),
+            )
+            val noIsbnData =
+                BookLookupData(isbn = null, title = "The Iliad", authors = listOf("Homer"), coverImageUrl = null)
+            val result = useCase(noIsbnData)
+            assertIs<Result.Failure<AddBookError>>(result)
+            assertEquals(AddBookError.DuplicateTitle("The Iliad"), result.error)
+        }
+
+    @Test
+    fun `isbn is null, duplicate title exists, forceAdd true — inserts successfully`() =
+        runTest {
+            repo.seedBooks(
+                Book(
+                    id = "existing-id",
+                    isbn = null,
+                    title = "The Iliad",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                ),
+            )
+            val noIsbnData =
+                BookLookupData(isbn = null, title = "The Iliad", authors = listOf("Homer"), coverImageUrl = null)
+            val result = useCase(noIsbnData, forceAdd = true)
+            assertIs<Result.Success<*>>(result)
+        }
+
+    @Test
+    fun `isbn is non-null, duplicate title exists — proceeds normally (title check skipped)`() =
+        runTest {
+            repo.seedBooks(
+                Book(
+                    id = "existing-id",
+                    isbn = null,
+                    title = "The Iliad",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                ),
+            )
+            val result = useCase(lookupData)
+            assertIs<Result.Success<*>>(result)
         }
 }

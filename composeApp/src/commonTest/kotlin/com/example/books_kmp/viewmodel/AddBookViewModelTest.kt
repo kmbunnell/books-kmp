@@ -7,6 +7,7 @@ import com.example.books_kmp.domain.library.BarcodeScanError
 import com.example.books_kmp.domain.library.FakeBookLookupService
 import com.example.books_kmp.domain.library.FakeBookRepository
 import com.example.books_kmp.domain.library.LookupBookUseCase
+import com.example.books_kmp.domain.library.LookupByTitleUseCase
 import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.domain.model.BookLookupError
 import kotlin.test.AfterTest
@@ -32,6 +33,7 @@ class AddBookViewModelTest {
     private lateinit var fakeService: FakeBookLookupService
     private lateinit var lookupUseCase: LookupBookUseCase
     private lateinit var addBookUseCase: AddBookUseCase
+    private lateinit var lookupByTitleUseCase: LookupByTitleUseCase
     private lateinit var viewModel: AddBookViewModel
 
     private val validLookupData =
@@ -49,7 +51,8 @@ class AddBookViewModelTest {
         fakeService = FakeBookLookupService()
         lookupUseCase = LookupBookUseCase(fakeRepo, fakeService)
         addBookUseCase = AddBookUseCase(fakeRepo)
-        viewModel = AddBookViewModel(lookupUseCase, addBookUseCase)
+        lookupByTitleUseCase = LookupByTitleUseCase(fakeService)
+        viewModel = AddBookViewModel(lookupUseCase, addBookUseCase, lookupByTitleUseCase)
     }
 
     @AfterTest
@@ -96,25 +99,30 @@ class AddBookViewModelTest {
         }
 
     @Test
-    fun `LookupIsbn with Duplicate sets showDuplicateDialog true and clears isLoading`() =
+    fun `LookupIsbn with Duplicate sets showDuplicateDialog and foundBook, clears isLoading`() =
         runTest {
             fakeRepo.isbnExistsOverride = true
+            fakeService.lookupResult = Result.Success(validLookupData)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
             val state = viewModel.uiState.value
             assertTrue(state.showDuplicateDialog)
+            assertEquals(validLookupData, state.foundBook)
             assertFalse(state.isLoading)
         }
 
     @Test
-    fun `DismissDuplicateDialog clears showDuplicateDialog`() =
+    fun `DismissDuplicateDialog clears showDuplicateDialog and foundBook`() =
         runTest {
             fakeRepo.isbnExistsOverride = true
+            fakeService.lookupResult = Result.Success(validLookupData)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
             assertTrue(viewModel.uiState.value.showDuplicateDialog)
             viewModel.onIntent(AddBookIntent.DismissDuplicateDialog)
-            assertFalse(viewModel.uiState.value.showDuplicateDialog)
+            val state = viewModel.uiState.value
+            assertFalse(state.showDuplicateDialog)
+            assertNull(state.foundBook)
         }
 
     @Test
@@ -153,11 +161,41 @@ class AddBookViewModelTest {
     fun `DismissDuplicateDialog clears isbn in state`() =
         runTest {
             fakeRepo.isbnExistsOverride = true
+            fakeService.lookupResult = Result.Success(validLookupData)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
             assertTrue(viewModel.uiState.value.showDuplicateDialog)
             viewModel.onIntent(AddBookIntent.DismissDuplicateDialog)
             assertEquals("", viewModel.uiState.value.isbn)
+        }
+
+    @Test
+    fun `AddAnyway emits BookAdded and resets state, book inserted with original isbn`() =
+        runTest {
+            fakeRepo.isbnExistsOverride = true
+            fakeService.lookupResult = Result.Success(validLookupData)
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            assertTrue(viewModel.uiState.value.showDuplicateDialog)
+
+            viewModel.effects.test {
+                viewModel.onIntent(AddBookIntent.AddAnyway)
+                assertIs<AddBookEffect.BookAdded>(awaitItem())
+            }
+            assertEquals(AddBookUiState(), viewModel.uiState.value)
+            assertEquals("9780140449136", fakeRepo.lastAddedBook?.isbn)
+        }
+
+    @Test
+    fun `AddAnyway on repo failure sets NetworkError`() =
+        runTest {
+            fakeRepo.isbnExistsOverride = true
+            fakeService.lookupResult = Result.Success(validLookupData)
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            fakeRepo.addBookShouldFail = true
+            viewModel.onIntent(AddBookIntent.AddAnyway)
+            assertIs<AddBookScreenError.NetworkError>(viewModel.uiState.value.error)
         }
 
     @Test
@@ -356,6 +394,94 @@ class AddBookViewModelTest {
             viewModel.onIntent(AddBookIntent.ScanFailed(BarcodeScanError.Cancelled))
             val state = viewModel.uiState.value
             assertFalse(state.isScanning)
+            assertNull(state.error)
+        }
+
+    // --- Title mode tests ---
+
+    @Test
+    fun `SetLookupMode to Title updates mode and clears isbn and error and foundBook`() =
+        runTest {
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.SetLookupMode(LookupMode.Title))
+            val state = viewModel.uiState.value
+            assertEquals(LookupMode.Title, state.lookupMode)
+            assertEquals("", state.isbn)
+            assertNull(state.error)
+            assertNull(state.foundBook)
+            assertTrue(state.titleResults.isEmpty())
+        }
+
+    @Test
+    fun `SetLookupMode to ISBN clears titleQuery and titleResults`() =
+        runTest {
+            viewModel.onIntent(AddBookIntent.SetLookupMode(LookupMode.Title))
+            viewModel.onIntent(AddBookIntent.TitleChanged("The Iliad"))
+            viewModel.onIntent(AddBookIntent.SetLookupMode(LookupMode.ISBN))
+            val state = viewModel.uiState.value
+            assertEquals(LookupMode.ISBN, state.lookupMode)
+            assertEquals("", state.titleQuery)
+            assertTrue(state.titleResults.isEmpty())
+        }
+
+    @Test
+    fun `TitleChanged updates titleQuery in state`() =
+        runTest {
+            viewModel.onIntent(AddBookIntent.TitleChanged("The Iliad"))
+            assertEquals("The Iliad", viewModel.uiState.value.titleQuery)
+        }
+
+    @Test
+    fun `LookupByTitle success sets titleResults and clears isLoading`() =
+        runTest {
+            val results = listOf(validLookupData)
+            fakeService.lookupByTitleResult = Result.Success(results)
+            viewModel.onIntent(AddBookIntent.LookupByTitle("The Iliad"))
+            val state = viewModel.uiState.value
+            assertEquals(results, state.titleResults)
+            assertFalse(state.isLoading)
+            assertNull(state.error)
+        }
+
+    @Test
+    fun `LookupByTitle NotFound sets NotFound error and clears isLoading`() =
+        runTest {
+            fakeService.lookupByTitleResult = Result.Failure(BookLookupError.NotFound)
+            viewModel.onIntent(AddBookIntent.LookupByTitle("Unknown Title"))
+            val state = viewModel.uiState.value
+            assertIs<AddBookScreenError.NotFound>(state.error)
+            assertFalse(state.isLoading)
+            assertTrue(state.titleResults.isEmpty())
+        }
+
+    @Test
+    fun `SelectTitleResult sets foundBook and clears titleResults`() =
+        runTest {
+            val results = listOf(validLookupData)
+            fakeService.lookupByTitleResult = Result.Success(results)
+            viewModel.onIntent(AddBookIntent.LookupByTitle("The Iliad"))
+            assertEquals(results, viewModel.uiState.value.titleResults)
+
+            viewModel.onIntent(AddBookIntent.SelectTitleResult(validLookupData))
+            val state = viewModel.uiState.value
+            assertEquals(validLookupData, state.foundBook)
+            assertTrue(state.titleResults.isEmpty())
+        }
+
+    @Test
+    fun `Retry in title mode re-invokes LookupByTitle with current titleQuery`() =
+        runTest {
+            fakeService.lookupByTitleResult = Result.Failure(BookLookupError.NetworkError)
+            viewModel.onIntent(AddBookIntent.SetLookupMode(LookupMode.Title))
+            viewModel.onIntent(AddBookIntent.TitleChanged("The Iliad"))
+            viewModel.onIntent(AddBookIntent.LookupByTitle("The Iliad"))
+            assertIs<AddBookScreenError.NetworkError>(viewModel.uiState.value.error)
+
+            val results = listOf(validLookupData)
+            fakeService.lookupByTitleResult = Result.Success(results)
+            viewModel.onIntent(AddBookIntent.Retry)
+            val state = viewModel.uiState.value
+            assertEquals(results, state.titleResults)
             assertNull(state.error)
         }
 }

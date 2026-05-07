@@ -8,7 +8,21 @@ import com.example.books_kmp.domain.model.NewBook
 class AddBookUseCase(
     private val bookRepository: BookRepository,
 ) {
-    suspend operator fun invoke(lookupData: BookLookupData): Result<Book, AddBookError> {
+    suspend operator fun invoke(
+        lookupData: BookLookupData,
+        forceAdd: Boolean = false,
+    ): Result<Book, AddBookError> {
+        if (lookupData.isbn == null && !forceAdd) {
+            when (val titleResult = bookRepository.findBookByTitle(lookupData.title)) {
+                is Result.Success -> {
+                    val existing = titleResult.data
+                    if (existing != null) {
+                        return Result.Failure(AddBookError.DuplicateTitle(existing.title))
+                    }
+                }
+                is Result.Failure -> return Result.Failure(AddBookError.NetworkError)
+            }
+        }
         val newBook =
             NewBook(
                 isbn = lookupData.isbn,

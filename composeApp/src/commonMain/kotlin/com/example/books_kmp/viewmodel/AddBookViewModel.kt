@@ -7,6 +7,8 @@ import com.example.books_kmp.domain.library.AddBookError
 import com.example.books_kmp.domain.library.AddBookUseCase
 import com.example.books_kmp.domain.library.BarcodeScanError
 import com.example.books_kmp.domain.library.LookupBookUseCase
+import com.example.books_kmp.domain.library.LookupByTitleError
+import com.example.books_kmp.domain.library.LookupByTitleUseCase
 import com.example.books_kmp.domain.model.BookLookupData
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,8 +19,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+enum class LookupMode { ISBN, Title }
+
 data class AddBookUiState(
+    val lookupMode: LookupMode = LookupMode.ISBN,
     val isbn: String = "",
+    val titleQuery: String = "",
+    val titleResults: List<BookLookupData> = emptyList(),
     val isLoading: Boolean = false,
     val error: AddBookScreenError? = null,
     val showDuplicateDialog: Boolean = false,
@@ -51,6 +58,8 @@ sealed interface AddBookIntent {
 
     data object DismissDuplicateDialog : AddBookIntent
 
+    data object AddAnyway : AddBookIntent
+
     data object Retry : AddBookIntent
 
     data object EnterManually : AddBookIntent
@@ -62,6 +71,14 @@ sealed interface AddBookIntent {
     data object ScanDismissed : AddBookIntent
 
     data class ScanFailed(val error: BarcodeScanError) : AddBookIntent
+
+    data class SetLookupMode(val mode: LookupMode) : AddBookIntent
+
+    data class TitleChanged(val title: String) : AddBookIntent
+
+    data class LookupByTitle(val title: String) : AddBookIntent
+
+    data class SelectTitleResult(val book: BookLookupData) : AddBookIntent
 }
 
 sealed interface AddBookEffect {
@@ -73,6 +90,7 @@ sealed interface AddBookEffect {
 class AddBookViewModel(
     private val lookupBookUseCase: LookupBookUseCase,
     private val addBookUseCase: AddBookUseCase,
+    private val lookupByTitleUseCase: LookupByTitleUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddBookUiState())
     val uiState: StateFlow<AddBookUiState> = _uiState.asStateFlow()
@@ -83,9 +101,29 @@ class AddBookViewModel(
     fun onIntent(intent: AddBookIntent) {
         when (intent) {
             is AddBookIntent.IsbnChanged -> _uiState.update { it.copy(isbn = intent.isbn) }
+            is AddBookIntent.TitleChanged -> _uiState.update { it.copy(titleQuery = intent.title) }
+            is AddBookIntent.SetLookupMode ->
+                _uiState.update {
+                    it.copy(
+                        lookupMode = intent.mode,
+                        isbn = "",
+                        titleQuery = "",
+                        titleResults = emptyList(),
+                        error = null,
+                        foundBook = null,
+                    )
+                }
+            is AddBookIntent.SelectTitleResult ->
+                _uiState.update { it.copy(foundBook = intent.book, titleResults = emptyList()) }
             AddBookIntent.CancelBookPreview -> _uiState.update { it.copy(foundBook = null, isbn = "") }
             AddBookIntent.DismissDuplicateDialog ->
-                _uiState.update { it.copy(showDuplicateDialog = false, isbn = "") }
+                _uiState.update {
+                    it.copy(
+                        showDuplicateDialog = false,
+                        foundBook = null,
+                        isbn = ""
+                    )
+                }
             AddBookIntent.StartScan ->
                 _uiState.update { it.copy(isScanning = true, isbn = "", error = null, foundBook = null) }
             AddBookIntent.ScanDismissed -> _uiState.update { it.copy(isScanning = false) }
@@ -105,8 +143,22 @@ class AddBookViewModel(
                     )
                 }
             is AddBookIntent.LookupIsbn -> viewModelScope.launch { handleLookupIsbn(intent.isbn) }
+            is AddBookIntent.LookupByTitle -> {
+                if (_uiState.value.isLoading) return
+                viewModelScope.launch { handleLookupByTitle(intent.title) }
+            }
             AddBookIntent.ConfirmBook -> viewModelScope.launch { handleConfirmBook() }
-            AddBookIntent.Retry -> viewModelScope.launch { handleLookupIsbn(_uiState.value.isbn) }
+            AddBookIntent.AddAnyway -> {
+                if (_uiState.value.isLoading) return
+                viewModelScope.launch { handleAddAnyway() }
+            }
+            AddBookIntent.Retry -> {
+                val mode = _uiState.value.lookupMode
+                val query = if (mode == LookupMode.Title) _uiState.value.titleQuery else _uiState.value.isbn
+                viewModelScope.launch {
+                    if (mode == LookupMode.Title) handleLookupByTitle(query) else handleLookupIsbn(query)
+                }
+            }
             AddBookIntent.EnterManually -> viewModelScope.launch { _effects.emit(AddBookEffect.NavigateToManualEntry) }
             is AddBookIntent.BarcodeScanned ->
                 viewModelScope.launch {
@@ -123,20 +175,50 @@ class AddBookViewModel(
                 _uiState.update { it.copy(isLoading = false, foundBook = result.data) }
             }
             is Result.Failure -> {
-                _uiState.update { it.copy(isLoading = false) }
-                when (result.error) {
-                    AddBookError.Duplicate -> _uiState.update { it.copy(showDuplicateDialog = true) }
-                    AddBookError.NotFound -> _uiState.update { it.copy(error = AddBookScreenError.NotFound) }
-                    is AddBookError.NetworkError -> _uiState.update { it.copy(error = AddBookScreenError.NetworkError) }
-                    AddBookError.RateLimited -> _uiState.update { it.copy(error = AddBookScreenError.RateLimited) }
-                    AddBookError.MalformedResponse ->
-                        _uiState.update {
-                            it.copy(
-                                error = AddBookScreenError.NetworkError
-                            )
-                        }
+                val error = result.error
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        foundBook =
+                            if (error is AddBookError.Duplicate) error.lookupData else null,
+                        showDuplicateDialog =
+                            error is AddBookError.Duplicate || error is AddBookError.DuplicateTitle,
+                        error =
+                            when (error) {
+                                is AddBookError.Duplicate,
+                                is AddBookError.DuplicateTitle,
+                                -> null
+                                AddBookError.NotFound -> AddBookScreenError.NotFound
+                                AddBookError.NetworkError,
+                                AddBookError.MalformedResponse,
+                                -> AddBookScreenError.NetworkError
+                                AddBookError.RateLimited -> AddBookScreenError.RateLimited
+                            },
+                    )
                 }
             }
+        }
+    }
+
+    private suspend fun handleLookupByTitle(title: String) {
+        _uiState.update { it.copy(isLoading = true, error = null, titleResults = emptyList(), foundBook = null) }
+        when (val result = lookupByTitleUseCase(title)) {
+            is Result.Success ->
+                _uiState.update { it.copy(isLoading = false, titleResults = result.data.take(20)) }
+            is Result.Failure ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error =
+                            when (result.error) {
+                                LookupByTitleError.NotFound -> AddBookScreenError.NotFound
+                                LookupByTitleError.RateLimited -> AddBookScreenError.RateLimited
+                                LookupByTitleError.NetworkError,
+                                LookupByTitleError.MalformedResponse,
+                                -> AddBookScreenError.NetworkError
+                            },
+                    )
+                }
         }
     }
 
@@ -144,6 +226,37 @@ class AddBookViewModel(
         val lookup = _uiState.value.foundBook ?: return
         _uiState.update { it.copy(isLoading = true) }
         when (val result = addBookUseCase(lookup)) {
+            is Result.Success -> {
+                _uiState.update { AddBookUiState() }
+                _effects.emit(AddBookEffect.BookAdded)
+            }
+            is Result.Failure -> {
+                val error = result.error
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        showDuplicateDialog = error is AddBookError.DuplicateTitle,
+                        // AddBookError.Duplicate is unreachable from addBookUseCase; defensive
+                        error =
+                            when (error) {
+                                is AddBookError.DuplicateTitle -> null
+                                is AddBookError.Duplicate,
+                                AddBookError.NotFound,
+                                AddBookError.NetworkError,
+                                AddBookError.RateLimited,
+                                AddBookError.MalformedResponse,
+                                -> AddBookScreenError.NetworkError
+                            },
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun handleAddAnyway() {
+        val lookup = _uiState.value.foundBook ?: return
+        _uiState.update { it.copy(isLoading = true, showDuplicateDialog = false) }
+        when (val result = addBookUseCase(lookup, forceAdd = true)) {
             is Result.Success -> {
                 _uiState.update { AddBookUiState() }
                 _effects.emit(AddBookEffect.BookAdded)

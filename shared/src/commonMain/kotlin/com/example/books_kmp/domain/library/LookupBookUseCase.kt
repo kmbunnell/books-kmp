@@ -14,19 +14,25 @@ class LookupBookUseCase(
                 is Result.Failure -> return Result.Failure(AddBookError.NetworkError)
                 is Result.Success -> result.data
             }
-        if (isbnAlreadyExists) return Result.Failure(AddBookError.Duplicate)
 
-        return when (val result = lookupService.lookupByIsbn(isbn)) {
-            is Result.Failure ->
-                Result.Failure(
-                    when (result.error) {
-                        is BookLookupError.NotFound -> AddBookError.NotFound
-                        BookLookupError.NetworkError -> AddBookError.NetworkError
-                        is BookLookupError.RateLimited -> AddBookError.RateLimited
-                        is BookLookupError.MalformedResponse -> AddBookError.MalformedResponse
-                    },
-                )
-            is Result.Success -> Result.Success(result.data)
+        val lookupData =
+            when (val result = lookupService.lookupByIsbn(isbn)) {
+                is Result.Failure ->
+                    return Result.Failure(
+                        when (result.error) {
+                            is BookLookupError.NotFound -> AddBookError.NotFound
+                            BookLookupError.NetworkError -> AddBookError.NetworkError
+                            is BookLookupError.RateLimited -> AddBookError.RateLimited
+                            is BookLookupError.MalformedResponse -> AddBookError.MalformedResponse
+                        },
+                    )
+                is Result.Success -> result.data
+            }
+
+        return if (isbnAlreadyExists) {
+            Result.Failure(AddBookError.Duplicate(lookupData))
+        } else {
+            Result.Success(lookupData)
         }
     }
 }

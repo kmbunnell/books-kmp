@@ -30,47 +30,47 @@ class LookupByTitleUseCaseTest {
         }
 
     @Test
-    fun `returns AddBookError NotFound when result list is empty`() =
+    fun `returns LookupByTitleError NotFound when result list is empty`() =
         runTest {
             fakeService.lookupByTitleResult = Result.Success(emptyList())
             val result = useCase("The Iliad")
-            assertIs<Result.Failure<AddBookError>>(result)
-            assertEquals(AddBookError.NotFound, result.error)
+            assertIs<Result.Failure<LookupByTitleError>>(result)
+            assertEquals(LookupByTitleError.NotFound, result.error)
         }
 
     @Test
-    fun `maps BookLookupError NetworkError to AddBookError NetworkError`() =
+    fun `maps BookLookupError NetworkError to LookupByTitleError NetworkError`() =
         runTest {
             fakeService.lookupByTitleResult = Result.Failure(BookLookupError.NetworkError)
             val result = useCase("The Iliad")
-            assertIs<Result.Failure<AddBookError>>(result)
-            assertEquals(AddBookError.NetworkError, result.error)
+            assertIs<Result.Failure<LookupByTitleError>>(result)
+            assertEquals(LookupByTitleError.NetworkError, result.error)
         }
 
     @Test
-    fun `maps BookLookupError RateLimited to AddBookError RateLimited`() =
+    fun `maps BookLookupError RateLimited to LookupByTitleError RateLimited`() =
         runTest {
             fakeService.lookupByTitleResult = Result.Failure(BookLookupError.RateLimited)
             val result = useCase("The Iliad")
-            assertIs<Result.Failure<AddBookError>>(result)
-            assertEquals(AddBookError.RateLimited, result.error)
+            assertIs<Result.Failure<LookupByTitleError>>(result)
+            assertEquals(LookupByTitleError.RateLimited, result.error)
         }
 
     @Test
-    fun `maps BookLookupError MalformedResponse to AddBookError MalformedResponse`() =
+    fun `maps BookLookupError MalformedResponse to LookupByTitleError MalformedResponse`() =
         runTest {
             fakeService.lookupByTitleResult = Result.Failure(BookLookupError.MalformedResponse)
             val result = useCase("The Iliad")
-            assertIs<Result.Failure<AddBookError>>(result)
-            assertEquals(AddBookError.MalformedResponse, result.error)
+            assertIs<Result.Failure<LookupByTitleError>>(result)
+            assertEquals(LookupByTitleError.MalformedResponse, result.error)
         }
 
     @Test
-    fun `maps BookLookupError NotFound to AddBookError NotFound`() =
+    fun `maps BookLookupError NotFound to LookupByTitleError NotFound`() =
         runTest {
             fakeService.lookupByTitleResult = Result.Failure(BookLookupError.NotFound)
             val result = useCase("unknown")
-            assertIs<Result.Failure<AddBookError>>(result)
-            assertEquals(AddBookError.NotFound, result.error)
+            assertIs<Result.Failure<LookupByTitleError>>(result)
+            assertEquals(LookupByTitleError.NotFound, result.error)
         }
 }
