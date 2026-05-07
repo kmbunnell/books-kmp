@@ -9,8 +9,8 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
-import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
 import io.github.jan.supabase.postgrest.query.Count
+import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,8 +62,7 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
 
     // User scoping is enforced by RLS — no explicit user_id filter needed in queries below.
 
-    override suspend fun getBookById(id: String): Result<Book?, BookRepositoryError> =
-        selectSingleBook { eq("id", id) }
+    override suspend fun getBookById(id: String): Result<Book?, BookRepositoryError> = selectSingleBook { eq("id", id) }
 
     override suspend fun getBookByIsbn(isbn: String): Result<Book?, BookRepositoryError> =
         selectSingleBook { eq("isbn", isbn) }
