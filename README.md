@@ -4,7 +4,7 @@ A cross-platform mobile app for book collectors to build and manage a personal d
 
 Built with **Kotlin Multiplatform** and **Compose Multiplatform**, targeting both Android and iOS from a single shared codebase.
 
-> **Status:** Work in progress — clean architecture skeleton is in place; Supabase integration, UI screens, and barcode scanning are actively under development.
+> **Status:** Work in progress — core flows are functional end-to-end on Android. Shipped: email/password auth, library grid (tag filter, sort, search), barcode scanning (ML Kit / AVFoundation), Add Book by ISBN or title, Book Detail with tag toggling, Tag Management, and Manual Entry.
 
 ## Tech Stack
 
