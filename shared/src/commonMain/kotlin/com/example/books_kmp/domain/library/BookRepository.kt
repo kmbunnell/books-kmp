@@ -16,6 +16,8 @@ interface BookRepository {
 
     suspend fun addBook(book: NewBook): Result<Book, BookRepositoryError>
 
+    suspend fun findBookByTitle(title: String): Result<Book?, BookRepositoryError>
+
     suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError>
 
     suspend fun deleteBook(bookId: String): Result<Unit, BookRepositoryError>

@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
@@ -27,6 +27,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -49,9 +52,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_add
+import bookskmp.composeapp.generated.resources.button_add_anyway
+import bookskmp.composeapp.generated.resources.button_cancel
 import bookskmp.composeapp.generated.resources.button_enter_manually
 import bookskmp.composeapp.generated.resources.button_look_up
-import bookskmp.composeapp.generated.resources.button_ok
 import bookskmp.composeapp.generated.resources.button_retry
 import bookskmp.composeapp.generated.resources.camera_permission_permanently_denied
 import bookskmp.composeapp.generated.resources.cd_book_cover
@@ -67,6 +71,8 @@ import bookskmp.composeapp.generated.resources.error_rate_limited
 import bookskmp.composeapp.generated.resources.error_scan_failed
 import bookskmp.composeapp.generated.resources.error_unavailable_hardware
 import bookskmp.composeapp.generated.resources.label_isbn
+import bookskmp.composeapp.generated.resources.label_isbn_search
+import bookskmp.composeapp.generated.resources.label_title_search
 import bookskmp.composeapp.generated.resources.snackbar_book_added
 import bookskmp.composeapp.generated.resources.title_add_book
 import coil3.compose.AsyncImage
@@ -79,6 +85,7 @@ import com.example.books_kmp.viewmodel.AddBookIntent
 import com.example.books_kmp.viewmodel.AddBookScreenError
 import com.example.books_kmp.viewmodel.AddBookUiState
 import com.example.books_kmp.viewmodel.AddBookViewModel
+import com.example.books_kmp.viewmodel.LookupMode
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import org.jetbrains.compose.resources.stringResource
@@ -131,10 +138,18 @@ fun AddBookScreenContent(
                 text = { Text(stringResource(Res.string.error_duplicate_message)) },
                 confirmButton = {
                     Button(
-                        onClick = { onIntent(AddBookIntent.DismissDuplicateDialog) },
-                        modifier = Modifier.testTag(TestTags.AddBook.DuplicateDialogOkButton),
+                        onClick = { onIntent(AddBookIntent.AddAnyway) },
+                        modifier = Modifier.testTag(TestTags.AddBook.DuplicateDialogAddAnywayButton),
                     ) {
-                        Text(stringResource(Res.string.button_ok))
+                        Text(stringResource(Res.string.button_add_anyway))
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { onIntent(AddBookIntent.DismissDuplicateDialog) },
+                        modifier = Modifier.testTag(TestTags.AddBook.DuplicateDialogCancelButton),
+                    ) {
+                        Text(stringResource(Res.string.button_cancel))
                     }
                 },
                 modifier = Modifier.testTag(TestTags.AddBook.DuplicateDialog),
@@ -160,119 +175,147 @@ fun AddBookScreenContent(
                 )
             },
         ) { innerPadding ->
-            Column(
+            LazyColumn(
                 modifier =
                     Modifier
                         .padding(innerPadding)
-                        .padding(horizontal = 16.dp)
-                        .verticalScroll(rememberScrollState()),
+                        .padding(horizontal = 16.dp),
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedTextField(
-                    value = uiState.isbn,
-                    onValueChange = { if (it.length <= 13) onIntent(AddBookIntent.IsbnChanged(it)) },
-                    label = { Text(stringResource(Res.string.label_isbn)) },
-                    singleLine = true,
-                    enabled = !uiState.isLoading,
-                    trailingIcon = {
-                        IconButton(
-                            onClick = { onIntent(AddBookIntent.StartScan) },
-                            modifier = Modifier.testTag(TestTags.AddBook.ScanButton),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.CameraAlt,
-                                contentDescription = stringResource(Res.string.cd_scan_barcode),
+                    val isbnLabel = stringResource(Res.string.label_isbn_search)
+                    val titleLabel = stringResource(Res.string.label_title_search)
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth().testTag(TestTags.AddBook.LookupModeToggle),
+                    ) {
+                        LookupMode.entries.forEachIndexed { index, mode ->
+                            SegmentedButton(
+                                selected = uiState.lookupMode == mode,
+                                onClick = { onIntent(AddBookIntent.SetLookupMode(mode)) },
+                                shape =
+                                    SegmentedButtonDefaults.itemShape(
+                                        index = index,
+                                        count = LookupMode.entries.size,
+                                    ),
+                                label = {
+                                    Text(if (mode == LookupMode.ISBN) isbnLabel else titleLabel)
+                                },
+                                modifier =
+                                    Modifier.testTag(
+                                        if (mode == LookupMode.ISBN) {
+                                            TestTags.AddBook.IsbnModeButton
+                                        } else {
+                                            TestTags.AddBook.TitleModeButton
+                                        },
+                                    ),
                             )
                         }
-                    },
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester)
-                            .testTag(TestTags.AddBook.IsbnField),
-                )
+                    }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
-                    onClick = { onIntent(AddBookIntent.LookupIsbn(uiState.isbn)) },
-                    enabled = !uiState.isLoading && uiState.isbn.isNotBlank(),
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .testTag(TestTags.AddBook.LookUpButton),
-                ) {
-                    Text(stringResource(Res.string.button_look_up))
-                }
-
-                if (uiState.isLoading) {
-                    Spacer(modifier = Modifier.height(32.dp))
-                    CircularProgressIndicator(
-                        modifier =
-                            Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .testTag(TestTags.AddBook.LoadingIndicator),
+                    LookupModeSection(
+                        lookupMode = uiState.lookupMode,
+                        isbn = uiState.isbn,
+                        titleQuery = uiState.titleQuery,
+                        isLoading = uiState.isLoading,
+                        focusRequester = focusRequester,
+                        onIntent = onIntent,
                     )
                 }
 
+                itemsIndexed(uiState.titleResults) { index, book ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Card(
+                        onClick = { onIntent(AddBookIntent.SelectTitleResult(book)) },
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .testTag(TestTags.AddBook.titleResultItem(index)),
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(text = book.title)
+                            Text(text = book.authors.joinToString(", "))
+                        }
+                    }
+                }
+
+                if (uiState.isLoading) {
+                    item {
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.testTag(TestTags.AddBook.LoadingIndicator),
+                            )
+                        }
+                    }
+                }
+
                 uiState.error?.let { error ->
-                    ErrorSection(error = error, onIntent = onIntent)
+                    item {
+                        ErrorSection(error = error, onIntent = onIntent)
+                    }
                 }
 
                 uiState.foundBook?.let { book ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Card(
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                            ) {
-                                BookCoverImage(
-                                    url = book.coverImageUrl,
-                                    contentDescription = stringResource(Res.string.cd_book_cover),
-                                    modifier =
-                                        Modifier
-                                            .size(120.dp)
-                                            .testTag(TestTags.AddBook.BookPreviewCover),
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = book.title,
-                                    modifier = Modifier.testTag(TestTags.AddBook.BookPreviewTitle),
-                                )
-                                Text(
-                                    text = book.authors.joinToString(", "),
-                                    modifier = Modifier.testTag(TestTags.AddBook.BookPreviewAuthors),
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Button(
-                                    onClick = { onIntent(AddBookIntent.ConfirmBook) },
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Card(
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier =
                                         Modifier
                                             .fillMaxWidth()
-                                            .testTag(TestTags.AddBook.AddButton),
+                                            .padding(16.dp),
                                 ) {
-                                    Text(stringResource(Res.string.button_add))
+                                    BookCoverImage(
+                                        url = book.coverImageUrl,
+                                        contentDescription = stringResource(Res.string.cd_book_cover),
+                                        modifier =
+                                            Modifier
+                                                .size(120.dp)
+                                                .testTag(TestTags.AddBook.BookPreviewCover),
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = book.title,
+                                        modifier = Modifier.testTag(TestTags.AddBook.BookPreviewTitle),
+                                    )
+                                    Text(
+                                        text = book.authors.joinToString(", "),
+                                        modifier = Modifier.testTag(TestTags.AddBook.BookPreviewAuthors),
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Button(
+                                        onClick = { onIntent(AddBookIntent.ConfirmBook) },
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .testTag(TestTags.AddBook.AddButton),
+                                    ) {
+                                        Text(stringResource(Res.string.button_add))
+                                    }
                                 }
-                            }
-                            IconButton(
-                                onClick = { onIntent(AddBookIntent.CancelBookPreview) },
-                                modifier =
-                                    Modifier
-                                        .align(Alignment.TopEnd)
-                                        .testTag(TestTags.AddBook.CancelButton),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Close,
-                                    contentDescription = stringResource(Res.string.cd_close),
-                                )
+                                IconButton(
+                                    onClick = { onIntent(AddBookIntent.CancelBookPreview) },
+                                    modifier =
+                                        Modifier
+                                            .align(Alignment.TopEnd)
+                                            .testTag(TestTags.AddBook.CancelButton),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Close,
+                                        contentDescription = stringResource(Res.string.cd_close),
+                                    )
+                                }
                             }
                         }
                     }
@@ -300,6 +343,80 @@ fun AddBookScreenContent(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun LookupModeSection(
+    lookupMode: LookupMode,
+    isbn: String,
+    titleQuery: String,
+    isLoading: Boolean,
+    focusRequester: FocusRequester,
+    onIntent: (AddBookIntent) -> Unit,
+) {
+    if (lookupMode == LookupMode.ISBN) {
+        OutlinedTextField(
+            value = isbn,
+            onValueChange = { if (it.length <= 13) onIntent(AddBookIntent.IsbnChanged(it)) },
+            label = { Text(stringResource(Res.string.label_isbn)) },
+            singleLine = true,
+            enabled = !isLoading,
+            trailingIcon = {
+                IconButton(
+                    onClick = { onIntent(AddBookIntent.StartScan) },
+                    modifier = Modifier.testTag(TestTags.AddBook.ScanButton),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CameraAlt,
+                        contentDescription = stringResource(Res.string.cd_scan_barcode),
+                    )
+                }
+            },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .testTag(TestTags.AddBook.IsbnField),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = { onIntent(AddBookIntent.LookupIsbn(isbn)) },
+            enabled = !isLoading && isbn.isNotBlank(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.AddBook.LookUpButton),
+        ) {
+            Text(stringResource(Res.string.button_look_up))
+        }
+    } else {
+        OutlinedTextField(
+            value = titleQuery,
+            onValueChange = { onIntent(AddBookIntent.TitleChanged(it)) },
+            label = { Text(stringResource(Res.string.label_title_search)) },
+            singleLine = true,
+            enabled = !isLoading,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.AddBook.TitleField),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = { onIntent(AddBookIntent.LookupByTitle(titleQuery)) },
+            enabled = !isLoading && titleQuery.isNotBlank(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.AddBook.LookUpButton),
+        ) {
+            Text(stringResource(Res.string.button_look_up))
         }
     }
 }
@@ -385,6 +502,18 @@ private fun ErrorSection(
 private fun AddBookScreenPreview_Empty() {
     AddBookScreenContent(
         uiState = AddBookUiState(),
+        effects = MutableSharedFlow(),
+        onIntent = {},
+        onNavigateUp = {},
+        onNavigateToManualEntry = {},
+    )
+}
+
+@Preview
+@Composable
+private fun AddBookScreenPreview_TitleMode() {
+    AddBookScreenContent(
+        uiState = AddBookUiState(lookupMode = LookupMode.Title),
         effects = MutableSharedFlow(),
         onIntent = {},
         onNavigateUp = {},

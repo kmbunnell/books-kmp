@@ -37,8 +37,9 @@
     <string name="button_look_up">Look Up</string>
     <string name="button_add">Add</string>
     <string name="error_duplicate_title">Duplicate Book</string>
-    <string name="error_duplicate_message">This ISBN is already in your library.</string>
+    <string name="error_duplicate_message">This book is already in your library.</string>
     <string name="button_ok">OK</string>
+    <string name="button_add_anyway">Add Anyway</string>
     <string name="error_network_generic">Network error. Please try again.</string>
     <string name="button_retry">Retry</string>
     <string name="error_rate_limited">Too many requests. Please try again later.</string>
@@ -46,7 +47,7 @@
     <string name="cd_book_cover">Book cover</string>
     <string name="cd_add_book">Add book</string>
     <string name="cd_navigate_up">Navigate up</string>
-    <string name="error_isbn_not_found">Unable to look up isbn, would you like to enter this book manually instead?</string>
+    <string name="error_isbn_not_found">Book not found. Would you like to enter this book manually instead?</string>
     <string name="button_enter_manually">Enter Manually</string>
     <string name="cd_close">Close</string>
     <string name="camera_permission_title">Camera Permission Required</string>
@@ -100,4 +101,6 @@
     <string name="message_delete_book">Remove this book from your library? This cannot be undone.</string>
     <string name="button_confirm_delete">Delete</string>
     <string name="error_delete_book_failed">Failed to delete book. Please try again.</string>
+    <string name="label_isbn_search">ISBN</string>
+    <string name="label_title_search">Title</string>
 </resources>

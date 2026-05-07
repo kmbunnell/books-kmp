@@ -62,11 +62,18 @@ object TestTags {
         const val AddButton = "add_book_add_button"
         const val CancelButton = "add_book_cancel_button"
         const val DuplicateDialog = "add_book_duplicate_dialog"
-        const val DuplicateDialogOkButton = "add_book_duplicate_dialog_ok"
+        const val DuplicateDialogAddAnywayButton = "add_book_duplicate_dialog_add_anyway"
+        const val DuplicateDialogCancelButton = "add_book_duplicate_dialog_cancel"
         const val ErrorBanner = "add_book_error_banner"
         const val RetryButton = "add_book_retry_button"
         const val EnterManuallyButton = "add_book_enter_manually_button"
         const val ScanButton = "add_book_scan_button"
+        const val LookupModeToggle = "add_book_lookup_mode_toggle"
+        const val IsbnModeButton = "add_book_isbn_mode_button"
+        const val TitleModeButton = "add_book_title_mode_button"
+        const val TitleField = "add_book_title_field"
+
+        fun titleResultItem(index: Int) = "add_book_title_result_$index"
     }
 
     object ManualEntry {

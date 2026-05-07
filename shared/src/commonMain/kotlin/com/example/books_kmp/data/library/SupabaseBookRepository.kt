@@ -9,6 +9,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
 import io.github.jan.supabase.postgrest.query.Count
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,25 +63,22 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
     // User scoping is enforced by RLS — no explicit user_id filter needed in queries below.
 
     override suspend fun getBookById(id: String): Result<Book?, BookRepositoryError> =
-        try {
-            val dto =
-                supabase
-                    .from("books")
-                    .select(Columns.raw("*, book_tags(tag_id)")) { filter { eq("id", id) } }
-                    .decodeSingleOrNull<BookDto>()
-            Result.Success(dto?.toBook())
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Result.Failure(BookRepositoryError.NetworkError)
-        }
+        selectSingleBook { eq("id", id) }
 
     override suspend fun getBookByIsbn(isbn: String): Result<Book?, BookRepositoryError> =
+        selectSingleBook { eq("isbn", isbn) }
+
+    override suspend fun findBookByTitle(title: String): Result<Book?, BookRepositoryError> =
+        selectSingleBook { ilike("title", title) }
+
+    private suspend fun selectSingleBook(
+        predicate: PostgrestFilterBuilder.() -> Unit,
+    ): Result<Book?, BookRepositoryError> =
         try {
             val dto =
                 supabase
                     .from("books")
-                    .select(Columns.raw("*, book_tags(tag_id)")) { filter { eq("isbn", isbn) } }
+                    .select(Columns.raw("*, book_tags(tag_id)")) { filter(predicate) }
                     .decodeSingleOrNull<BookDto>()
             Result.Success(dto?.toBook())
         } catch (e: CancellationException) {
