@@ -73,9 +73,9 @@ import bookskmp.composeapp.generated.resources.error_unavailable_hardware
 import bookskmp.composeapp.generated.resources.label_isbn
 import bookskmp.composeapp.generated.resources.label_isbn_search
 import bookskmp.composeapp.generated.resources.label_title_search
-import bookskmp.composeapp.generated.resources.title_results_enter_manually
 import bookskmp.composeapp.generated.resources.snackbar_book_added
 import bookskmp.composeapp.generated.resources.title_add_book
+import bookskmp.composeapp.generated.resources.title_results_enter_manually
 import coil3.compose.AsyncImage
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.BookLookupData
@@ -246,9 +246,10 @@ fun AddBookScreenContent(
                     item {
                         TextButton(
                             onClick = { onIntent(AddBookIntent.EnterManually) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag(TestTags.AddBook.EnterManuallyButton),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .testTag(TestTags.AddBook.EnterManuallyButton),
                         ) {
                             Text(stringResource(Res.string.title_results_enter_manually))
                         }
