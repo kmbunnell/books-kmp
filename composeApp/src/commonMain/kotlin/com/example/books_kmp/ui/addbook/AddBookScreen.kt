@@ -73,6 +73,7 @@ import bookskmp.composeapp.generated.resources.error_unavailable_hardware
 import bookskmp.composeapp.generated.resources.label_isbn
 import bookskmp.composeapp.generated.resources.label_isbn_search
 import bookskmp.composeapp.generated.resources.label_title_search
+import bookskmp.composeapp.generated.resources.title_results_enter_manually
 import bookskmp.composeapp.generated.resources.snackbar_book_added
 import bookskmp.composeapp.generated.resources.title_add_book
 import coil3.compose.AsyncImage
@@ -237,6 +238,19 @@ fun AddBookScreenContent(
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(text = book.title)
                             Text(text = book.authors.joinToString(", "))
+                        }
+                    }
+                }
+
+                if (uiState.titleResults.isNotEmpty()) {
+                    item {
+                        TextButton(
+                            onClick = { onIntent(AddBookIntent.EnterManually) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(TestTags.AddBook.EnterManuallyButton),
+                        ) {
+                            Text(stringResource(Res.string.title_results_enter_manually))
                         }
                     }
                 }
