@@ -87,4 +87,24 @@ class SaveManualBookUseCaseTest {
             assertIs<SaveManualBookError.DuplicateTitle>(result.error)
             assertFalse(repo.addBookCalled)
         }
+
+    @Test
+    fun `invoke returns SaveFailed when title lookup fails`() =
+        runTest {
+            repo.findDuplicateTitleShouldFail = true
+            val result = useCase("The Odyssey", "Homer")
+            assertIs<Result.Failure<SaveManualBookError>>(result)
+            assertEquals(SaveManualBookError.SaveFailed, result.error)
+            assertFalse(repo.addBookCalled)
+        }
+
+    @Test
+    fun `invoke returns DuplicateTitle when entry matches stored title after punctuation stripping`() =
+        runTest {
+            repo.seedBooks(Book(id = "1", isbn = null, title = "So B. It", authors = listOf("Sarah Weeks"), coverImageUrl = null))
+            val result = useCase("so b it", "Sarah Weeks")
+            assertIs<Result.Failure<SaveManualBookError>>(result)
+            assertIs<SaveManualBookError.DuplicateTitle>(result.error)
+            assertFalse(repo.addBookCalled)
+        }
 }
