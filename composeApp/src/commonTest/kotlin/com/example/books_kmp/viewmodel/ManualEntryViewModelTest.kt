@@ -3,6 +3,7 @@ package com.example.books_kmp.viewmodel
 import app.cash.turbine.test
 import com.example.books_kmp.domain.library.FakeBookRepository
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
+import com.example.books_kmp.domain.model.Book
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -139,6 +140,38 @@ class ManualEntryViewModelTest {
             viewModel.effects.test {
                 viewModel.onIntent(ManualEntryIntent.Cancel)
                 assertIs<ManualEntryEffect.NavigateBack>(awaitItem())
+            }
+        }
+
+    @Test
+    fun `SaveBook with duplicate title sets showDuplicateDialog and does not emit ShowError`() =
+        runTest {
+            fakeRepo.seedBooks(Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null))
+            val viewModel = ManualEntryViewModel(useCase)
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+            assertTrue(viewModel.uiState.value.showDuplicateDialog)
+            assertFalse(viewModel.uiState.value.isLoading)
+        }
+
+    @Test
+    fun `DismissDuplicateDialog clears showDuplicateDialog`() =
+        runTest {
+            fakeRepo.seedBooks(Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null))
+            val viewModel = ManualEntryViewModel(useCase)
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+            viewModel.onIntent(ManualEntryIntent.DismissDuplicateDialog)
+            assertFalse(viewModel.uiState.value.showDuplicateDialog)
+        }
+
+    @Test
+    fun `AddAnyway saves book and emits NavigateToLibrary`() =
+        runTest {
+            fakeRepo.seedBooks(Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null))
+            val viewModel = ManualEntryViewModel(useCase)
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+            viewModel.effects.test {
+                viewModel.onIntent(ManualEntryIntent.AddAnyway)
+                assertIs<ManualEntryEffect.NavigateToLibrary>(awaitItem())
             }
         }
 }

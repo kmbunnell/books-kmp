@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,7 +51,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_add
-import bookskmp.composeapp.generated.resources.button_add_anyway
 import bookskmp.composeapp.generated.resources.button_cancel
 import bookskmp.composeapp.generated.resources.button_enter_manually
 import bookskmp.composeapp.generated.resources.button_look_up
@@ -63,8 +61,6 @@ import bookskmp.composeapp.generated.resources.cd_close
 import bookskmp.composeapp.generated.resources.cd_close_scanner
 import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.cd_scan_barcode
-import bookskmp.composeapp.generated.resources.error_duplicate_message
-import bookskmp.composeapp.generated.resources.error_duplicate_title
 import bookskmp.composeapp.generated.resources.error_isbn_not_found
 import bookskmp.composeapp.generated.resources.error_network_generic
 import bookskmp.composeapp.generated.resources.error_rate_limited
@@ -79,6 +75,7 @@ import bookskmp.composeapp.generated.resources.title_results_enter_manually
 import coil3.compose.AsyncImage
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.BookLookupData
+import com.example.books_kmp.ui.DuplicateBookDialog
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.ui.scan.BarcodeScannerView
 import com.example.books_kmp.viewmodel.AddBookEffect
@@ -133,27 +130,12 @@ fun AddBookScreenContent(
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (uiState.showDuplicateDialog) {
-            AlertDialog(
-                onDismissRequest = {},
-                title = { Text(stringResource(Res.string.error_duplicate_title)) },
-                text = { Text(stringResource(Res.string.error_duplicate_message)) },
-                confirmButton = {
-                    Button(
-                        onClick = { onIntent(AddBookIntent.AddAnyway) },
-                        modifier = Modifier.testTag(TestTags.AddBook.DuplicateDialogAddAnywayButton),
-                    ) {
-                        Text(stringResource(Res.string.button_add_anyway))
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { onIntent(AddBookIntent.DismissDuplicateDialog) },
-                        modifier = Modifier.testTag(TestTags.AddBook.DuplicateDialogCancelButton),
-                    ) {
-                        Text(stringResource(Res.string.button_cancel))
-                    }
-                },
-                modifier = Modifier.testTag(TestTags.AddBook.DuplicateDialog),
+            DuplicateBookDialog(
+                onAddAnyway = { onIntent(AddBookIntent.AddAnyway) },
+                onDismiss = { onIntent(AddBookIntent.DismissDuplicateDialog) },
+                dialogTag = TestTags.AddBook.DuplicateDialog,
+                addAnywayTag = TestTags.AddBook.DuplicateDialogAddAnywayButton,
+                cancelTag = TestTags.AddBook.DuplicateDialogCancelButton,
             )
         }
 

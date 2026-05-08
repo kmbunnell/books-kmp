@@ -10,7 +10,19 @@ class SaveManualBookUseCase(
     suspend operator fun invoke(
         title: String,
         author: String,
+        forceAdd: Boolean = false,
     ): Result<Book, SaveManualBookError> {
+        if (!forceAdd) {
+            when (val titleResult = bookRepository.findBookByTitle(title)) {
+                is Result.Success -> {
+                    val existing = titleResult.data
+                    if (existing != null) {
+                        return Result.Failure(SaveManualBookError.DuplicateTitle)
+                    }
+                }
+                is Result.Failure -> return Result.Failure(SaveManualBookError.SaveFailed)
+            }
+        }
         val book = NewBook(title = title, authors = listOf(author))
         return when (val result = bookRepository.addBook(book)) {
             is Result.Success -> Result.Success(result.data)

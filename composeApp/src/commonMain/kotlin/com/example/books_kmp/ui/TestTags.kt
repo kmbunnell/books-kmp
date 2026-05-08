@@ -82,6 +82,9 @@ object TestTags {
         const val SaveButton = "manual_entry_save_button"
         const val CancelButton = "manual_entry_cancel_button"
         const val LoadingIndicator = "manual_entry_loading"
+        const val DuplicateDialog = "manual_entry_duplicate_dialog"
+        const val DuplicateDialogAddAnywayButton = "manual_entry_duplicate_dialog_add_anyway"
+        const val DuplicateDialogCancelButton = "manual_entry_duplicate_dialog_cancel"
     }
 
     object CameraPermission {
