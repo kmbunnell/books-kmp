@@ -142,27 +142,16 @@ class AddBookViewModel(
                             },
                     )
                 }
-            is AddBookIntent.LookupIsbn -> {
-                if (_uiState.value.isLoading) return
-                viewModelScope.launch { handleLookupIsbn(intent.isbn) }
-            }
-            is AddBookIntent.LookupByTitle -> {
-                if (_uiState.value.isLoading) return
-                viewModelScope.launch { handleLookupByTitle(intent.title) }
-            }
-            AddBookIntent.ConfirmBook -> viewModelScope.launch { handleConfirmBook() }
-            AddBookIntent.AddAnyway -> {
-                if (_uiState.value.isLoading) return
-                viewModelScope.launch { handleAddAnyway() }
-            }
-            AddBookIntent.Retry -> {
-                if (_uiState.value.isLoading) return
-                val mode = _uiState.value.lookupMode
-                val query = if (mode == LookupMode.Title) _uiState.value.titleQuery else _uiState.value.isbn
-                viewModelScope.launch {
+            is AddBookIntent.LookupIsbn -> launchIfIdle { handleLookupIsbn(intent.isbn) }
+            is AddBookIntent.LookupByTitle -> launchIfIdle { handleLookupByTitle(intent.title) }
+            AddBookIntent.ConfirmBook -> launchIfIdle { handleConfirmBook() }
+            AddBookIntent.AddAnyway -> launchIfIdle { handleAddAnyway() }
+            AddBookIntent.Retry ->
+                launchIfIdle {
+                    val mode = _uiState.value.lookupMode
+                    val query = if (mode == LookupMode.Title) _uiState.value.titleQuery else _uiState.value.isbn
                     if (mode == LookupMode.Title) handleLookupByTitle(query) else handleLookupIsbn(query)
                 }
-            }
             AddBookIntent.EnterManually -> viewModelScope.launch { _effects.emit(AddBookEffect.NavigateToManualEntry) }
             is AddBookIntent.BarcodeScanned ->
                 viewModelScope.launch {
@@ -170,6 +159,11 @@ class AddBookViewModel(
                     handleLookupIsbn(intent.isbn)
                 }
         }
+    }
+
+    private fun launchIfIdle(block: suspend () -> Unit) {
+        if (_uiState.value.isLoading) return
+        viewModelScope.launch { block() }
     }
 
     private suspend fun handleLookupIsbn(isbn: String) {
