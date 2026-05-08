@@ -39,8 +39,9 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
     }
 
     override suspend fun addBook(book: NewBook): Result<Book, BookRepositoryError> {
-        val userId = supabase.auth.currentUserOrNull()?.id
-            ?: return Result.Failure(BookRepositoryError.NotAuthenticated)
+        val userId =
+            supabase.auth.currentUserOrNull()?.id
+                ?: return Result.Failure(BookRepositoryError.NotAuthenticated)
         return try {
             val dto = book.toDto(userId)
             val saved = supabase.from("books").insert(dto) { select() }.decodeSingle<BookDto>().toBook()
