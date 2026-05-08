@@ -146,7 +146,9 @@ class ManualEntryViewModelTest {
     @Test
     fun `SaveBook with duplicate title sets showDuplicateDialog and does not emit ShowError`() =
         runTest {
-            fakeRepo.seedBooks(Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null))
+            fakeRepo.seedBooks(
+                Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+            )
             val viewModel = ManualEntryViewModel(useCase)
             viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
             assertTrue(viewModel.uiState.value.showDuplicateDialog)
@@ -156,7 +158,9 @@ class ManualEntryViewModelTest {
     @Test
     fun `DismissDuplicateDialog clears showDuplicateDialog`() =
         runTest {
-            fakeRepo.seedBooks(Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null))
+            fakeRepo.seedBooks(
+                Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+            )
             val viewModel = ManualEntryViewModel(useCase)
             viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
             viewModel.onIntent(ManualEntryIntent.DismissDuplicateDialog)
@@ -166,7 +170,9 @@ class ManualEntryViewModelTest {
     @Test
     fun `AddAnyway saves book and emits NavigateToLibrary`() =
         runTest {
-            fakeRepo.seedBooks(Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null))
+            fakeRepo.seedBooks(
+                Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+            )
             val viewModel = ManualEntryViewModel(useCase)
             viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
             viewModel.effects.test {
