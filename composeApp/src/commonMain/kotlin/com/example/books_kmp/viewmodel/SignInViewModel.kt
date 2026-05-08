@@ -39,8 +39,13 @@ class SignInViewModel(
 
     fun onIntent(intent: SignInIntent) {
         when (intent) {
-            is SignInIntent.SignIn -> viewModelScope.launch { handleSignIn(intent.email, intent.password) }
+            is SignInIntent.SignIn -> launchIfIdle { handleSignIn(intent.email, intent.password) }
         }
+    }
+
+    private fun launchIfIdle(block: suspend () -> Unit) {
+        if (_uiState.value.isLoading) return
+        viewModelScope.launch { block() }
     }
 
     private suspend fun handleSignIn(

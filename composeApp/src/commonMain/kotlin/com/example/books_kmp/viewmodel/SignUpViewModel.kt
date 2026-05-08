@@ -45,8 +45,19 @@ class SignUpViewModel(
     fun onIntent(intent: SignUpIntent) {
         when (intent) {
             is SignUpIntent.SignUp ->
-                viewModelScope.launch { handleSignUp(intent.email, intent.password, intent.confirmPassword) }
+                launchIfIdle {
+                    handleSignUp(
+                        intent.email,
+                        intent.password,
+                        intent.confirmPassword
+                    )
+                }
         }
+    }
+
+    private fun launchIfIdle(block: suspend () -> Unit) {
+        if (_uiState.value.isLoading) return
+        viewModelScope.launch { block() }
     }
 
     private suspend fun handleSignUp(
