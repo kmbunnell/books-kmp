@@ -4,6 +4,7 @@ import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Book
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -46,5 +47,24 @@ class SaveManualBookUseCaseTest {
             val result = useCase("The Odyssey", "Homer")
             assertIs<Result.Failure<SaveManualBookError>>(result)
             assertEquals(SaveManualBookError.SaveFailed, result.error)
+        }
+
+    @Test
+    fun `invoke returns DuplicateTitle when a book with the same title already exists`() =
+        runTest {
+            repo.seedBooks(Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null))
+            val result = useCase("The Odyssey", "Homer")
+            assertIs<Result.Failure<SaveManualBookError>>(result)
+            assertIs<SaveManualBookError.DuplicateTitle>(result.error)
+            assertFalse(repo.addBookCalled)
+        }
+
+    @Test
+    fun `invoke with forceAdd skips duplicate check and saves the book`() =
+        runTest {
+            repo.seedBooks(Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null))
+            val result = useCase("The Odyssey", "Homer", forceAdd = true)
+            assertIs<Result.Success<Book>>(result)
+            assertNotNull(repo.lastAddedBook)
         }
 }

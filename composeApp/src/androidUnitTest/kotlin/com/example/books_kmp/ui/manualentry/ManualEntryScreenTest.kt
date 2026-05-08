@@ -149,4 +149,50 @@ class ManualEntryScreenTest {
         composeTestRule.onNodeWithTag(TestTags.ManualEntry.LoadingIndicator).assertIsDisplayed()
         composeTestRule.onNodeWithTag(TestTags.ManualEntry.SaveButton).assertIsNotEnabled()
     }
+
+    @Test
+    fun `showDuplicateDialog — duplicate dialog is displayed`() {
+        composeTestRule.setContent {
+            ManualEntryScreenContent(
+                uiState = ManualEntryUiState(showDuplicateDialog = true),
+                effects = MutableSharedFlow<ManualEntryEffect>(),
+                onIntent = {},
+                onNavigateToLibrary = {},
+                onNavigateBack = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.ManualEntry.DuplicateDialog).assertIsDisplayed()
+    }
+
+    @Test
+    fun `duplicate dialog add anyway button triggers AddAnyway intent`() {
+        var capturedIntent: ManualEntryIntent? = null
+        composeTestRule.setContent {
+            ManualEntryScreenContent(
+                uiState = ManualEntryUiState(showDuplicateDialog = true),
+                effects = MutableSharedFlow<ManualEntryEffect>(),
+                onIntent = { capturedIntent = it },
+                onNavigateToLibrary = {},
+                onNavigateBack = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.ManualEntry.DuplicateDialogAddAnywayButton).performClick()
+        assertEquals(ManualEntryIntent.AddAnyway, capturedIntent)
+    }
+
+    @Test
+    fun `duplicate dialog cancel button triggers DismissDuplicateDialog intent`() {
+        var capturedIntent: ManualEntryIntent? = null
+        composeTestRule.setContent {
+            ManualEntryScreenContent(
+                uiState = ManualEntryUiState(showDuplicateDialog = true),
+                effects = MutableSharedFlow<ManualEntryEffect>(),
+                onIntent = { capturedIntent = it },
+                onNavigateToLibrary = {},
+                onNavigateBack = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.ManualEntry.DuplicateDialogCancelButton).performClick()
+        assertEquals(ManualEntryIntent.DismissDuplicateDialog, capturedIntent)
+    }
 }

@@ -5,9 +5,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -35,6 +39,7 @@ import bookskmp.composeapp.generated.resources.error_title_required
 import bookskmp.composeapp.generated.resources.label_author
 import bookskmp.composeapp.generated.resources.label_title
 import bookskmp.composeapp.generated.resources.title_manual_entry
+import com.example.books_kmp.ui.DuplicateBookDialog
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.ManualEntryEffect
 import com.example.books_kmp.viewmodel.ManualEntryIntent
@@ -87,12 +92,29 @@ fun ManualEntryScreenContent(
         }
     }
 
+    if (uiState.showDuplicateDialog) {
+        DuplicateBookDialog(
+            onAddAnyway = { onIntent(ManualEntryIntent.AddAnyway) },
+            onDismiss = { onIntent(ManualEntryIntent.DismissDuplicateDialog) },
+            dialogTag = TestTags.ManualEntry.DuplicateDialog,
+            addAnywayTag = TestTags.ManualEntry.DuplicateDialogAddAnywayButton,
+            cancelTag = TestTags.ManualEntry.DuplicateDialogCancelButton,
+        )
+    }
+
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text(stringResource(Res.string.title_manual_entry)) })
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-    ) { innerPadding ->
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(Res.string.title_manual_entry)) },
+                    navigationIcon = {
+                        IconButton(onClick = { onIntent(ManualEntryIntent.Cancel) }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        }
+                    },
+                )
+            },
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+        ) { innerPadding ->
         Column(
             modifier =
                 Modifier
