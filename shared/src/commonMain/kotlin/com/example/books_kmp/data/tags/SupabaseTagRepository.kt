@@ -26,7 +26,7 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
     override suspend fun createTag(name: String): Result<Tag, TagError> {
         val dupResult = isDuplicate(name, excludeId = "")
         if (dupResult is Result.Failure) return dupResult
-        if ((dupResult as Result.Success).data) return Result.Failure(TagError.DuplicateName)
+        if (dupResult.data) return Result.Failure(TagError.DuplicateName)
         val userId =
             supabase.auth.currentUserOrNull()?.id
                 ?: return Result.Failure(TagError.NotAuthenticated)
@@ -51,7 +51,7 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
     ): Result<Tag, TagError> {
         val dupResult = isDuplicate(newName, excludeId = id)
         if (dupResult is Result.Failure) return dupResult
-        if ((dupResult as Result.Success).data) return Result.Failure(TagError.DuplicateName)
+        if (dupResult.data) return Result.Failure(TagError.DuplicateName)
         return try {
             val dto =
                 supabase
@@ -154,7 +154,7 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
         if (tagsResult is Result.Failure) return tagsResult
         val trimmedLower = name.trim().lowercase()
         return Result.Success(
-            (tagsResult as Result.Success).data.any {
+            tagsResult.data.any {
                 it.name.trim().lowercase() == trimmedLower && it.id != excludeId
             },
         )

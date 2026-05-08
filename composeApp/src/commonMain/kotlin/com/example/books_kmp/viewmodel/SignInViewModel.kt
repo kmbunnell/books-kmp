@@ -38,10 +38,8 @@ class SignInViewModel(
     val effects: SharedFlow<SignInEffect> = _effects.asSharedFlow()
 
     fun onIntent(intent: SignInIntent) {
-        viewModelScope.launch {
-            when (intent) {
-                is SignInIntent.SignIn -> handleSignIn(intent.email, intent.password)
-            }
+        when (intent) {
+            is SignInIntent.SignIn -> viewModelScope.launch { handleSignIn(intent.email, intent.password) }
         }
     }
 
