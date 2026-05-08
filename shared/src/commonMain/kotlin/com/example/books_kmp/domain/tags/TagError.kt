@@ -6,4 +6,6 @@ sealed interface TagError {
     data class NetworkError(val cause: Throwable) : TagError
 
     data object NotFound : TagError
+
+    data object NotAuthenticated : TagError
 }
