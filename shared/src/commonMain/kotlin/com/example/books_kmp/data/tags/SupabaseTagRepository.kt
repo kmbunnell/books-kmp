@@ -27,7 +27,8 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
         val dupResult = isDuplicate(name, excludeId = "")
         if (dupResult is Result.Failure) return dupResult
         if ((dupResult as Result.Success).data) return Result.Failure(TagError.DuplicateName)
-        val userId = supabase.auth.currentUserOrNull()?.id ?: error("Not authenticated")
+        val userId = supabase.auth.currentUserOrNull()?.id
+            ?: return Result.Failure(TagError.NotAuthenticated)
         return try {
             val dto =
                 supabase.from(TABLE_TAGS).insert(TagDto(name = name.trim(), userId = userId)) {
