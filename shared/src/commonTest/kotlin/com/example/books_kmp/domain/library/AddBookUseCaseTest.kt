@@ -95,6 +95,17 @@ class AddBookUseCaseTest {
         }
 
     @Test
+    fun `isbn is null, title lookup fails — returns NetworkError`() =
+        runTest {
+            repo.findDuplicateTitleShouldFail = true
+            val noIsbnData =
+                BookLookupData(isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+            val result = useCase(noIsbnData)
+            assertIs<Result.Failure<AddBookError>>(result)
+            assertEquals(AddBookError.NetworkError, result.error)
+        }
+
+    @Test
     fun `isbn is non-null, duplicate title exists — proceeds normally (title check skipped)`() =
         runTest {
             repo.seedBooks(

@@ -14,15 +14,9 @@ class SaveManualBookUseCase(
         forceAdd: Boolean = false,
     ): Result<Book, SaveManualBookError> {
         if (!forceAdd) {
-            val normalisedTitle = normalise(title).lowercase()
-            when (val titleResult = bookRepository.findBookByTitle(normalisedTitle)) {
-                is Result.Success -> {
-                    val existing = titleResult.data
-                    if (existing != null) {
-                        return Result.Failure(SaveManualBookError.DuplicateTitle)
-                    }
-                }
+            when (val check = bookRepository.findDuplicateTitle(normalise(title).lowercase())) {
                 is Result.Failure -> return Result.Failure(SaveManualBookError.SaveFailed)
+                is Result.Success -> if (check.data != null) return Result.Failure(SaveManualBookError.DuplicateTitle)
             }
         }
         val book = NewBook(title = title, authors = listOf(author))

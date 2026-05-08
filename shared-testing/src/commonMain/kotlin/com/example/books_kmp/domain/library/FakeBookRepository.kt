@@ -31,6 +31,7 @@ class FakeBookRepository(
     var deleteBookGate: CompletableDeferred<Unit>? = null
     var deleteBookShouldFail = false
     var deleteBookCalled = 0
+    var findDuplicateTitleShouldFail = false
 
     fun seedBooks(vararg booksToSeed: Book) {
         books.addAll(booksToSeed)
@@ -100,8 +101,10 @@ class FakeBookRepository(
         return Result.Success(Unit)
     }
 
-    override suspend fun findBookByTitle(title: String): Result<Book?, BookRepositoryError> =
-        Result.Success(books.find { normalise(it.title).lowercase() == title })
+    override suspend fun findDuplicateTitle(normalisedTitle: String): Result<Book?, BookRepositoryError> {
+        if (findDuplicateTitleShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
+        return Result.Success(books.find { normalise(it.title).lowercase() == normalisedTitle })
+    }
 
     override suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError> {
         if (isbnExistsShouldFail) return Result.Failure(BookRepositoryError.NetworkError)

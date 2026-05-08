@@ -5,6 +5,7 @@ import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.BookRepositoryError
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.NewBook
+import com.example.books_kmp.util.normalise
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
@@ -41,7 +42,9 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
         val userId = supabase.auth.currentUserOrNull()?.id ?: error("Not authenticated")
         return try {
             val dto = book.toDto(userId)
-            Result.Success(supabase.from("books").insert(dto) { select() }.decodeSingle<BookDto>().toBook())
+            val saved = supabase.from("books").insert(dto) { select() }.decodeSingle<BookDto>().toBook()
+            booksCache.update { it?.plus(saved) }
+            Result.Success(saved)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -67,8 +70,13 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
     override suspend fun getBookByIsbn(isbn: String): Result<Book?, BookRepositoryError> =
         selectSingleBook { eq("isbn", isbn) }
 
-    override suspend fun findBookByTitle(title: String): Result<Book?, BookRepositoryError> =
-        selectSingleBook { ilike("title", title) }
+    override suspend fun findDuplicateTitle(normalisedTitle: String): Result<Book?, BookRepositoryError> {
+        val cache = booksCache.value ?: when (val loaded = getBooksByUser()) {
+            is Result.Failure -> return Result.Failure(loaded.error)
+            is Result.Success -> loaded.data
+        }
+        return Result.Success(cache.find { normalise(it.title).lowercase() == normalisedTitle })
+    }
 
     private suspend fun selectSingleBook(
         predicate: PostgrestFilterBuilder.() -> Unit,
@@ -108,6 +116,7 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
     override suspend fun deleteBook(bookId: String): Result<Unit, BookRepositoryError> =
         try {
             supabase.from("books").delete { filter { eq("id", bookId) } }
+            booksCache.update { it?.filter { book -> book.id != bookId } }
             Result.Success(Unit)
         } catch (e: CancellationException) {
             throw e
