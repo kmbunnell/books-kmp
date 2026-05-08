@@ -4,6 +4,7 @@ import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.domain.model.NewBook
+import com.example.books_kmp.util.normalise
 
 class AddBookUseCase(
     private val bookRepository: BookRepository,
@@ -13,7 +14,8 @@ class AddBookUseCase(
         forceAdd: Boolean = false,
     ): Result<Book, AddBookError> {
         if (lookupData.isbn == null && !forceAdd) {
-            when (val titleResult = bookRepository.findBookByTitle(lookupData.title)) {
+            val normalisedTitle = normalise(lookupData.title).lowercase()
+            when (val titleResult = bookRepository.findBookByTitle(normalisedTitle)) {
                 is Result.Success -> {
                     val existing = titleResult.data
                     if (existing != null) {
