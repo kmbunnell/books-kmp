@@ -100,7 +100,7 @@ class FakeBookRepository(
     }
 
     override suspend fun findBookByTitle(title: String): Result<Book?, BookRepositoryError> =
-        Result.Success(books.find { it.title.equals(title, ignoreCase = true) })
+        Result.Success(books.find { it.title.lowercase().trim() == title })
 
     override suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError> {
         if (isbnExistsShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
