@@ -67,4 +67,15 @@ class SaveManualBookUseCaseTest {
             assertIs<Result.Success<Book>>(result)
             assertNotNull(repo.lastAddedBook)
         }
+
+    @Test
+    fun `invoke returns DuplicateTitle for case-insensitive title match`() =
+        runTest {
+            repo.seedBooks(Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null))
+            val result = useCase("the odyssey", "Homer")
+            assertIs<Result.Failure<SaveManualBookError>>(result)
+            assertIs<SaveManualBookError.DuplicateTitle>(result.error)
+            assertFalse(repo.addBookCalled)
+        }
+
 }

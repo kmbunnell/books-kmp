@@ -69,7 +69,10 @@ class ManualEntryViewModel(
                 if (_uiState.value.isLoading) return
                 viewModelScope.launch { handleAddAnyway() }
             }
-            ManualEntryIntent.DismissDuplicateDialog -> _uiState.update { it.copy(showDuplicateDialog = false) }
+            ManualEntryIntent.DismissDuplicateDialog -> {
+                pendingEntry = null
+                _uiState.update { it.copy(showDuplicateDialog = false) }
+            }
         }
     }
 

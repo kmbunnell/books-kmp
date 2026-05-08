@@ -13,7 +13,8 @@ class SaveManualBookUseCase(
         forceAdd: Boolean = false,
     ): Result<Book, SaveManualBookError> {
         if (!forceAdd) {
-            when (val titleResult = bookRepository.findBookByTitle(title)) {
+            val normalisedTitle = title.lowercase().trim()
+            when (val titleResult = bookRepository.findBookByTitle(normalisedTitle)) {
                 is Result.Success -> {
                     val existing = titleResult.data
                     if (existing != null) {

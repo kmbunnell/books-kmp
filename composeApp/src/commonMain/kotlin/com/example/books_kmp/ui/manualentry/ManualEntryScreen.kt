@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_cancel
+import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.button_save
 import bookskmp.composeapp.generated.resources.error_author_required
 import bookskmp.composeapp.generated.resources.error_save_failed
@@ -103,18 +104,21 @@ fun ManualEntryScreenContent(
     }
 
     Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(Res.string.title_manual_entry)) },
-                    navigationIcon = {
-                        IconButton(onClick = { onIntent(ManualEntryIntent.Cancel) }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                        }
-                    },
-                )
-            },
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-        ) { innerPadding ->
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(Res.string.title_manual_entry)) },
+                navigationIcon = {
+                    IconButton(onClick = { onIntent(ManualEntryIntent.Cancel) }) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(Res.string.cd_navigate_up),
+                        )
+                    }
+                },
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { innerPadding ->
         Column(
             modifier =
                 Modifier

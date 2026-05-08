@@ -23,7 +23,7 @@ fun DuplicateBookDialog(
     cancelTag: String,
 ) {
     AlertDialog(
-        onDismissRequest = {},
+        onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.error_duplicate_title)) },
         text = { Text(stringResource(Res.string.error_duplicate_message)) },
         confirmButton = {
