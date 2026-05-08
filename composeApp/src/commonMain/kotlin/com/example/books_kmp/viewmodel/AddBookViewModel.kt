@@ -142,7 +142,10 @@ class AddBookViewModel(
                             },
                     )
                 }
-            is AddBookIntent.LookupIsbn -> viewModelScope.launch { handleLookupIsbn(intent.isbn) }
+            is AddBookIntent.LookupIsbn -> {
+                if (_uiState.value.isLoading) return
+                viewModelScope.launch { handleLookupIsbn(intent.isbn) }
+            }
             is AddBookIntent.LookupByTitle -> {
                 if (_uiState.value.isLoading) return
                 viewModelScope.launch { handleLookupByTitle(intent.title) }
@@ -153,6 +156,7 @@ class AddBookViewModel(
                 viewModelScope.launch { handleAddAnyway() }
             }
             AddBookIntent.Retry -> {
+                if (_uiState.value.isLoading) return
                 val mode = _uiState.value.lookupMode
                 val query = if (mode == LookupMode.Title) _uiState.value.titleQuery else _uiState.value.isbn
                 viewModelScope.launch {

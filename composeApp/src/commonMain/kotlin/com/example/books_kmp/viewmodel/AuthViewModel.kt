@@ -69,10 +69,8 @@ class AuthViewModel(
     }
 
     fun onIntent(intent: AuthIntent) {
-        viewModelScope.launch {
-            when (intent) {
-                AuthIntent.SignOut -> handleSignOut()
-            }
+        when (intent) {
+            AuthIntent.SignOut -> viewModelScope.launch { handleSignOut() }
         }
     }
 
