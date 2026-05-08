@@ -32,8 +32,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_cancel
-import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.button_save
+import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.error_author_required
 import bookskmp.composeapp.generated.resources.error_save_failed
 import bookskmp.composeapp.generated.resources.error_title_required

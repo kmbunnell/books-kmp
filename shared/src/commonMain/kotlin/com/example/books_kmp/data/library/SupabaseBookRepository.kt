@@ -71,10 +71,11 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
         selectSingleBook { eq("isbn", isbn) }
 
     override suspend fun findDuplicateTitle(normalisedTitle: String): Result<Book?, BookRepositoryError> {
-        val cache = booksCache.value ?: when (val loaded = getBooksByUser()) {
-            is Result.Failure -> return Result.Failure(loaded.error)
-            is Result.Success -> loaded.data
-        }
+        val cache =
+            booksCache.value ?: when (val loaded = getBooksByUser()) {
+                is Result.Failure -> return Result.Failure(loaded.error)
+                is Result.Success -> loaded.data
+            }
         return Result.Success(cache.find { normalise(it.title).lowercase() == normalisedTitle })
     }
 

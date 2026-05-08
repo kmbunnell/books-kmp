@@ -16,7 +16,12 @@ class AddBookUseCase(
         if (lookupData.isbn == null && !forceAdd) {
             when (val check = bookRepository.findDuplicateTitle(normalise(lookupData.title).lowercase())) {
                 is Result.Failure -> return Result.Failure(AddBookError.NetworkError)
-                is Result.Success -> if (check.data != null) return Result.Failure(AddBookError.DuplicateTitle(check.data.title))
+                is Result.Success ->
+                    if (check.data != null) {
+                        return Result.Failure(
+                            AddBookError.DuplicateTitle(check.data.title)
+                        )
+                    }
             }
         }
         val newBook =

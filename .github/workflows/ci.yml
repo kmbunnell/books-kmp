@@ -43,11 +43,6 @@ jobs:
       - name: Unit tests
         run: ./gradlew :shared:testDebugUnitTest :composeApp:testDebugUnitTest
 
-      - name: Verify integration test compilation
-        # Compile integration tests without running them — no Supabase instance available in CI.
-        # Full integration test run is handled by the integration-tests workflow.
-        run: ./gradlew :shared-integration-tests:compileTestKotlinJvm
-
       - name: Assemble debug APK
         run: ./gradlew :composeApp:assembleDebug
 
