@@ -3,6 +3,7 @@ package com.example.books_kmp.domain.library
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.NewBook
+import com.example.books_kmp.util.normalise
 
 class SaveManualBookUseCase(
     private val bookRepository: BookRepository,
@@ -13,7 +14,7 @@ class SaveManualBookUseCase(
         forceAdd: Boolean = false,
     ): Result<Book, SaveManualBookError> {
         if (!forceAdd) {
-            val normalisedTitle = title.lowercase().trim()
+            val normalisedTitle = normalise(title).lowercase()
             when (val titleResult = bookRepository.findBookByTitle(normalisedTitle)) {
                 is Result.Success -> {
                     val existing = titleResult.data

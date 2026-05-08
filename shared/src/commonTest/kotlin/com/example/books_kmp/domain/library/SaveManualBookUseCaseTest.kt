@@ -78,4 +78,13 @@ class SaveManualBookUseCaseTest {
             assertFalse(repo.addBookCalled)
         }
 
+    @Test
+    fun `invoke returns DuplicateTitle for title that matches after diacritic normalisation`() =
+        runTest {
+            repo.seedBooks(Book(id = "1", isbn = null, title = "Resume", authors = listOf("Author"), coverImageUrl = null))
+            val result = useCase("Résumé", "Author")
+            assertIs<Result.Failure<SaveManualBookError>>(result)
+            assertIs<SaveManualBookError.DuplicateTitle>(result.error)
+            assertFalse(repo.addBookCalled)
+        }
 }

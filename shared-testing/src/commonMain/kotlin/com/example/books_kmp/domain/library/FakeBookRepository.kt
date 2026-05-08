@@ -3,6 +3,7 @@ package com.example.books_kmp.domain.library
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.NewBook
+import com.example.books_kmp.util.normalise
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -100,7 +101,7 @@ class FakeBookRepository(
     }
 
     override suspend fun findBookByTitle(title: String): Result<Book?, BookRepositoryError> =
-        Result.Success(books.find { it.title.lowercase().trim() == title })
+        Result.Success(books.find { normalise(it.title).lowercase() == title })
 
     override suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError> {
         if (isbnExistsShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
