@@ -1,4 +1,4 @@
-# Shelved
+# Shelvd
 
 A cross-platform mobile app for book collectors to build and manage a personal digital library. Scan a barcode or enter an ISBN, and Shelved automatically pulls in the cover, title, and author from the Open Library API. Organize your collection with a flexible tagging system that acts as virtual shelves.
 
