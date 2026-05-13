@@ -287,7 +287,7 @@ fun AddBookScreenContent(
                                         contentDescription = stringResource(Res.string.cd_book_cover),
                                         modifier =
                                             Modifier
-                                                .size(120.dp)
+                                                .height(200.dp)
                                                 .testTag(TestTags.AddBook.BookPreviewCover),
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
