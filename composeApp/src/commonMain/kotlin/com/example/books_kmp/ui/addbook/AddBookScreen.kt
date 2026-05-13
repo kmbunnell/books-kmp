@@ -3,6 +3,7 @@ package com.example.books_kmp.ui.addbook
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,11 +48,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_add
 import bookskmp.composeapp.generated.resources.button_enter_manually
+import bookskmp.composeapp.generated.resources.button_isbn_lookup
+import bookskmp.composeapp.generated.resources.button_title_lookup
 import bookskmp.composeapp.generated.resources.button_look_up
 import bookskmp.composeapp.generated.resources.button_retry
 import bookskmp.composeapp.generated.resources.camera_permission_permanently_denied
@@ -225,15 +229,17 @@ fun AddBookScreenContent(
 
                 if (uiState.titleResults.isNotEmpty()) {
                     item {
-                        TextButton(
-                            onClick = { onIntent(AddBookIntent.EnterManually) },
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .testTag(TestTags.AddBook.EnterManuallyButton),
-                        ) {
-                            Text(stringResource(Res.string.title_results_enter_manually))
-                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(Res.string.title_results_enter_manually),
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                        )
+                        LookUpOptions(
+                            firstButtonText = stringResource(Res.string.button_isbn_lookup),
+                            onFirstButtonClick = { onIntent(AddBookIntent.SetLookupMode(LookupMode.ISBN)) },
+                            onEnterManually = { onIntent(AddBookIntent.EnterManually) },
+                        )
                     }
                 }
 
@@ -445,6 +451,28 @@ private fun BookCoverImage(
 }
 
 @Composable
+private fun LookUpOptions(
+    firstButtonText: String,
+    onFirstButtonClick: () -> Unit,
+    onEnterManually: () -> Unit,
+) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        TextButton(
+            onClick = onFirstButtonClick,
+            modifier = Modifier.weight(1f),
+        ) {
+            Text(firstButtonText)
+        }
+        TextButton(
+            onClick = onEnterManually,
+            modifier = Modifier.weight(1f).testTag(TestTags.AddBook.EnterManuallyButton),
+        ) {
+            Text(stringResource(Res.string.button_enter_manually))
+        }
+    }
+}
+
+@Composable
 private fun ErrorSection(
     error: AddBookScreenError,
     onIntent: (AddBookIntent) -> Unit,
@@ -463,16 +491,18 @@ private fun ErrorSection(
     Spacer(modifier = Modifier.height(8.dp))
     Text(
         text = message,
-        modifier = Modifier.testTag(TestTags.AddBook.ErrorBanner),
+        modifier = Modifier
+            .testTag(TestTags.AddBook.ErrorBanner)
+            .fillMaxWidth(),
+        textAlign = TextAlign.Center,
     )
     when (error) {
         AddBookScreenError.NotFound ->
-            TextButton(
-                onClick = { onIntent(AddBookIntent.EnterManually) },
-                modifier = Modifier.testTag(TestTags.AddBook.EnterManuallyButton),
-            ) {
-                Text(stringResource(Res.string.button_enter_manually))
-            }
+            LookUpOptions(
+                firstButtonText = stringResource(Res.string.button_title_lookup),
+                onFirstButtonClick = { onIntent(AddBookIntent.SetLookupMode(LookupMode.Title)) },
+                onEnterManually = { onIntent(AddBookIntent.EnterManually) },
+            )
         AddBookScreenError.NetworkError,
         AddBookScreenError.RateLimited ->
             TextButton(
