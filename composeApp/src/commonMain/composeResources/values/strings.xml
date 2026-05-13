@@ -47,8 +47,10 @@
     <string name="cd_book_cover">Book cover</string>
     <string name="cd_add_book">Add book</string>
     <string name="cd_navigate_up">Navigate up</string>
-    <string name="error_isbn_not_found">Book not found. Would you like to enter this book manually instead?</string>
+    <string name="error_isbn_not_found">Book not found. Try another way?</string>
+    <string name="button_title_lookup">Title Search</string>
     <string name="button_enter_manually">Enter Manually</string>
+    <string name="button_isbn_lookup">ISBN Search</string>
     <string name="cd_close">Close</string>
     <string name="camera_permission_title">Camera Permission Required</string>
     <string name="camera_permission_rationale">Camera access is needed to scan book barcodes. Please grant the permission to continue.</string>
@@ -58,7 +60,7 @@
     <string name="cd_scan_barcode">Scan barcode</string>
     <string name="cd_close_scanner">Close scanner</string>
     <string name="error_scan_failed">Unable to scan barcode. Please try again.</string>
-    <string name = "error_unavailable_hardware"> "This device does not support barcode scanning."</string>
+    <string name ="error_unavailable_hardware"> "This device does not support barcode scanning."</string>
     <string name="title_tag_management">Tag Management</string>
     <string name="section_default_tags">Default Tags</string>
     <string name="section_custom_tags">Custom Tags</string>
@@ -103,5 +105,5 @@
     <string name="error_delete_book_failed">Failed to delete book. Please try again.</string>
     <string name="label_isbn_search">ISBN</string>
     <string name="label_title_search">Title</string>
-    <string name="title_results_enter_manually">Don't see your book? Enter manually instead.</string>
+    <string name="title_results_enter_manually">Add book another way:</string>
 </resources>

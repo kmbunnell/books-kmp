@@ -225,7 +225,8 @@ class AddBookViewModel(
         _uiState.update { it.copy(isLoading = true) }
         when (val result = addBookUseCase(lookup)) {
             is Result.Success -> {
-                _uiState.update { AddBookUiState() }
+                val mode = _uiState.value.lookupMode
+                _uiState.update { AddBookUiState(lookupMode = mode) }
                 _effects.emit(AddBookEffect.BookAdded)
             }
             is Result.Failure -> {
@@ -256,7 +257,8 @@ class AddBookViewModel(
         _uiState.update { it.copy(isLoading = true, showDuplicateDialog = false) }
         when (val result = addBookUseCase(lookup, forceAdd = true)) {
             is Result.Success -> {
-                _uiState.update { AddBookUiState() }
+                val mode = _uiState.value.lookupMode
+                _uiState.update { AddBookUiState(lookupMode = mode) }
                 _effects.emit(AddBookEffect.BookAdded)
             }
             is Result.Failure -> {
