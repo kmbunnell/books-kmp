@@ -6,6 +6,16 @@ Built with **Kotlin Multiplatform** and **Compose Multiplatform**, targeting bot
 
 > **Status:** Work in progress — core flows are functional end-to-end on Android. Shipped: email/password auth, library grid (tag filter, sort, search), barcode scanning (ML Kit / AVFoundation), Add Book by ISBN or title, Book Detail with tag toggling, Tag Management, and Manual Entry.
 
+## Screenshots
+
+| Android                               | iOS |
+|---------------------------------------|-----|
+| ![Library](assets/andr_library.webp)  | ![Library](assets/ios_library.webp) |
+| ![Tag Filter](assets/andr_sort.webp)  | ![Tag filter](assets/ios_sort_Tag.webp) |
+| ![Tags](assets/andr_tag.webp)         | ![Tags](assets/ios_tag.webp) |
+| ![ISBN search](assets/andr_isbn.webp) | ![Title search](assets/ios_title_search.webp) |
+|                                       | ![Custom tag](assets/ios_custom_tag.webp) |
+
 ## Tech Stack
 
 | Layer | Technology |
