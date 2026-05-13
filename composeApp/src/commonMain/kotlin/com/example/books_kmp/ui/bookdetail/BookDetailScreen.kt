@@ -40,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -56,17 +55,15 @@ import bookskmp.composeapp.generated.resources.error_book_detail_load_failed
 import bookskmp.composeapp.generated.resources.error_delete_book_failed
 import bookskmp.composeapp.generated.resources.error_tag_operation_failed
 import bookskmp.composeapp.generated.resources.message_delete_book
-import bookskmp.composeapp.generated.resources.placeholder
 import bookskmp.composeapp.generated.resources.section_tags
 import bookskmp.composeapp.generated.resources.title_book_detail
 import bookskmp.composeapp.generated.resources.title_delete_book
-import coil3.compose.AsyncImage
+import com.example.books_kmp.ui.BookCoverImage
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.viewmodel.BookDetailEffect
 import com.example.books_kmp.viewmodel.BookDetailIntent
 import com.example.books_kmp.viewmodel.BookDetailUiState
 import com.example.books_kmp.viewmodel.BookDetailViewModel
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -217,12 +214,9 @@ internal fun BookDetailScreenContent(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                         ) {
-                            AsyncImage(
-                                model = uiState.book?.coverImageUrl,
+                            BookCoverImage(
+                                url = uiState.book?.coverImageUrl,
                                 contentDescription = stringResource(Res.string.cd_book_cover),
-                                placeholder = painterResource(Res.drawable.placeholder),
-                                error = painterResource(Res.drawable.placeholder),
-                                contentScale = ContentScale.Fit,
                                 onSuccess = { coverLoaded = true },
                                 modifier =
                                     Modifier
