@@ -50,9 +50,9 @@ import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_add
 import bookskmp.composeapp.generated.resources.button_enter_manually
 import bookskmp.composeapp.generated.resources.button_isbn_lookup
-import bookskmp.composeapp.generated.resources.button_title_lookup
 import bookskmp.composeapp.generated.resources.button_look_up
 import bookskmp.composeapp.generated.resources.button_retry
+import bookskmp.composeapp.generated.resources.button_title_lookup
 import bookskmp.composeapp.generated.resources.camera_permission_permanently_denied
 import bookskmp.composeapp.generated.resources.cd_book_cover
 import bookskmp.composeapp.generated.resources.cd_close
@@ -70,9 +70,9 @@ import bookskmp.composeapp.generated.resources.label_title_search
 import bookskmp.composeapp.generated.resources.snackbar_book_added
 import bookskmp.composeapp.generated.resources.title_add_book
 import bookskmp.composeapp.generated.resources.title_results_enter_manually
-import com.example.books_kmp.ui.BookCoverImage
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.BookLookupData
+import com.example.books_kmp.ui.BookCoverImage
 import com.example.books_kmp.ui.DuplicateBookDialog
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.ui.scan.BarcodeScannerView
@@ -468,9 +468,10 @@ private fun ErrorSection(
     Spacer(modifier = Modifier.height(8.dp))
     Text(
         text = message,
-        modifier = Modifier
-            .testTag(TestTags.AddBook.ErrorBanner)
-            .fillMaxWidth(),
+        modifier =
+            Modifier
+                .testTag(TestTags.AddBook.ErrorBanner)
+                .fillMaxWidth(),
         textAlign = TextAlign.Center,
     )
     when (error) {
