@@ -1,16 +1,18 @@
 ---
-description: Implement the approved plan from plan.md following TDD and CLAUDE.md guidelines
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Agent, AskUserQuestion
+name: implement-plan
+description: Use this agent to implement the approved plan from .claude/plan.md following TDD and AGENTS.md architecture rules. Invoke after approving a plan with /plan-build. The agent runs the full TDD cycle — red/green/refactor per step — then regression checks, build, and lint. Use proactively after plan approval.
+model: opus
+color: green
 ---
 
 ## Purpose
 
-Read `.claude/plan.md` and implement every step following TDD and CLAUDE.md architecture rules. Checks are embedded in the TDD cycle per layer — no separate review pass at the end.
+Read `.claude/plan.md` and implement every step following TDD and AGENTS.md architecture rules. Checks are embedded in the TDD cycle per layer — no separate review pass at the end.
 
 ## Token-efficiency rules
 
 - Do not re-read files already read this session unless modified since.
-- Do not re-read `CLAUDE.md` or `docs/*.md` — those rules are in your system context.
+- Do not re-read `AGENTS.md` or `docs/*.md` — those rules are in your system context.
 - Batch all edits to a single file into one Edit call.
 - Combine Gradle tasks where possible. Never run a full build after every file change.
 - On Gradle failure, read only the last 100 lines of output.
@@ -36,7 +38,7 @@ If mismatched or on `main`/`develop`, stop and report.
 - A plan step is ambiguous or references something that doesn't exist.
 - Fixing one test breaks another (cascading failure after the second unexpected break).
 - More than 2 consecutive Gradle failures.
-- Unsure whether an approach violates CLAUDE.md layer or MVI rules.
+- Unsure whether an approach violates AGENTS.md layer or MVI rules.
 
 ## Step 1 — TDD implementation loop
 
