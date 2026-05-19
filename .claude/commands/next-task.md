@@ -7,14 +7,12 @@ allowed-tools: Bash, Read, Glob, Grep, Agent, AskUserQuestion
 
 `$ARGUMENTS` may contain a specific ticket key (e.g. `SHELVD-42`).
 
-This skill runs two phases in sequence. Read and follow each phase's steps file in full before moving to the next.
-
 ## Phase 1 — Jira pickup
 
-Read `.claude/commands/jira-pickup.md` and follow all its steps, passing `$ARGUMENTS` as the ticket key argument.
+Run `/jira-pickup`, passing `$ARGUMENTS` as the ticket key. Wait for it to complete and capture the ticket key and branch name from its output.
 
 ## Phase 2 — Plan build
 
-Read `.claude/commands/plan-build.md` and follow all its steps, using the ticket key from Phase 1.
+Run `/plan-build` with the ticket key from Phase 1. Wait for the plan to be approved before finishing.
 
 **Do not write any production or test code.**

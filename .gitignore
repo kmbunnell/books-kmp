@@ -39,5 +39,6 @@ DerivedData/
 # iOS secrets (never commit)
 **/Secrets.xcconfig
 
-# Claude plan file
+# Claude local files
 .claude/plan.md
+.claude/.last-reviewed-plan-hash

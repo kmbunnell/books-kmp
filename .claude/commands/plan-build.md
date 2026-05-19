@@ -71,6 +71,6 @@ If changes are requested, revise and re-present. Repeat until approved or cancel
 <plan content>
 ```
 
-Confirm: "Plan written. Run `/clear` then `/implement-plan` when ready."
+Confirm: "Plan written. Run `/implement-plan` when ready."
 
 **Do not write any production or test code.**
