@@ -147,6 +147,69 @@ Deno.test("ISBN present in cache → 200 cached data; lookup_count incremented",
   await clearCacheRow(isbn);
 });
 
+// --- Rate limiting -----------------------------------------------------------
+
+async function seedRateLimitRow(
+  userId: string,
+  window: "hour" | "day",
+  count: number,
+): Promise<void> {
+  const admin = setupSupabaseAdmin();
+  const now = new Date();
+  const windowStart = window === "hour"
+    ? new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), 0, 0, 0)).toISOString()
+    : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0)).toISOString();
+  await admin.from("user_lookup_rate_limits").upsert({
+    user_id: userId,
+    window_start: windowStart,
+    request_count: count,
+  });
+}
+
+async function clearRateLimitRows(userId: string): Promise<void> {
+  const admin = setupSupabaseAdmin();
+  await admin.from("user_lookup_rate_limits").delete().eq("user_id", userId);
+}
+
+Deno.test("hourly limit reached (200) → 429", async () => {
+  await clearRateLimitRows(sharedUserId);
+  await seedRateLimitRow(sharedUserId, "hour", 200);
+  const res = await post({ type: "isbn", isbn: "9780000000001" });
+  assertEquals(res.status, 429);
+  await res.body?.cancel();
+  await clearRateLimitRows(sharedUserId);
+});
+
+Deno.test("daily limit reached (500) → 429", async () => {
+  await clearRateLimitRows(sharedUserId);
+  await seedRateLimitRow(sharedUserId, "day", 500);
+  const res = await post({ type: "isbn", isbn: "9780000000001" });
+  assertEquals(res.status, 429);
+  await res.body?.cancel();
+  await clearRateLimitRows(sharedUserId);
+});
+
+Deno.test("hourly at 199 and daily at 499 → not rate limited", async () => {
+  await clearRateLimitRows(sharedUserId);
+  await seedRateLimitRow(sharedUserId, "hour", 199);
+  await seedRateLimitRow(sharedUserId, "day", 499);
+  // Any valid request that doesn't need Google Books — use the cache-hit ISBN
+  const admin = setupSupabaseAdmin();
+  const isbn = "9999999999992";
+  await admin.from("book_metadata_cache").insert({
+    isbn,
+    title: "Rate Limit Test Book",
+    authors: ["Test Author"],
+    cover_url: null,
+    lookup_count: 1,
+  });
+  const res = await post({ type: "isbn", isbn });
+  assertEquals(res.status, 200);
+  await res.body?.cancel();
+  await admin.from("book_metadata_cache").delete().eq("isbn", isbn);
+  await clearRateLimitRows(sharedUserId);
+});
+
 // --- Teardown ----------------------------------------------------------------
 
 Deno.test("teardown: delete shared test user", async () => {

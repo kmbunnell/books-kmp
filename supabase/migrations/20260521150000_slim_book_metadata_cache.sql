@@ -24,7 +24,7 @@ AS $$
     WHERE isbn = p_isbn;
 $$;
 
-CREATE FUNCTION upsert_book_metadata_cache(
+CREATE OR REPLACE FUNCTION upsert_book_metadata_cache(
     p_isbn      TEXT,
     p_title     TEXT,
     p_authors   TEXT[],
