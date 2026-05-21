@@ -45,10 +45,6 @@ import bookskmp.composeapp.generated.resources.label_password
 import bookskmp.composeapp.generated.resources.sign_in_sign_up_prompt
 import com.example.books_kmp.domain.auth.SignInError
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.SignInEffect
-import com.example.books_kmp.viewmodel.SignInIntent
-import com.example.books_kmp.viewmodel.SignInUiState
-import com.example.books_kmp.viewmodel.SignInViewModel
 import kotlinx.coroutines.flow.SharedFlow
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel

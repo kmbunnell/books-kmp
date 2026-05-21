@@ -12,9 +12,6 @@ import androidx.compose.ui.test.performClick
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.BookDetailError
-import com.example.books_kmp.viewmodel.BookDetailIntent
-import com.example.books_kmp.viewmodel.BookDetailUiState
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.Rule

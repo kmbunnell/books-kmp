@@ -70,10 +70,6 @@ import bookskmp.composeapp.generated.resources.title_library
 import coil3.compose.AsyncImage
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.LibraryIntent
-import com.example.books_kmp.viewmodel.LibraryUiState
-import com.example.books_kmp.viewmodel.LibraryViewModel
-import com.example.books_kmp.viewmodel.SortOrder
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel

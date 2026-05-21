@@ -1,4 +1,4 @@
-package com.example.books_kmp.viewmodel
+package com.example.books_kmp.ui.tags
 
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Tag

@@ -17,8 +17,8 @@ import com.example.books_kmp.ui.bookdetail.BookDetailScreen
 import com.example.books_kmp.ui.library.LibraryScreen
 import com.example.books_kmp.ui.manualentry.ManualEntryScreen
 import com.example.books_kmp.ui.tags.TagManagementScreen
-import com.example.books_kmp.viewmodel.AuthIntent
-import com.example.books_kmp.viewmodel.AuthViewModel
+import com.example.books_kmp.ui.auth.AuthIntent
+import com.example.books_kmp.ui.auth.AuthViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

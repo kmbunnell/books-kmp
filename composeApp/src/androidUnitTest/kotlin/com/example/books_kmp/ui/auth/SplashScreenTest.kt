@@ -5,7 +5,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.AuthUiState
 import kotlin.test.assertTrue
 import org.junit.Rule
 import org.junit.Test

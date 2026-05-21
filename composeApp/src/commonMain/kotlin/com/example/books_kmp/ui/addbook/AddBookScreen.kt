@@ -76,12 +76,6 @@ import com.example.books_kmp.ui.BookCoverImage
 import com.example.books_kmp.ui.DuplicateBookDialog
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.ui.scan.BarcodeScannerView
-import com.example.books_kmp.viewmodel.AddBookEffect
-import com.example.books_kmp.viewmodel.AddBookIntent
-import com.example.books_kmp.viewmodel.AddBookScreenError
-import com.example.books_kmp.viewmodel.AddBookUiState
-import com.example.books_kmp.viewmodel.AddBookViewModel
-import com.example.books_kmp.viewmodel.LookupMode
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import org.jetbrains.compose.resources.stringResource

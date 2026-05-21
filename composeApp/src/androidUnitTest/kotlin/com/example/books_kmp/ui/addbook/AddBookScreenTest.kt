@@ -12,11 +12,6 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.AddBookEffect
-import com.example.books_kmp.viewmodel.AddBookIntent
-import com.example.books_kmp.viewmodel.AddBookScreenError
-import com.example.books_kmp.viewmodel.AddBookUiState
-import com.example.books_kmp.viewmodel.LookupMode
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.MutableSharedFlow
