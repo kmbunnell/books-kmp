@@ -1,0 +1,156 @@
+// Integration tests for the `lookup-book` Edge Function.
+//
+// Prerequisites (run before `deno test`):
+//   1. `supabase start`                       (local stack on :54321/:54322)
+//   2. `supabase functions serve lookup-book` (function on :54321/functions/v1)
+//
+// Run:
+//   deno test --allow-net --allow-env supabase/functions/lookup-book/index.test.ts
+
+import { assertEquals } from "jsr:@std/assert@1";
+import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
+
+const FUNCTION_URL = "http://localhost:54321/functions/v1/lookup-book";
+const SUPABASE_URL = "http://localhost:54321";
+// Well-known local default keys from `supabase start`. Override via env if needed.
+const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ??
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU";
+
+function setupSupabaseAdmin(): SupabaseClient {
+  return createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+// Shared test user — created once, deleted in teardown to avoid accumulating
+// rows in auth.users across repeated test runs.
+let sharedToken: string;
+let sharedUserId: string;
+
+Deno.test("setup: create shared test user", async () => {
+  const email = `test-lookup-book@example.com`;
+  const password = "Password123!";
+  const admin = setupSupabaseAdmin();
+
+  // Delete any leftover from a previous interrupted run before creating fresh.
+  const { data: existing } = await admin.auth.admin.listUsers();
+  const prior = existing?.users?.find((u) => u.email === email);
+  if (prior) await admin.auth.admin.deleteUser(prior.id);
+
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
+  if (error || !data.user) throw new Error(`Failed to create test user: ${error?.message}`);
+  sharedUserId = data.user.id;
+
+  // Sign in to get a session token.
+  const anon = createClient(SUPABASE_URL, ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: session, error: signInErr } = await anon.auth.signInWithPassword({ email, password });
+  if (signInErr || !session.session) throw new Error(`Failed to sign in: ${signInErr?.message}`);
+  sharedToken = session.session.access_token;
+});
+
+async function clearCacheRow(isbn: string): Promise<void> {
+  const admin = setupSupabaseAdmin();
+  await admin.from("book_metadata_cache").delete().eq("isbn", isbn);
+}
+
+async function post(
+  body: unknown,
+  opts: { token?: string | null } = {},
+): Promise<Response> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  // null = omit Authorization header entirely; undefined = use sharedToken; string = use that value
+  if (opts.token !== null) {
+    headers["Authorization"] = `Bearer ${opts.token ?? sharedToken}`;
+  }
+  return await fetch(FUNCTION_URL, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+}
+
+// --- Step 1: request parsing -------------------------------------------------
+
+Deno.test("missing type field → 400", async () => {
+  const res = await post({});
+  assertEquals(res.status, 400);
+  await res.body?.cancel();
+});
+
+Deno.test("type: isbn without isbn → 400", async () => {
+  const res = await post({ type: "isbn" });
+  assertEquals(res.status, 400);
+  await res.body?.cancel();
+});
+
+Deno.test("type: title without query → 400", async () => {
+  const res = await post({ type: "title" });
+  assertEquals(res.status, 400);
+  await res.body?.cancel();
+});
+
+// --- Step 2: JWT auth --------------------------------------------------------
+
+Deno.test("no Authorization header → 401", async () => {
+  const res = await post({ type: "isbn", isbn: "9780000000000" }, { token: null });
+  assertEquals(res.status, 401);
+  await res.body?.cancel();
+});
+
+Deno.test("garbage bearer token → 401", async () => {
+  const res = await post(
+    { type: "isbn", isbn: "9780000000000" },
+    { token: "not-a-real-jwt" },
+  );
+  assertEquals(res.status, 401);
+  await res.body?.cancel();
+});
+
+// --- Step 3: ISBN cache hit --------------------------------------------------
+
+Deno.test("ISBN present in cache → 200 cached data; lookup_count incremented", async () => {
+  const admin = setupSupabaseAdmin();
+  const isbn = "9999999999991";
+  await clearCacheRow(isbn);
+
+  const { error: insertErr } = await admin.from("book_metadata_cache").insert({
+    isbn,
+    title: "Cached Title",
+    authors: ["Cached Author"],
+    cover_url: "https://example.com/c.jpg",
+    lookup_count: 1,
+  });
+  assertEquals(insertErr, null);
+
+  const res = await post({ type: "isbn", isbn });
+  assertEquals(res.status, 200);
+  const body = await res.json();
+  assertEquals(body.isbn, isbn);
+  assertEquals(body.title, "Cached Title");
+  assertEquals(body.authors, ["Cached Author"]);
+
+  const { data: row } = await admin
+    .from("book_metadata_cache")
+    .select("lookup_count")
+    .eq("isbn", isbn)
+    .single();
+  assertEquals(row?.lookup_count, 2);
+
+  await clearCacheRow(isbn);
+});
+
+// --- Teardown ----------------------------------------------------------------
+
+Deno.test("teardown: delete shared test user", async () => {
+  const admin = setupSupabaseAdmin();
+  const { error } = await admin.auth.admin.deleteUser(sharedUserId);
+  if (error) console.error("Failed to delete test user:", error.message);
+});
