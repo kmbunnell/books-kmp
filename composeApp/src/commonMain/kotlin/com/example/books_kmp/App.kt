@@ -10,6 +10,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.books_kmp.ui.addbook.AddBookScreen
+import com.example.books_kmp.ui.auth.AuthIntent
+import com.example.books_kmp.ui.auth.AuthViewModel
 import com.example.books_kmp.ui.auth.SignInScreen
 import com.example.books_kmp.ui.auth.SignUpScreen
 import com.example.books_kmp.ui.auth.SplashScreen
@@ -17,8 +19,6 @@ import com.example.books_kmp.ui.bookdetail.BookDetailScreen
 import com.example.books_kmp.ui.library.LibraryScreen
 import com.example.books_kmp.ui.manualentry.ManualEntryScreen
 import com.example.books_kmp.ui.tags.TagManagementScreen
-import com.example.books_kmp.ui.auth.AuthIntent
-import com.example.books_kmp.ui.auth.AuthViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

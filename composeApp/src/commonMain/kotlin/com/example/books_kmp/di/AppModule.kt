@@ -18,11 +18,11 @@ import com.example.books_kmp.domain.tags.TagRepository
 import com.example.books_kmp.domain.tags.ToggleBookTagUseCase
 import com.example.books_kmp.ui.addbook.AddBookViewModel
 import com.example.books_kmp.ui.auth.AuthViewModel
+import com.example.books_kmp.ui.auth.SignInViewModel
+import com.example.books_kmp.ui.auth.SignUpViewModel
 import com.example.books_kmp.ui.bookdetail.BookDetailViewModel
 import com.example.books_kmp.ui.library.LibraryViewModel
 import com.example.books_kmp.ui.manualentry.ManualEntryViewModel
-import com.example.books_kmp.ui.auth.SignInViewModel
-import com.example.books_kmp.ui.auth.SignUpViewModel
 import com.example.books_kmp.ui.tags.TagManagementViewModel
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
