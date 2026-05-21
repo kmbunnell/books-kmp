@@ -81,7 +81,11 @@ async function parseRequest(req: Request): Promise<ParseResult> {
     if (typeof isbn !== "string" || isbn.trim() === "") {
       return { ok: false, error: "Missing or invalid 'isbn'" };
     }
-    return { ok: true, value: { type: "isbn", isbn: isbn.trim() } };
+    const trimmed = isbn.trim();
+    if (!/^\d{9}[\dX]$|^\d{13}$/.test(trimmed)) {
+      return { ok: false, error: "Invalid ISBN format — expected 10 or 13 digits" };
+    }
+    return { ok: true, value: { type: "isbn", isbn: trimmed } };
   }
 
   if (type === "title") {
@@ -96,7 +100,7 @@ async function parseRequest(req: Request): Promise<ParseResult> {
 }
 
 type AuthResult =
-  | { ok: true; client: SupabaseClient }
+  | { ok: true; client: SupabaseClient; userId: string }
   | { ok: false; status: 401 | 500 };
 
 async function requireAuth(req: Request): Promise<AuthResult> {
@@ -121,7 +125,20 @@ async function requireAuth(req: Request): Promise<AuthResult> {
   if (error || !data?.user) {
     return { ok: false, status: 401 };
   }
-  return { ok: true, client };
+  return { ok: true, client, userId: data.user.id };
+}
+
+async function checkRateLimit(userId: string): Promise<boolean> {
+  const admin = serviceRoleClient();
+  const [hourly, daily] = await Promise.all([
+    admin.rpc("check_and_increment_rate_limit", { p_user_id: userId, p_limit: 200, p_window: "hour" }),
+    admin.rpc("check_and_increment_rate_limit", { p_user_id: userId, p_limit: 500, p_window: "day" }),
+  ]);
+  if (hourly.error) console.error("Rate limit hourly check failed:", hourly.error.message);
+  if (daily.error) console.error("Rate limit daily check failed:", daily.error.message);
+  // Fail open on RPC error — don't block legitimate users on a DB hiccup
+  if (hourly.error || daily.error) return true;
+  return hourly.data !== false && daily.data !== false;
 }
 
 function serviceRoleClient(): SupabaseClient {
@@ -253,15 +270,25 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
+  const contentLength = Number(req.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > 4096) {
+    return jsonResponse({ error: "Payload too large" }, 413);
+  }
+
+  const parsed = await parseRequest(req);
+  if (!parsed.ok) {
+    return jsonResponse({ error: parsed.error }, 400);
+  }
+
   const auth = await requireAuth(req);
   if (!auth.ok) {
     const msg = auth.status === 500 ? "Internal server error" : "Unauthorized";
     return jsonResponse({ error: msg }, auth.status);
   }
 
-  const parsed = await parseRequest(req);
-  if (!parsed.ok) {
-    return jsonResponse({ error: parsed.error }, 400);
+  const allowed = await checkRateLimit(auth.userId);
+  if (!allowed) {
+    return jsonResponse({ error: "Rate limit exceeded" }, 429);
   }
 
   if (parsed.value.type === "isbn") {

@@ -4,6 +4,13 @@ Day-to-day decisions made during development — captures both spec evolution an
 
 ---
 
+## 2026-05-21 — lookup-book rate limiting: 200/hour + 500/day per user, with 500k cache row cap
+**Context:** SHELVD-124 — abuse protection added after recognising the cache table and Google Books quota could be exploited by authenticated users running scripts.
+**Decision:** Two-layer protection: (1) per-user rate limits enforced via `check_and_increment_rate_limit` RPC — 200 requests/hour and 500 requests/day, both checked atomically on every request; (2) `upsert_book_metadata_cache` silently skips the insert when the table exceeds 500,000 rows (Google Books result still returned to caller). Rate limit check fails open on DB error to avoid locking out legitimate users. `user_lookup_rate_limits` rows accumulate over time but are never re-read after their window passes — a pg_cron cleanup of rows older than 30 days can be added when needed.
+**Rationale:** Limits are sized for real scanning sessions (a user can scan ~30 books in a few minutes; 200/hour gives comfortable headroom). Both hourly and daily windows are enforced because hourly alone allows sustained 4,800/day abuse, and daily alone doesn't catch burst scripting. Rate limits apply to all requests — including cache hits — because the goal is DB protection (preventing authenticated users from filling the cache table via scripts), not purely Google Books quota protection. The counter is capped at `p_limit + 1` so rejected requests don't inflate it beyond a meaningful value.
+
+---
+
 <!-- Format:
 ## YYYY-MM-DD — Short title
 **Context:** What situation or feature prompted this.
