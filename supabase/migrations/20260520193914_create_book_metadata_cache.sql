@@ -3,11 +3,6 @@ CREATE TABLE IF NOT EXISTS book_metadata_cache (
     title            TEXT        NOT NULL,
     authors          TEXT[],
     cover_url        TEXT,
-    publisher        TEXT,
-    published_date   TEXT,
-    page_count       INTEGER,
-    description      TEXT,
-    metadata         JSONB,
     last_fetched_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     lookup_count     INTEGER     NOT NULL DEFAULT 1
 );
