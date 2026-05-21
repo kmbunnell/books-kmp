@@ -73,7 +73,6 @@ import com.example.books_kmp.ui.TestTags
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-
 private const val MAX_TAG_NAME_LENGTH = 20
 
 @Composable
@@ -294,11 +293,15 @@ fun TagManagementScreenContent(
                 )
                 OutlinedTextField(
                     value = formState.draftName,
-                    onValueChange = { if (it.length <= MAX_TAG_NAME_LENGTH) onIntent(
-                        TagManagementIntent.UpdateFormName(
-                            it
-                        )
-                    ) },
+                    onValueChange = {
+                        if (it.length <= MAX_TAG_NAME_LENGTH) {
+                            onIntent(
+                                TagManagementIntent.UpdateFormName(
+                                    it
+                                )
+                            )
+                        }
+                    },
                     label = { Text(stringResource(Res.string.label_tag_name)) },
                     supportingText = {
                         if (nameErrorText != null) {
