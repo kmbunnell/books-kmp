@@ -13,8 +13,6 @@ import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import com.example.books_kmp.domain.auth.SignUpError
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.SignUpEffect
-import com.example.books_kmp.viewmodel.SignUpUiState
 import kotlin.test.assertEquals
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.Rule

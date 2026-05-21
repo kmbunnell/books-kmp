@@ -11,11 +11,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.TagFormMode
-import com.example.books_kmp.viewmodel.TagFormState
-import com.example.books_kmp.viewmodel.TagManagementError
-import com.example.books_kmp.viewmodel.TagManagementIntent
-import com.example.books_kmp.viewmodel.TagManagementUiState
 import kotlin.test.assertEquals
 import org.junit.Rule
 import org.junit.Test

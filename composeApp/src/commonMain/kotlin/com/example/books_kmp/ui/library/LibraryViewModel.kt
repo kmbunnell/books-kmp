@@ -1,4 +1,4 @@
-package com.example.books_kmp.viewmodel
+package com.example.books_kmp.ui.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

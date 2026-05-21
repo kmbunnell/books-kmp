@@ -1,4 +1,4 @@
-package com.example.books_kmp.viewmodel
+package com.example.books_kmp.ui.manualentry
 
 import app.cash.turbine.test
 import com.example.books_kmp.domain.library.FakeBookRepository

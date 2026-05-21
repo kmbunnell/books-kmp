@@ -70,21 +70,9 @@ import bookskmp.composeapp.generated.resources.title_edit_tag
 import bookskmp.composeapp.generated.resources.title_new_tag
 import bookskmp.composeapp.generated.resources.title_tag_management
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.TagFormMode
-import com.example.books_kmp.viewmodel.TagManagementError
-import com.example.books_kmp.viewmodel.TagManagementIntent
-import com.example.books_kmp.viewmodel.TagManagementIntent.CancelDelete
-import com.example.books_kmp.viewmodel.TagManagementIntent.ConfirmDeleteTag
-import com.example.books_kmp.viewmodel.TagManagementIntent.DismissForm
-import com.example.books_kmp.viewmodel.TagManagementIntent.OpenCreateForm
-import com.example.books_kmp.viewmodel.TagManagementIntent.OpenEditForm
-import com.example.books_kmp.viewmodel.TagManagementIntent.RequestDeleteTag
-import com.example.books_kmp.viewmodel.TagManagementIntent.SubmitForm
-import com.example.books_kmp.viewmodel.TagManagementIntent.UpdateFormName
-import com.example.books_kmp.viewmodel.TagManagementUiState
-import com.example.books_kmp.viewmodel.TagManagementViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+
 
 private const val MAX_TAG_NAME_LENGTH = 20
 
@@ -244,7 +232,7 @@ fun TagManagementScreenContent(
                                             text = { Text(stringResource(Res.string.menu_rename_tag)) },
                                             onClick = {
                                                 expandedTagId = null
-                                                onIntent(OpenEditForm(tag))
+                                                onIntent(TagManagementIntent.OpenEditForm(tag))
                                             },
                                             modifier = Modifier.testTag(TestTags.TagManagement.renameMenuItem(tag.id)),
                                         )
@@ -252,7 +240,7 @@ fun TagManagementScreenContent(
                                             text = { Text(stringResource(Res.string.menu_delete_tag)) },
                                             onClick = {
                                                 expandedTagId = null
-                                                onIntent(RequestDeleteTag(tag))
+                                                onIntent(TagManagementIntent.RequestDeleteTag(tag))
                                             },
                                             modifier = Modifier.testTag(TestTags.TagManagement.deleteMenuItem(tag.id)),
                                         )
@@ -261,7 +249,7 @@ fun TagManagementScreenContent(
                             }
                         }
                         TextButton(
-                            onClick = { onIntent(OpenCreateForm) },
+                            onClick = { onIntent(TagManagementIntent.OpenCreateForm) },
                             modifier = Modifier.testTag(TestTags.TagManagement.AddTagButton),
                         ) {
                             Text(stringResource(Res.string.button_add_tag))
@@ -286,7 +274,7 @@ fun TagManagementScreenContent(
         val formState = uiState.tagFormState
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ModalBottomSheet(
-            onDismissRequest = { onIntent(DismissForm) },
+            onDismissRequest = { onIntent(TagManagementIntent.DismissForm) },
             sheetState = sheetState,
         ) {
             Column(
@@ -306,7 +294,11 @@ fun TagManagementScreenContent(
                 )
                 OutlinedTextField(
                     value = formState.draftName,
-                    onValueChange = { if (it.length <= MAX_TAG_NAME_LENGTH) onIntent(UpdateFormName(it)) },
+                    onValueChange = { if (it.length <= MAX_TAG_NAME_LENGTH) onIntent(
+                        TagManagementIntent.UpdateFormName(
+                            it
+                        )
+                    ) },
                     label = { Text(stringResource(Res.string.label_tag_name)) },
                     supportingText = {
                         if (nameErrorText != null) {
@@ -322,7 +314,7 @@ fun TagManagementScreenContent(
                             .testTag(TestTags.TagManagement.FormNameField),
                 )
                 Button(
-                    onClick = { onIntent(SubmitForm) },
+                    onClick = { onIntent(TagManagementIntent.SubmitForm) },
                     enabled = formState.draftName.isNotBlank(),
                     modifier = Modifier.testTag(TestTags.TagManagement.FormSaveButton),
                 ) {
@@ -336,7 +328,7 @@ fun TagManagementScreenContent(
     val pendingTag = uiState.pendingDeleteTag
     if (pendingTag != null) {
         AlertDialog(
-            onDismissRequest = { onIntent(CancelDelete) },
+            onDismissRequest = { onIntent(TagManagementIntent.CancelDelete) },
             title = { Text(stringResource(Res.string.title_delete_tag)) },
             text = {
                 Text(
@@ -349,7 +341,7 @@ fun TagManagementScreenContent(
             },
             confirmButton = {
                 TextButton(
-                    onClick = { onIntent(ConfirmDeleteTag) },
+                    onClick = { onIntent(TagManagementIntent.ConfirmDeleteTag) },
                     modifier = Modifier.testTag(TestTags.TagManagement.DeleteDialogConfirm),
                 ) {
                     Text(stringResource(Res.string.button_delete))
@@ -357,7 +349,7 @@ fun TagManagementScreenContent(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { onIntent(CancelDelete) },
+                    onClick = { onIntent(TagManagementIntent.CancelDelete) },
                     modifier = Modifier.testTag(TestTags.TagManagement.DeleteDialogCancel),
                 ) {
                     Text(stringResource(Res.string.button_cancel))

@@ -60,10 +60,6 @@ import bookskmp.composeapp.generated.resources.title_book_detail
 import bookskmp.composeapp.generated.resources.title_delete_book
 import com.example.books_kmp.ui.BookCoverImage
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.BookDetailEffect
-import com.example.books_kmp.viewmodel.BookDetailIntent
-import com.example.books_kmp.viewmodel.BookDetailUiState
-import com.example.books_kmp.viewmodel.BookDetailViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf

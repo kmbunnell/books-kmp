@@ -10,10 +10,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.ManualEntryEffect
-import com.example.books_kmp.viewmodel.ManualEntryError
-import com.example.books_kmp.viewmodel.ManualEntryIntent
-import com.example.books_kmp.viewmodel.ManualEntryUiState
 import kotlin.test.assertEquals
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.Rule

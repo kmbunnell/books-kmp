@@ -10,9 +10,6 @@ import androidx.compose.ui.test.performTextInput
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.LibraryIntent
-import com.example.books_kmp.viewmodel.LibraryUiState
-import com.example.books_kmp.viewmodel.SortOrder
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.Rule

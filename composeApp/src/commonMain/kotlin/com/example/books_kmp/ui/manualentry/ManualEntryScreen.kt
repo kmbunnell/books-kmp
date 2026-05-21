@@ -42,10 +42,6 @@ import bookskmp.composeapp.generated.resources.label_title
 import bookskmp.composeapp.generated.resources.title_manual_entry
 import com.example.books_kmp.ui.DuplicateBookDialog
 import com.example.books_kmp.ui.TestTags
-import com.example.books_kmp.viewmodel.ManualEntryEffect
-import com.example.books_kmp.viewmodel.ManualEntryIntent
-import com.example.books_kmp.viewmodel.ManualEntryUiState
-import com.example.books_kmp.viewmodel.ManualEntryViewModel
 import kotlinx.coroutines.flow.SharedFlow
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
