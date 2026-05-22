@@ -232,6 +232,17 @@ class AddBookViewModelTest {
         }
 
     @Test
+    fun `LookupIsbn with Unauthenticated sets error to Unauthenticated and clears isLoading`() =
+        runTest {
+            fakeService.lookupResult = Result.Failure(BookLookupError.Unauthenticated)
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            val state = viewModel.uiState.value
+            assertIs<AddBookScreenError.Unauthenticated>(state.error)
+            assertFalse(state.isLoading)
+        }
+
+    @Test
     fun `LookupIsbn clears stale foundBook when a subsequent lookup fails`() =
         runTest {
             fakeService.lookupResult = Result.Success(validLookupData)

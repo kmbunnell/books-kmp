@@ -115,8 +115,11 @@ fun App() {
             composable<Route.AddBook> {
                 AddBookScreen(
                     onNavigateUp = { navController.popBackStack() },
-                    onNavigateToManualEntry = {
-                        navController.navigate(Route.ManualEntry)
+                    onNavigateToManualEntry = { navController.navigate(Route.ManualEntry) },
+                    onNavigateToSignIn = {
+                        navController.navigate(Route.SignIn) {
+                            popUpTo(navController.graph.id) { inclusive = true }
+                        }
                     },
                 )
             }

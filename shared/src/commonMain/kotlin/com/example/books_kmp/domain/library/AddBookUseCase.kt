@@ -33,7 +33,13 @@ class AddBookUseCase(
             )
         return when (val result = bookRepository.addBook(newBook)) {
             is Result.Success -> Result.Success(result.data)
-            is Result.Failure -> Result.Failure(AddBookError.NetworkError)
+            is Result.Failure ->
+                Result.Failure(
+                    when (result.error) {
+                        BookRepositoryError.NotAuthenticated -> AddBookError.Unauthenticated
+                        BookRepositoryError.NetworkError -> AddBookError.NetworkError
+                    },
+                )
         }
     }
 }

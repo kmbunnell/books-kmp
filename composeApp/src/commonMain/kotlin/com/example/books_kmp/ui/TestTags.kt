@@ -68,6 +68,7 @@ object TestTags {
         const val RetryButton = "add_book_retry_button"
         const val EnterManuallyButton = "add_book_enter_manually_button"
         const val ScanButton = "add_book_scan_button"
+        const val SignInButton = "add_book_sign_in_button"
         const val LookupModeToggle = "add_book_lookup_mode_toggle"
         const val IsbnModeButton = "add_book_isbn_mode_button"
         const val TitleModeButton = "add_book_title_mode_button"
