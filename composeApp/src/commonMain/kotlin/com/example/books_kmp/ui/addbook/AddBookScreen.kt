@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -61,6 +60,7 @@ import bookskmp.composeapp.generated.resources.cd_close_scanner
 import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.cd_scan_barcode
 import bookskmp.composeapp.generated.resources.error_book_not_found
+import bookskmp.composeapp.generated.resources.info_not_found_catalog
 import bookskmp.composeapp.generated.resources.error_network_generic
 import bookskmp.composeapp.generated.resources.error_rate_limited
 import bookskmp.composeapp.generated.resources.error_scan_failed
@@ -478,12 +478,20 @@ private fun ErrorSection(
         textAlign = TextAlign.Center,
     )
     when (error) {
-        AddBookScreenError.NotFound ->
+        AddBookScreenError.NotFound -> {
             LookUpOptions(
                 firstButtonText = stringResource(Res.string.button_title_lookup),
                 onFirstButtonClick = { onIntent(AddBookIntent.SetLookupMode(LookupMode.Title)) },
                 onEnterManually = { onIntent(AddBookIntent.EnterManually) },
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = stringResource(Res.string.info_not_found_catalog),
+                    modifier = Modifier.padding(12.dp),
+                )
+            }
+        }
         AddBookScreenError.Unauthenticated ->
             TextButton(
                 onClick = onNavigateToSignIn,

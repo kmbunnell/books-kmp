@@ -239,15 +239,14 @@ class AddBookViewModel(
                     it.copy(
                         isLoading = false,
                         showDuplicateDialog = error is AddBookError.DuplicateTitle,
-                        // AddBookError.Duplicate is unreachable from addBookUseCase; defensive
+                        // Duplicate and NotFound are unreachable from addBookUseCase; defensive
                         error =
                             when (error) {
                                 is AddBookError.DuplicateTitle -> null
-                                is AddBookError.Duplicate,
-                                AddBookError.NotFound,
-                                AddBookError.NetworkError,
-                                AddBookError.MalformedResponse,
-                                -> AddBookScreenError.NetworkError
+                                is AddBookError.Duplicate -> AddBookScreenError.NetworkError
+                                AddBookError.NotFound -> AddBookScreenError.NetworkError
+                                AddBookError.NetworkError -> AddBookScreenError.NetworkError
+                                AddBookError.MalformedResponse -> AddBookScreenError.NetworkError
                                 AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
                                 AddBookError.RateLimited -> AddBookScreenError.RateLimited
                             },
@@ -274,12 +273,12 @@ class AddBookViewModel(
                             when (result.error) {
                                 AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
                                 AddBookError.RateLimited -> AddBookScreenError.RateLimited
-                                is AddBookError.Duplicate,
-                                is AddBookError.DuplicateTitle,
-                                AddBookError.NotFound,
-                                AddBookError.NetworkError,
-                                AddBookError.MalformedResponse,
-                                -> AddBookScreenError.NetworkError
+                                // Duplicate, DuplicateTitle, and NotFound are unreachable from addBookUseCase(forceAdd=true); defensive
+                                is AddBookError.Duplicate -> AddBookScreenError.NetworkError
+                                is AddBookError.DuplicateTitle -> AddBookScreenError.NetworkError
+                                AddBookError.NotFound -> AddBookScreenError.NetworkError
+                                AddBookError.NetworkError -> AddBookScreenError.NetworkError
+                                AddBookError.MalformedResponse -> AddBookScreenError.NetworkError
                             },
                     )
                 }
