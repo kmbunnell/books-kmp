@@ -60,12 +60,12 @@ import bookskmp.composeapp.generated.resources.cd_close_scanner
 import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.cd_scan_barcode
 import bookskmp.composeapp.generated.resources.error_book_not_found
-import bookskmp.composeapp.generated.resources.info_not_found_catalog
 import bookskmp.composeapp.generated.resources.error_network_generic
 import bookskmp.composeapp.generated.resources.error_rate_limited
 import bookskmp.composeapp.generated.resources.error_scan_failed
 import bookskmp.composeapp.generated.resources.error_unauthenticated
 import bookskmp.composeapp.generated.resources.error_unavailable_hardware
+import bookskmp.composeapp.generated.resources.info_not_found_catalog
 import bookskmp.composeapp.generated.resources.label_isbn
 import bookskmp.composeapp.generated.resources.label_isbn_search
 import bookskmp.composeapp.generated.resources.label_title_search
