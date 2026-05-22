@@ -6,7 +6,7 @@
           {
             "type": "command",
             "asyncRewake": true,
-            "rewakeMessage": "implement-plan completed successfully. Run the code-reviewer agent now to review the current diff.",
+            "rewakeMessage": "implement-plan completed successfully. Run the kmp-reviewer agent now to review the current diff.",
             "rewakeSummary": "Auto-triggering code review after implementation",
             "command": "PLAN='.claude/plan.md'; HASH_FILE='.claude/.last-reviewed-plan-hash'; grep -q '\\*\\*Status:\\*\\* Implemented' \"$PLAN\" 2>/dev/null || exit 0; CURRENT=$(md5 -q \"$PLAN\"); [ \"$(cat \"$HASH_FILE\" 2>/dev/null)\" = \"$CURRENT\" ] && exit 0; echo \"$CURRENT\" > \"$HASH_FILE\" && exit 2"
           }

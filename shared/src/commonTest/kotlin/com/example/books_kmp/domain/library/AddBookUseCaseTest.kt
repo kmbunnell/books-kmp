@@ -49,6 +49,15 @@ class AddBookUseCaseTest {
         }
 
     @Test
+    fun `invoke returns Unauthenticated when repository returns NotAuthenticated`() =
+        runTest {
+            repo.addBookShouldReturnNotAuthenticated = true
+            val result = useCase(lookupData)
+            assertIs<Result.Failure<AddBookError>>(result)
+            assertEquals(AddBookError.Unauthenticated, result.error)
+        }
+
+    @Test
     fun `isbn is null, no duplicate title — inserts successfully`() =
         runTest {
             val noIsbnData =

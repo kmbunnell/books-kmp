@@ -2,7 +2,6 @@ package com.example.books_kmp.domain.library
 
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.BookLookupData
-import com.example.books_kmp.domain.model.BookLookupError
 
 class LookupBookUseCase(
     private val bookRepository: BookRepository,
@@ -17,16 +16,7 @@ class LookupBookUseCase(
 
         val lookupData =
             when (val result = lookupService.lookupByIsbn(isbn)) {
-                is Result.Failure ->
-                    return Result.Failure(
-                        when (result.error) {
-                            BookLookupError.NotFound -> AddBookError.NotFound
-                            BookLookupError.NetworkError -> AddBookError.NetworkError
-                            BookLookupError.Unauthenticated -> AddBookError.Unauthenticated
-                            BookLookupError.RateLimited -> AddBookError.RateLimited
-                            BookLookupError.MalformedResponse -> AddBookError.MalformedResponse
-                        },
-                    )
+                is Result.Failure -> return Result.Failure(result.error.toAddBookError())
                 is Result.Success -> result.data
             }
 

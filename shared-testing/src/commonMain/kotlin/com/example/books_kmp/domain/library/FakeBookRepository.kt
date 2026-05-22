@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class FakeBookRepository(
     var addBookShouldFail: Boolean = false,
+    var addBookShouldReturnNotAuthenticated: Boolean = false,
     var isbnExistsShouldFail: Boolean = false,
     var getBooksShouldFail: Boolean = false,
     var getBookByIdShouldFail: Boolean = false,
@@ -78,6 +79,7 @@ class FakeBookRepository(
     override suspend fun addBook(book: NewBook): Result<Book, BookRepositoryError> {
         addBookCalled = true
         addBookGate?.await()
+        if (addBookShouldReturnNotAuthenticated) return Result.Failure(BookRepositoryError.NotAuthenticated)
         if (addBookShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
         lastAddedBook = book
         val saved =

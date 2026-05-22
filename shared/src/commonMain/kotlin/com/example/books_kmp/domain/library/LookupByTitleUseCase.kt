@@ -2,7 +2,6 @@ package com.example.books_kmp.domain.library
 
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.BookLookupData
-import com.example.books_kmp.domain.model.BookLookupError
 
 class LookupByTitleUseCase(private val bookLookupService: BookLookupService) {
     suspend operator fun invoke(title: String): Result<List<BookLookupData>, LookupByTitleError> =
@@ -13,15 +12,6 @@ class LookupByTitleUseCase(private val bookLookupService: BookLookupService) {
                 } else {
                     Result.Success(result.data)
                 }
-            is Result.Failure ->
-                Result.Failure(
-                    when (result.error) {
-                        BookLookupError.NotFound -> LookupByTitleError.NotFound
-                        BookLookupError.RateLimited -> LookupByTitleError.RateLimited
-                        BookLookupError.MalformedResponse -> LookupByTitleError.MalformedResponse
-                        BookLookupError.NetworkError -> LookupByTitleError.NetworkError
-                        BookLookupError.Unauthenticated -> LookupByTitleError.Unauthenticated
-                    },
-                )
+            is Result.Failure -> Result.Failure(result.error.toLookupByTitleError())
         }
 }

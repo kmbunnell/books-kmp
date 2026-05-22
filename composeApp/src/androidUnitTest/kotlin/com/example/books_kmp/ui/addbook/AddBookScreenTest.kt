@@ -38,6 +38,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.NavigateUpButton).assertIsDisplayed()
@@ -53,6 +54,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = { navigatedUp = true },
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.NavigateUpButton).performClick()
@@ -68,6 +70,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookupModeToggle).assertIsDisplayed()
@@ -82,6 +85,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField).assertIsDisplayed()
@@ -96,6 +100,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.TitleField).assertIsDisplayed()
@@ -110,6 +115,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField).assertDoesNotExist()
@@ -125,6 +131,7 @@ class AddBookScreenTest {
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.TitleModeButton).performClick()
@@ -141,6 +148,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.titleResultItem(0)).assertIsDisplayed()
@@ -157,6 +165,7 @@ class AddBookScreenTest {
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.titleResultItem(0)).performClick()
@@ -172,6 +181,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsDisplayed()
@@ -186,6 +196,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsNotEnabled()
@@ -200,6 +211,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsEnabled()
@@ -214,6 +226,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsNotEnabled()
@@ -228,6 +241,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsEnabled()
@@ -243,6 +257,7 @@ class AddBookScreenTest {
                 onIntent = { intents += it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField).performClick()
@@ -261,6 +276,7 @@ class AddBookScreenTest {
                 onIntent = { intents += it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField).performTextInput("X")
@@ -277,6 +293,7 @@ class AddBookScreenTest {
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).performClick()
@@ -293,6 +310,7 @@ class AddBookScreenTest {
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).performClick()
@@ -308,6 +326,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LoadingIndicator).assertIsDisplayed()
@@ -322,6 +341,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsNotEnabled()
@@ -336,6 +356,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.BookPreviewTitle).assertDoesNotExist()
@@ -351,6 +372,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.BookPreviewTitle).performScrollTo().assertIsDisplayed()
@@ -367,6 +389,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.AddButton).performScrollTo().assertIsDisplayed()
@@ -382,6 +405,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.CancelButton).assertIsDisplayed()
@@ -398,6 +422,7 @@ class AddBookScreenTest {
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.AddButton).performScrollTo().performClick()
@@ -415,6 +440,7 @@ class AddBookScreenTest {
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.CancelButton).performClick()
@@ -430,6 +456,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.DuplicateDialog).assertIsDisplayed()
@@ -445,6 +472,7 @@ class AddBookScreenTest {
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.DuplicateDialogCancelButton).performClick()
@@ -460,6 +488,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.DuplicateDialogAddAnywayButton).assertIsDisplayed()
@@ -475,6 +504,7 @@ class AddBookScreenTest {
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.DuplicateDialogAddAnywayButton).performClick()
@@ -490,6 +520,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
@@ -505,6 +536,7 @@ class AddBookScreenTest {
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.RetryButton).performClick()
@@ -520,6 +552,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
@@ -534,6 +567,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.EnterManuallyButton).assertIsDisplayed()
@@ -549,6 +583,7 @@ class AddBookScreenTest {
                 onIntent = { capturedIntent = it },
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.EnterManuallyButton).performClick()
@@ -564,6 +599,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
@@ -578,6 +614,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.EnterManuallyButton).assertIsDisplayed()
@@ -592,6 +629,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithText("Too many requests. Please try again later.").assertIsDisplayed()
@@ -606,6 +644,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
@@ -621,6 +660,7 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
@@ -636,9 +676,43 @@ class AddBookScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
         composeTestRule.onNodeWithTag(TestTags.AddBook.RetryButton).assertDoesNotExist()
+    }
+
+    @Test
+    fun `Unauthenticated error shows sign in button`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(error = AddBookScreenError.Unauthenticated),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.SignInButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `tapping sign in button on Unauthenticated error triggers onNavigateToSignIn`() {
+        var navigatedToSignIn = false
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(error = AddBookScreenError.Unauthenticated),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = { navigatedToSignIn = true },
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.SignInButton).performClick()
+        assertTrue(navigatedToSignIn)
     }
 }

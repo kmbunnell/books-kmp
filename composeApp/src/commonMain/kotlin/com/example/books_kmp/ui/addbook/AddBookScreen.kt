@@ -52,6 +52,7 @@ import bookskmp.composeapp.generated.resources.button_enter_manually
 import bookskmp.composeapp.generated.resources.button_isbn_lookup
 import bookskmp.composeapp.generated.resources.button_look_up
 import bookskmp.composeapp.generated.resources.button_retry
+import bookskmp.composeapp.generated.resources.button_sign_in
 import bookskmp.composeapp.generated.resources.button_title_lookup
 import bookskmp.composeapp.generated.resources.camera_permission_permanently_denied
 import bookskmp.composeapp.generated.resources.cd_book_cover
@@ -86,6 +87,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun AddBookScreen(
     onNavigateUp: () -> Unit,
     onNavigateToManualEntry: () -> Unit,
+    onNavigateToSignIn: () -> Unit,
 ) {
     val viewModel: AddBookViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
@@ -95,6 +97,7 @@ fun AddBookScreen(
         onIntent = viewModel::onIntent,
         onNavigateUp = onNavigateUp,
         onNavigateToManualEntry = onNavigateToManualEntry,
+        onNavigateToSignIn = onNavigateToSignIn,
     )
 }
 
@@ -106,6 +109,7 @@ fun AddBookScreenContent(
     onIntent: (AddBookIntent) -> Unit,
     onNavigateUp: () -> Unit,
     onNavigateToManualEntry: () -> Unit,
+    onNavigateToSignIn: () -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -260,7 +264,7 @@ fun AddBookScreenContent(
 
                 uiState.error?.let { error ->
                     item {
-                        ErrorSection(error = error, onIntent = onIntent)
+                        ErrorSection(error = error, onIntent = onIntent, onNavigateToSignIn = onNavigateToSignIn)
                     }
                 }
 
@@ -450,6 +454,7 @@ private fun LookUpOptions(
 private fun ErrorSection(
     error: AddBookScreenError,
     onIntent: (AddBookIntent) -> Unit,
+    onNavigateToSignIn: () -> Unit,
 ) {
     val message =
         stringResource(
@@ -479,9 +484,13 @@ private fun ErrorSection(
                 onFirstButtonClick = { onIntent(AddBookIntent.SetLookupMode(LookupMode.Title)) },
                 onEnterManually = { onIntent(AddBookIntent.EnterManually) },
             )
-        AddBookScreenError.Unauthenticated -> {
-            // TODO : nav to log in
-        }
+        AddBookScreenError.Unauthenticated ->
+            TextButton(
+                onClick = onNavigateToSignIn,
+                modifier = Modifier.testTag(TestTags.AddBook.SignInButton),
+            ) {
+                Text(stringResource(Res.string.button_sign_in))
+            }
         AddBookScreenError.NetworkError,
         AddBookScreenError.RateLimited ->
             TextButton(
@@ -511,6 +520,7 @@ private fun AddBookScreenPreview_Empty() {
         onIntent = {},
         onNavigateUp = {},
         onNavigateToManualEntry = {},
+        onNavigateToSignIn = {},
     )
 }
 
@@ -523,6 +533,7 @@ private fun AddBookScreenPreview_TitleMode() {
         onIntent = {},
         onNavigateUp = {},
         onNavigateToManualEntry = {},
+        onNavigateToSignIn = {},
     )
 }
 
@@ -535,6 +546,7 @@ private fun AddBookScreenPreview_Loading() {
         onIntent = {},
         onNavigateUp = {},
         onNavigateToManualEntry = {},
+        onNavigateToSignIn = {},
     )
 }
 
@@ -547,6 +559,7 @@ private fun AddBookScreenPreview_Error() {
         onIntent = {},
         onNavigateUp = {},
         onNavigateToManualEntry = {},
+        onNavigateToSignIn = {},
     )
 }
 
@@ -569,5 +582,6 @@ private fun AddBookScreenPreview_FoundBook() {
         onIntent = {},
         onNavigateUp = {},
         onNavigateToManualEntry = {},
+        onNavigateToSignIn = {},
     )
 }

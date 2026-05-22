@@ -266,9 +266,23 @@ class AddBookViewModel(
                 _uiState.update { AddBookUiState(lookupMode = mode) }
                 _effects.emit(AddBookEffect.BookAdded)
             }
-            is Result.Failure -> {
-                _uiState.update { it.copy(isLoading = false, error = AddBookScreenError.NetworkError) }
-            }
+            is Result.Failure ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error =
+                            when (result.error) {
+                                AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
+                                AddBookError.RateLimited -> AddBookScreenError.RateLimited
+                                is AddBookError.Duplicate,
+                                is AddBookError.DuplicateTitle,
+                                AddBookError.NotFound,
+                                AddBookError.NetworkError,
+                                AddBookError.MalformedResponse,
+                                -> AddBookScreenError.NetworkError
+                            },
+                    )
+                }
         }
     }
 }
