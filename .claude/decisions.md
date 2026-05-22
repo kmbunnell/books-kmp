@@ -6,6 +6,9 @@ Non-obvious decisions — rejected alternatives, surprising constraints, gotchas
 
 ---
 
+## 2026-05-22 — GoogleBooksApiClient takes a `() -> String?` session lambda, not a SessionProvider interface (SHELVD-125)
+Passing the access-token accessor as a lambda keeps the client testable with a plain `{ "jwt" }`/`{ null }` stub and avoids adding a one-method `SessionProvider` interface solely for that purpose.
+
 ## 2026-05-21 — Rate limits count all requests, not just Google Books calls (SHELVD-124)
 Goal is DB protection against authenticated users flooding the cache table, not just quota protection — so cache hits count. Counter capped at `p_limit + 1` so rejected requests don't inflate it past a meaningful value.
 

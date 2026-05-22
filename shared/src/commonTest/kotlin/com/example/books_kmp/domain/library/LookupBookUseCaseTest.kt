@@ -90,6 +90,15 @@ class LookupBookUseCaseTest {
         }
 
     @Test
+    fun `invoke returns Unauthenticated when API returns Unauthenticated`() =
+        runTest {
+            lookup.lookupResult = Result.Failure(BookLookupError.Unauthenticated)
+            val result = useCase("9780140449136")
+            assertIs<Result.Failure<AddBookError>>(result)
+            assertEquals(AddBookError.Unauthenticated, result.error)
+        }
+
+    @Test
     fun `invoke returns NetworkError when isbnExists fails`() =
         runTest {
             repo.isbnExistsShouldFail = true

@@ -455,7 +455,15 @@ class AddBookViewModelTest {
         }
 
     @Test
-    fun `SelectTitleResult sets foundBook and clears titleResults`() =
+    fun `LookupByTitle Unauthenticated sets Unauthenticated error`() =
+        runTest {
+            fakeService.lookupByTitleResult = Result.Failure(BookLookupError.Unauthenticated)
+            viewModel.onIntent(AddBookIntent.LookupByTitle("The Iliad"))
+            assertIs<AddBookScreenError.Unauthenticated>(viewModel.uiState.value.error)
+        }
+
+    @Test
+    fun `SelectTitleResult sets foundBook and preserves titleResults`() =
         runTest {
             val results = listOf(validLookupData)
             fakeService.lookupByTitleResult = Result.Success(results)
@@ -465,7 +473,38 @@ class AddBookViewModelTest {
             viewModel.onIntent(AddBookIntent.SelectTitleResult(validLookupData))
             val state = viewModel.uiState.value
             assertEquals(validLookupData, state.foundBook)
-            assertTrue(state.titleResults.isEmpty())
+            assertEquals(results, state.titleResults)
+        }
+
+    @Test
+    fun `CancelBookPreview in title mode restores titleResults`() =
+        runTest {
+            val results = listOf(validLookupData)
+            fakeService.lookupByTitleResult = Result.Success(results)
+            viewModel.onIntent(AddBookIntent.SetLookupMode(LookupMode.Title))
+            viewModel.onIntent(AddBookIntent.LookupByTitle("The Iliad"))
+            viewModel.onIntent(AddBookIntent.SelectTitleResult(validLookupData))
+            assertNotNull(viewModel.uiState.value.foundBook)
+
+            viewModel.onIntent(AddBookIntent.CancelBookPreview)
+            val state = viewModel.uiState.value
+            assertNull(state.foundBook)
+            assertEquals(results, state.titleResults)
+        }
+
+    @Test
+    fun `Retry with blank query does not dispatch lookup`() =
+        runTest {
+            fakeService.lookupByTitleResult = Result.Failure(BookLookupError.NetworkError)
+            viewModel.onIntent(AddBookIntent.SetLookupMode(LookupMode.Title))
+            viewModel.onIntent(AddBookIntent.TitleChanged("The Iliad"))
+            viewModel.onIntent(AddBookIntent.LookupByTitle("The Iliad"))
+            assertIs<AddBookScreenError.NetworkError>(viewModel.uiState.value.error)
+
+            viewModel.onIntent(AddBookIntent.TitleChanged(""))
+            viewModel.onIntent(AddBookIntent.Retry)
+            assertIs<AddBookScreenError.NetworkError>(viewModel.uiState.value.error)
+            assertFalse(viewModel.uiState.value.isLoading)
         }
 
     @Test

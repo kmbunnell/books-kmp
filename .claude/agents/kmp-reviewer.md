@@ -1,5 +1,5 @@
 ---
-name: code-reviewer
+name: kmp-reviewer
 description: Use this agent to review changed code as a senior KMP/CMP engineer before committing or opening a pull request. Proactively use after the implement-plan agent completes, after fixing a bug, or before opening a PR. Checks Clean Architecture, MVI, error handling, DI, TDD, and platform correctness against AGENTS.md.
 model: opus
 color: cyan

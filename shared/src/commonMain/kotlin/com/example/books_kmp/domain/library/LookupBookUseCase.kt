@@ -20,10 +20,11 @@ class LookupBookUseCase(
                 is Result.Failure ->
                     return Result.Failure(
                         when (result.error) {
-                            is BookLookupError.NotFound -> AddBookError.NotFound
+                            BookLookupError.NotFound -> AddBookError.NotFound
                             BookLookupError.NetworkError -> AddBookError.NetworkError
-                            is BookLookupError.RateLimited -> AddBookError.RateLimited
-                            is BookLookupError.MalformedResponse -> AddBookError.MalformedResponse
+                            BookLookupError.Unauthenticated -> AddBookError.Unauthenticated
+                            BookLookupError.RateLimited -> AddBookError.RateLimited
+                            BookLookupError.MalformedResponse -> AddBookError.MalformedResponse
                         },
                     )
                 is Result.Success -> result.data

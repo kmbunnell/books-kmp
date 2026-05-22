@@ -5,6 +5,8 @@ sealed interface LookupByTitleError {
 
     data object NetworkError : LookupByTitleError
 
+    data object Unauthenticated : LookupByTitleError
+
     data object RateLimited : LookupByTitleError
 
     data object MalformedResponse : LookupByTitleError

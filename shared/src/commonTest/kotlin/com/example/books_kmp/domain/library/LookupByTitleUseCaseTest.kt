@@ -73,4 +73,13 @@ class LookupByTitleUseCaseTest {
             assertIs<Result.Failure<LookupByTitleError>>(result)
             assertEquals(LookupByTitleError.NotFound, result.error)
         }
+
+    @Test
+    fun `maps BookLookupError Unauthenticated to LookupByTitleError Unauthenticated`() =
+        runTest {
+            fakeService.lookupByTitleResult = Result.Failure(BookLookupError.Unauthenticated)
+            val result = useCase("The Iliad")
+            assertIs<Result.Failure<LookupByTitleError>>(result)
+            assertEquals(LookupByTitleError.Unauthenticated, result.error)
+        }
 }

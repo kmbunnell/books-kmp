@@ -2,7 +2,7 @@ package com.example.books_kmp.di
 
 import com.example.books_kmp.auth.SupabaseAuthRepository
 import com.example.books_kmp.data.library.SupabaseBookRepository
-import com.example.books_kmp.data.remote.OpenLibraryApiClient
+import com.example.books_kmp.data.remote.GoogleBooksApiClient
 import com.example.books_kmp.data.tags.SupabaseTagRepository
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.SignInUseCase
@@ -24,7 +24,9 @@ import com.example.books_kmp.ui.bookdetail.BookDetailViewModel
 import com.example.books_kmp.ui.library.LibraryViewModel
 import com.example.books_kmp.ui.manualentry.ManualEntryViewModel
 import com.example.books_kmp.ui.tags.TagManagementViewModel
+import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.ktor.client.HttpClient
@@ -50,7 +52,14 @@ fun appModule(
         single<BookRepository> { SupabaseBookRepository(get()) }
         single<TagRepository> { SupabaseTagRepository(get()) }
         single { HttpClient() }
-        single<BookLookupService> { OpenLibraryApiClient(get()) }
+        single<BookLookupService> {
+            val supabaseClient = get<SupabaseClient>()
+            GoogleBooksApiClient(
+                httpClient = get(),
+                accessTokenProvider = { supabaseClient.auth.currentSessionOrNull()?.accessToken },
+                supabaseUrl = supabaseUrl,
+            )
+        }
         factory { SignInUseCase(get()) }
         factory { SignUpUseCase(get()) }
         factory { LookupBookUseCase(get(), get()) }
