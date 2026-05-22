@@ -11,6 +11,8 @@ sealed interface AddBookError {
 
     data object NetworkError : AddBookError
 
+    data object Unauthenticated : AddBookError
+
     data object RateLimited : AddBookError
 
     data object MalformedResponse : AddBookError

@@ -36,6 +36,8 @@ data class AddBookUiState(
 sealed interface AddBookScreenError {
     data object NetworkError : AddBookScreenError
 
+    data object Unauthenticated : AddBookScreenError
+
     data object RateLimited : AddBookScreenError
 
     data object NotFound : AddBookScreenError
@@ -114,7 +116,7 @@ class AddBookViewModel(
                     )
                 }
             is AddBookIntent.SelectTitleResult ->
-                _uiState.update { it.copy(foundBook = intent.book, titleResults = emptyList()) }
+                _uiState.update { it.copy(foundBook = intent.book) }
             AddBookIntent.CancelBookPreview -> _uiState.update { it.copy(foundBook = null, isbn = "") }
             AddBookIntent.DismissDuplicateDialog ->
                 _uiState.update {
@@ -150,14 +152,14 @@ class AddBookViewModel(
                 launchIfIdle {
                     val mode = _uiState.value.lookupMode
                     val query = if (mode == LookupMode.Title) _uiState.value.titleQuery else _uiState.value.isbn
+                    if (query.isBlank()) return@launchIfIdle
                     if (mode == LookupMode.Title) handleLookupByTitle(query) else handleLookupIsbn(query)
                 }
             AddBookIntent.EnterManually -> viewModelScope.launch { _effects.emit(AddBookEffect.NavigateToManualEntry) }
-            is AddBookIntent.BarcodeScanned ->
-                viewModelScope.launch {
-                    _uiState.update { it.copy(isScanning = false, isLoading = true, error = null, foundBook = null) }
-                    handleLookupIsbn(intent.isbn)
-                }
+            is AddBookIntent.BarcodeScanned -> {
+                _uiState.update { it.copy(isScanning = false) }
+                launchIfIdle { handleLookupIsbn(intent.isbn) }
+            }
         }
     }
 
@@ -187,6 +189,7 @@ class AddBookViewModel(
                                 is AddBookError.DuplicateTitle,
                                 -> null
                                 AddBookError.NotFound -> AddBookScreenError.NotFound
+                                AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
                                 AddBookError.NetworkError,
                                 AddBookError.MalformedResponse,
                                 -> AddBookScreenError.NetworkError
@@ -210,6 +213,7 @@ class AddBookViewModel(
                         error =
                             when (result.error) {
                                 LookupByTitleError.NotFound -> AddBookScreenError.NotFound
+                                LookupByTitleError.Unauthenticated -> AddBookScreenError.Unauthenticated
                                 LookupByTitleError.RateLimited -> AddBookScreenError.RateLimited
                                 LookupByTitleError.NetworkError,
                                 LookupByTitleError.MalformedResponse,
@@ -242,9 +246,10 @@ class AddBookViewModel(
                                 is AddBookError.Duplicate,
                                 AddBookError.NotFound,
                                 AddBookError.NetworkError,
-                                AddBookError.RateLimited,
                                 AddBookError.MalformedResponse,
                                 -> AddBookScreenError.NetworkError
+                                AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
+                                AddBookError.RateLimited -> AddBookScreenError.RateLimited
                             },
                     )
                 }

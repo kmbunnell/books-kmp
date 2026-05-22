@@ -20,6 +20,7 @@ class LookupByTitleUseCase(private val bookLookupService: BookLookupService) {
                         BookLookupError.RateLimited -> LookupByTitleError.RateLimited
                         BookLookupError.MalformedResponse -> LookupByTitleError.MalformedResponse
                         BookLookupError.NetworkError -> LookupByTitleError.NetworkError
+                        BookLookupError.Unauthenticated -> LookupByTitleError.Unauthenticated
                     },
                 )
         }

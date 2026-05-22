@@ -59,8 +59,9 @@ import bookskmp.composeapp.generated.resources.cd_close
 import bookskmp.composeapp.generated.resources.cd_close_scanner
 import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.cd_scan_barcode
-import bookskmp.composeapp.generated.resources.error_isbn_not_found
+import bookskmp.composeapp.generated.resources.error_book_not_found
 import bookskmp.composeapp.generated.resources.error_network_generic
+import bookskmp.composeapp.generated.resources.error_unauthenticated
 import bookskmp.composeapp.generated.resources.error_rate_limited
 import bookskmp.composeapp.generated.resources.error_scan_failed
 import bookskmp.composeapp.generated.resources.error_unavailable_hardware
@@ -200,44 +201,46 @@ fun AddBookScreenContent(
                     )
                 }
 
-                itemsIndexed(uiState.titleResults) { index, book ->
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Card(
-                        onClick = { onIntent(AddBookIntent.SelectTitleResult(book)) },
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .testTag(TestTags.AddBook.titleResultItem(index)),
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                if (uiState.foundBook == null) {
+                    itemsIndexed(uiState.titleResults) { index, book ->
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Card(
+                            onClick = { onIntent(AddBookIntent.SelectTitleResult(book)) },
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .testTag(TestTags.AddBook.titleResultItem(index)),
                         ) {
-                            BookCoverImage(
-                                url = book.coverImageUrl,
-                                contentDescription = "",
-                                modifier = Modifier.height(200.dp),
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = book.title)
-                            Text(text = book.authors.joinToString(", "))
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            ) {
+                                BookCoverImage(
+                                    url = book.coverImageUrl,
+                                    contentDescription = "",
+                                    modifier = Modifier.height(200.dp),
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(text = book.title)
+                                Text(text = book.authors.joinToString(", "))
+                            }
                         }
                     }
-                }
 
-                if (uiState.titleResults.isNotEmpty()) {
-                    item {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(Res.string.title_results_enter_manually),
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                        )
-                        LookUpOptions(
-                            firstButtonText = stringResource(Res.string.button_isbn_lookup),
-                            onFirstButtonClick = { onIntent(AddBookIntent.SetLookupMode(LookupMode.ISBN)) },
-                            onEnterManually = { onIntent(AddBookIntent.EnterManually) },
-                        )
+                    if (uiState.titleResults.isNotEmpty()) {
+                        item {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(Res.string.title_results_enter_manually),
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                            )
+                            LookUpOptions(
+                                firstButtonText = stringResource(Res.string.button_isbn_lookup),
+                                onFirstButtonClick = { onIntent(AddBookIntent.SetLookupMode(LookupMode.ISBN)) },
+                                onEnterManually = { onIntent(AddBookIntent.EnterManually) },
+                            )
+                        }
                     }
                 }
 
@@ -451,7 +454,8 @@ private fun ErrorSection(
     val message =
         stringResource(
             when (error) {
-                AddBookScreenError.NotFound -> Res.string.error_isbn_not_found
+                AddBookScreenError.NotFound -> Res.string.error_book_not_found
+                AddBookScreenError.Unauthenticated -> Res.string.error_unauthenticated
                 AddBookScreenError.NetworkError -> Res.string.error_network_generic
                 AddBookScreenError.RateLimited -> Res.string.error_rate_limited
                 AddBookScreenError.ScanCameraPermissionDenied -> Res.string.camera_permission_permanently_denied
@@ -475,6 +479,9 @@ private fun ErrorSection(
                 onFirstButtonClick = { onIntent(AddBookIntent.SetLookupMode(LookupMode.Title)) },
                 onEnterManually = { onIntent(AddBookIntent.EnterManually) },
             )
+        AddBookScreenError.Unauthenticated->{
+        //TODO : nav to log in
+             }
         AddBookScreenError.NetworkError,
         AddBookScreenError.RateLimited ->
             TextButton(

@@ -8,4 +8,6 @@ sealed interface BookLookupError {
     data object RateLimited : BookLookupError
 
     data object MalformedResponse : BookLookupError
+
+    data object Unauthenticated : BookLookupError
 }

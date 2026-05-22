@@ -1,7 +1,7 @@
 package com.example.books_kmp.di
 
 import com.example.books_kmp.data.library.SupabaseBookRepository
-import com.example.books_kmp.data.remote.OpenLibraryApiClient
+import com.example.books_kmp.data.remote.GoogleBooksApiClient
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.SignInUseCase
 import com.example.books_kmp.domain.auth.SignUpUseCase
@@ -62,10 +62,10 @@ class AppModuleTest {
     }
 
     @Test
-    fun `appModule wires BookLookupService to OpenLibraryApiClient`() {
+    fun `appModule wires BookLookupService to GoogleBooksApiClient`() {
         val service = koin.get<BookLookupService>()
         assertNotNull(service)
-        assertTrue(service is OpenLibraryApiClient)
+        assertTrue(service is GoogleBooksApiClient)
     }
 
     @Test
