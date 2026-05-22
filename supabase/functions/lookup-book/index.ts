@@ -168,7 +168,7 @@ function mapVolume(volume: GoogleBooksVolume, isbn: string | null): BookMetadata
     isbn,
     title: v.title ?? "",
     authors: Array.isArray(v.authors) ? v.authors : [],
-    cover_url: v.imageLinks?.thumbnail ?? null,
+    cover_url: v.imageLinks?.thumbnail?.replace(/^http:\/\//, "https://") ?? null,
   };
 }
 

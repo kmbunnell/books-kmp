@@ -61,9 +61,9 @@ import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.cd_scan_barcode
 import bookskmp.composeapp.generated.resources.error_book_not_found
 import bookskmp.composeapp.generated.resources.error_network_generic
-import bookskmp.composeapp.generated.resources.error_unauthenticated
 import bookskmp.composeapp.generated.resources.error_rate_limited
 import bookskmp.composeapp.generated.resources.error_scan_failed
+import bookskmp.composeapp.generated.resources.error_unauthenticated
 import bookskmp.composeapp.generated.resources.error_unavailable_hardware
 import bookskmp.composeapp.generated.resources.label_isbn
 import bookskmp.composeapp.generated.resources.label_isbn_search
@@ -479,9 +479,9 @@ private fun ErrorSection(
                 onFirstButtonClick = { onIntent(AddBookIntent.SetLookupMode(LookupMode.Title)) },
                 onEnterManually = { onIntent(AddBookIntent.EnterManually) },
             )
-        AddBookScreenError.Unauthenticated->{
-        //TODO : nav to log in
-             }
+        AddBookScreenError.Unauthenticated -> {
+            // TODO : nav to log in
+        }
         AddBookScreenError.NetworkError,
         AddBookScreenError.RateLimited ->
             TextButton(
