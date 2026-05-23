@@ -30,6 +30,11 @@ jobs:
       - name: Start Supabase local stack
         run: supabase start
 
+      - name: Export Supabase keys
+        run: |
+          supabase status --output env | grep "^ANON_KEY=" | sed 's/^ANON_KEY=/SUPABASE_ANON_KEY=/' >> $GITHUB_ENV
+          supabase status --output env | grep "^SERVICE_ROLE_KEY=" | sed 's/^SERVICE_ROLE_KEY=/SUPABASE_SERVICE_ROLE_KEY=/' >> $GITHUB_ENV
+
       - name: Serve functions in background
         run: |
           supabase functions serve lookup-book &
