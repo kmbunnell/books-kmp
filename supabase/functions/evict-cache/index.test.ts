@@ -12,7 +12,7 @@ import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 const FUNCTION_URL = "http://localhost:54321/functions/v1/evict-cache";
 const SUPABASE_URL = "http://localhost:54321";
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 if (!SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY must be set");
 
 function admin(): SupabaseClient {
