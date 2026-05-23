@@ -12,9 +12,9 @@ import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 const FUNCTION_URL = "http://localhost:54321/functions/v1/lookup-book";
 const SUPABASE_URL = "http://localhost:54321";
-const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 if (!ANON_KEY) throw new Error("SUPABASE_ANON_KEY must be set");
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 if (!SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY must be set");
 
 function setupSupabaseAdmin(): SupabaseClient {
