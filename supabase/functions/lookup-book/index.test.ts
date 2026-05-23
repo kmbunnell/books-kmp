@@ -12,13 +12,16 @@ import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 const FUNCTION_URL = "http://localhost:54321/functions/v1/lookup-book";
 const SUPABASE_URL = "http://localhost:54321";
-const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-if (!ANON_KEY) throw new Error("SUPABASE_ANON_KEY must be set");
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-if (!SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY must be set");
+// In Supabase CLI 2.x, GoTrue uses EC (ES256) keys and rejects the legacy HS256 JWT-based
+// ANON_KEY/SERVICE_ROLE_KEY for auth API calls. Use PUBLISHABLE_KEY for the anon client
+// and a pre-generated ES256 service-role JWT for admin operations.
+const PUBLISHABLE_KEY = Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
+if (!PUBLISHABLE_KEY) throw new Error("SUPABASE_PUBLISHABLE_KEY must be set");
+const SERVICE_ROLE_JWT = Deno.env.get("SUPABASE_SERVICE_ROLE_JWT")!;
+if (!SERVICE_ROLE_JWT) throw new Error("SUPABASE_SERVICE_ROLE_JWT must be set");
 
 function setupSupabaseAdmin(): SupabaseClient {
-  return createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+  return createClient(SUPABASE_URL, SERVICE_ROLE_JWT, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
@@ -47,7 +50,7 @@ Deno.test("setup: create shared test user", async () => {
   sharedUserId = data.user.id;
 
   // Sign in to get a session token.
-  const anon = createClient(SUPABASE_URL, ANON_KEY, {
+  const anon = createClient(SUPABASE_URL, PUBLISHABLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const { data: session, error: signInErr } = await anon.auth.signInWithPassword({ email, password });

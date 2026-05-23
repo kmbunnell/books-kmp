@@ -12,11 +12,14 @@ import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 const FUNCTION_URL = "http://localhost:54321/functions/v1/evict-cache";
 const SUPABASE_URL = "http://localhost:54321";
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-if (!SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY must be set");
+// Supabase CLI 2.x uses ES256 keys; use a pre-generated ES256 JWT for auth.
+const SERVICE_ROLE_JWT = Deno.env.get("SUPABASE_SERVICE_ROLE_JWT")!;
+if (!SERVICE_ROLE_JWT) throw new Error("SUPABASE_SERVICE_ROLE_JWT must be set");
+const ANON_JWT = Deno.env.get("SUPABASE_ANON_JWT")!;
+if (!ANON_JWT) throw new Error("SUPABASE_ANON_JWT must be set");
 
 function admin(): SupabaseClient {
-  return createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+  return createClient(SUPABASE_URL, SERVICE_ROLE_JWT, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
@@ -24,7 +27,7 @@ function admin(): SupabaseClient {
 async function post(opts: { token?: string | null } = {}): Promise<Response> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (opts.token !== null) {
-    headers["Authorization"] = `Bearer ${opts.token ?? SERVICE_ROLE_KEY}`;
+    headers["Authorization"] = `Bearer ${opts.token ?? SERVICE_ROLE_JWT}`;
   }
   return await fetch(FUNCTION_URL, { method: "POST", headers, body: "{}" });
 }
@@ -58,7 +61,7 @@ function daysAgo(days: number): string {
 Deno.test("GET → 405", async () => {
   const res = await fetch(FUNCTION_URL, {
     method: "GET",
-    headers: { Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
+    headers: { Authorization: `Bearer ${SERVICE_ROLE_JWT}` },
   });
   assertEquals(res.status, 405);
   await res.body?.cancel();
@@ -66,6 +69,9 @@ Deno.test("GET → 405", async () => {
 
 // --- Auth --------------------------------------------------------------------
 
+// These two tests exercise gateway-level rejection (verify_jwt = true):
+// missing or malformed JWTs are rejected by the gateway with 401 before the
+// function handler runs.
 Deno.test("no Authorization header → 401", async () => {
   const res = await post({ token: null });
   assertEquals(res.status, 401);
@@ -75,6 +81,14 @@ Deno.test("no Authorization header → 401", async () => {
 Deno.test("garbage bearer token → 401", async () => {
   const res = await post({ token: "not-a-real-jwt" });
   assertEquals(res.status, 401);
+  await res.body?.cancel();
+});
+
+// This test exercises function-level role enforcement: a valid JWT that passed
+// gateway validation is rejected because its role claim is not "service_role".
+Deno.test("valid JWT with anon role → 403", async () => {
+  const res = await post({ token: ANON_JWT });
+  assertEquals(res.status, 403);
   await res.body?.cancel();
 });
 
@@ -90,7 +104,7 @@ Deno.test("stale low-popularity rows are deleted; count returned", async () => {
   const res = await post();
   assertEquals(res.status, 200);
   const body = await res.json();
-  assertEquals(body.deleted >= 2, true);
+  assertEquals(body.deleted, 2);
 
   const { data } = await admin()
     .from("book_metadata_cache")

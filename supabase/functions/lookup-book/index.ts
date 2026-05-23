@@ -275,7 +275,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   const bodyText = await req.text();
-  if (bodyText.length > 4096) {
+  if (new TextEncoder().encode(bodyText).byteLength > 4096) {
     return jsonResponse({ error: "Payload too large" }, 413);
   }
 
