@@ -21,7 +21,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.101.0
 
       - uses: denoland/setup-deno@v2
         with:
@@ -30,17 +30,27 @@ jobs:
       - name: Start Supabase local stack
         run: supabase start
 
-      - name: Serve lookup-book in background
-        run: supabase functions serve lookup-book &
+      - name: Serve functions in background
+        run: |
+          supabase functions serve lookup-book &
+          supabase functions serve evict-cache &
 
-      - name: Wait for function to be ready
+      - name: Wait for functions to be ready
         run: |
           until curl --silent --output /dev/null --max-time 3 \
             -X POST http://localhost:54321/functions/v1/lookup-book \
             -H "Content-Type: application/json" -d '{}'; do
-            echo "Waiting for function..."
+            echo "Waiting for lookup-book..."
+            sleep 2
+          done
+          until curl --silent --output /dev/null --max-time 3 \
+            -X POST http://localhost:54321/functions/v1/evict-cache \
+            -H "Content-Type: application/json"; do
+            echo "Waiting for evict-cache..."
             sleep 2
           done
 
       - name: Run integration tests
-        run: deno test --allow-net --allow-env supabase/functions/lookup-book/index.test.ts
+        run: |
+          deno test --allow-net --allow-env supabase/functions/lookup-book/index.test.ts
+          deno test --allow-net --allow-env supabase/functions/evict-cache/index.test.ts
