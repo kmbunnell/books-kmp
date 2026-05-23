@@ -12,11 +12,10 @@ import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 const FUNCTION_URL = "http://localhost:54321/functions/v1/lookup-book";
 const SUPABASE_URL = "http://localhost:54321";
-// Well-known local default keys from `supabase start`. Override via env if needed.
-const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ??
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU";
+const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+if (!ANON_KEY) throw new Error("SUPABASE_ANON_KEY must be set");
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+if (!SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY must be set");
 
 function setupSupabaseAdmin(): SupabaseClient {
   return createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {

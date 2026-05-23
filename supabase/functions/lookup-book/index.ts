@@ -23,6 +23,10 @@ declare const EdgeRuntime:
   | { waitUntil: (p: Promise<unknown>) => void }
   | undefined;
 
+if (!Deno.env.get("GOOGLE_BOOKS_API_KEY")) {
+  console.warn("GOOGLE_BOOKS_API_KEY not set — using unauthenticated Google Books quota (100 req/day per IP)");
+}
+
 interface BookMetadata {
   isbn: string | null;
   title: string;
@@ -61,10 +65,10 @@ function jsonResponse(body: unknown, status: number): Response {
   });
 }
 
-async function parseRequest(req: Request): Promise<ParseResult> {
+function parseRequest(bodyText: string): ParseResult {
   let body: unknown;
   try {
-    body = await req.json();
+    body = JSON.parse(bodyText);
   } catch (_e) {
     return { ok: false, error: "Invalid JSON body" };
   }
@@ -270,12 +274,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
-  const contentLength = Number(req.headers.get("content-length"));
-  if (Number.isFinite(contentLength) && contentLength > 4096) {
+  const bodyText = await req.text();
+  if (bodyText.length > 4096) {
     return jsonResponse({ error: "Payload too large" }, 413);
   }
 
-  const parsed = await parseRequest(req);
+  const parsed = parseRequest(bodyText);
   if (!parsed.ok) {
     return jsonResponse({ error: parsed.error }, 400);
   }
