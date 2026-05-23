@@ -6,6 +6,9 @@ Non-obvious decisions — rejected alternatives, surprising constraints, gotchas
 
 ---
 
+## 2026-05-23 — Password policy tightened to 8 chars + letters_digits (SHELVD-127)
+Improves security posture; existing accounts are not force-rotated — the stricter policy applies only to new sign-ups and password changes going forward.
+
 ## 2026-05-22 — GoogleBooksApiClient takes a `() -> String?` session lambda, not a SessionProvider interface (SHELVD-125)
 Passing the access-token accessor as a lambda keeps the client testable with a plain `{ "jwt" }`/`{ null }` stub and avoids adding a one-method `SessionProvider` interface solely for that purpose.
 

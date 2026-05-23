@@ -32,8 +32,14 @@ jobs:
 
       - name: Export Supabase keys
         run: |
-          supabase status --output env | grep "^ANON_KEY=" | sed 's/^ANON_KEY=/SUPABASE_ANON_KEY=/' >> $GITHUB_ENV
-          supabase status --output env | grep "^SERVICE_ROLE_KEY=" | sed 's/^SERVICE_ROLE_KEY=/SUPABASE_SERVICE_ROLE_KEY=/' >> $GITHUB_ENV
+          supabase status --output env | grep "PUBLISHABLE_KEY=" | sed 's/.*PUBLISHABLE_KEY=/SUPABASE_PUBLISHABLE_KEY=/' | tr -d '"' >> $GITHUB_ENV
+
+      - name: Generate ES256 JWTs
+        run: |
+          SERVICE_ROLE_JWT=$(deno run --allow-run scripts/generate-service-jwt.ts supabase_auth_books-kmp service_role)
+          ANON_JWT=$(deno run --allow-run scripts/generate-service-jwt.ts supabase_auth_books-kmp anon)
+          echo "SUPABASE_SERVICE_ROLE_JWT=$SERVICE_ROLE_JWT" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_JWT=$ANON_JWT" >> $GITHUB_ENV
 
       - name: Serve functions in background
         run: |
@@ -48,14 +54,16 @@ jobs:
             echo "Waiting for lookup-book..."
             sleep 2
           done
-          until curl --silent --output /dev/null --max-time 3 \
+          until curl --silent --fail --output /dev/null --max-time 3 \
             -X POST http://localhost:54321/functions/v1/evict-cache \
-            -H "Content-Type: application/json"; do
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_JWT" \
+            -d '{}'; do
             echo "Waiting for evict-cache..."
             sleep 2
           done
 
       - name: Run integration tests
         run: |
-          deno test --allow-net --allow-env supabase/functions/lookup-book/index.test.ts
-          deno test --allow-net --allow-env supabase/functions/evict-cache/index.test.ts
+          deno test --allow-net --allow-env --node-modules-dir=auto supabase/functions/lookup-book/index.test.ts
+          deno test --allow-net --allow-env --node-modules-dir=auto supabase/functions/evict-cache/index.test.ts
