@@ -1,6 +1,6 @@
 # Shelvd
 
-A cross-platform mobile app for book collectors to build and manage a personal digital library. Scan a barcode or enter an ISBN, and Shelved automatically pulls in the cover, title, and author from the Open Library API. Organize your collection with a flexible tagging system that acts as virtual shelves.
+A cross-platform mobile app for book collectors to build and manage a personal digital library. Scan a barcode or enter an ISBN, and Shelved automatically pulls in the cover, title, and author from the Google Books API. Organize your collection with a flexible tagging system that acts as virtual shelves.
 
 Built with **Kotlin Multiplatform** and **Compose Multiplatform**, targeting both Android and iOS from a single shared codebase.
 
@@ -36,7 +36,7 @@ Shelved follows a **clean architecture** pattern with clear separation between l
 
 - **Presentation** (`composeApp/commonMain`) — Compose screens, ViewModels exposing state via `StateFlow`
 - **Domain** (`shared/commonMain`) — Use cases, domain models, and repository interfaces. Pure Kotlin, no platform dependencies
-- **Data** (`shared/commonMain` + platform source sets) — Repository implementations, Supabase data sources, Open Library API client
+- **Data** (`shared/commonMain` + platform source sets) — Repository implementations, Supabase data sources, Google Books API client
 
 Platform-specific code (barcode scanning, native sign-in) uses KMP's `expect`/`actual` pattern to keep the shared API clean while leveraging native capabilities on each platform.
 

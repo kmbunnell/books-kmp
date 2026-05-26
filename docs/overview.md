@@ -9,7 +9,7 @@ For the schema itself read `supabase/migrations/`. For data models read `shared/
 
 - **Kotlin Multiplatform + Compose Multiplatform** — single codebase for Android and iOS, including UI.
 - **Supabase** — auth, Postgres, and Row Level Security in one managed backend; no separate auth service to operate.
-- **Open Library** for ISBN lookups — free, no API key, no quota signup. Tradeoff: occasional gaps in metadata.
+- **Google Books API** for ISBN lookups — rich metadata coverage; requires an API key.
 - **Coil 3** for image loading — works in `commonMain`, no `expect`/`actual` needed.
 - **Koin** for DI — KMP-friendly and lightweight.
 - **Hand-rolled fakes over mocking libraries** in tests — most mock libraries don't support KMP cleanly.

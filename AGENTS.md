@@ -1,6 +1,6 @@
 ## Project Overview
 
-Books-KMP is a cross-platform mobile book library app built with **Kotlin Multiplatform (KMP)** and **Compose Multiplatform (CMP)**, backed by **Supabase** (auth, database, RLS). Users scan or enter ISBNs to populate book metadata from the Open Library API, then organize their collection with a flexible tagging system.
+Books-KMP is a cross-platform mobile book library app built with **Kotlin Multiplatform (KMP)** and **Compose Multiplatform (CMP)**, backed by **Supabase** (auth, database, RLS). Users scan or enter ISBNs to populate book metadata from the Google Books API, then organize their collection with a flexible tagging system.
 
 **Target platforms:** Android and iOS from a single shared codebase.
 
