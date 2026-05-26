@@ -35,16 +35,18 @@ jobs:
           {
             echo 'SUPABASE_URL=https://placeholder.supabase.co'
             echo 'SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwbGFjZWhvbGRlciIsInJvbGUiOiJhbm9uIn0.placeholder-signature-not-a-real-key'
+            echo 'STAGING_SUPABASE_URL=https://placeholder.supabase.co'
+            echo 'STAGING_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwbGFjZWhvbGRlciIsInJvbGUiOiJhbm9uIn0.placeholder-signature-not-a-real-key'
           } > local.properties
 
       - name: ktlint check
         run: ./gradlew ktlintCheck
 
       - name: Unit tests
-        run: ./gradlew :shared:testDebugUnitTest :composeApp:testDebugUnitTest
+        run: ./gradlew :shared:testDebugUnitTest :composeApp:testProductionDebugUnitTest
 
       - name: Assemble debug APK
-        run: ./gradlew :composeApp:assembleDebug
+        run: ./gradlew :composeApp:assembleProductionDebug :composeApp:assembleStagingDebug
 
       - name: Upload test reports on failure
         if: failure()
