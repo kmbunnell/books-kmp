@@ -1,6 +1,7 @@
 package com.example.books_kmp.di
 
 import com.example.books_kmp.auth.SupabaseAuthRepository
+import com.example.books_kmp.config.SupabaseConfig
 import com.example.books_kmp.data.library.SupabaseBookRepository
 import com.example.books_kmp.data.remote.GoogleBooksApiClient
 import com.example.books_kmp.data.tags.SupabaseTagRepository
@@ -34,15 +35,12 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-fun appModule(
-    supabaseUrl: String,
-    supabaseKey: String,
-): Module =
+fun appModule(config: SupabaseConfig): Module =
     module {
         single {
             createSupabaseClient(
-                supabaseUrl = supabaseUrl,
-                supabaseKey = supabaseKey,
+                supabaseUrl = config.supabaseUrl,
+                supabaseKey = config.supabaseAnonKey,
             ) {
                 install(Auth)
                 install(Postgrest)
@@ -57,7 +55,7 @@ fun appModule(
             GoogleBooksApiClient(
                 httpClient = get(),
                 accessTokenProvider = { supabaseClient.auth.currentSessionOrNull()?.accessToken },
-                supabaseUrl = supabaseUrl,
+                supabaseUrl = config.supabaseUrl,
             )
         }
         factory { SignInUseCase(get()) }
