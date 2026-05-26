@@ -1,5 +1,6 @@
 package com.example.books_kmp.di
 
+import com.example.books_kmp.config.SupabaseConfig
 import com.example.books_kmp.data.library.SupabaseBookRepository
 import com.example.books_kmp.data.remote.GoogleBooksApiClient
 import com.example.books_kmp.domain.auth.AuthRepository
@@ -43,7 +44,12 @@ class AppModuleTest {
             koinApplication {
                 allowOverride(true)
                 modules(
-                    appModule("https://placeholder.supabase.co", "placeholder-key"),
+                    appModule(
+                        SupabaseConfig(
+                            supabaseUrl = "https://placeholder.supabase.co",
+                            supabaseAnonKey = "placeholder-key",
+                        ),
+                    ),
                     module { single { testClient } },
                 )
             }.koin
