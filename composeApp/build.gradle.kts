@@ -11,6 +11,11 @@ fun localProp(key: String): String =
     localProps.getProperty(key)
         ?: error("Missing required local.properties key: $key")
 
+fun envOrLocalProp(key: String): String =
+    System.getenv(key)
+        ?: localProps.getProperty(key)
+        ?: error("Missing $key — add to local.properties or set as env var")
+
 val generateSecretsXcconfig by tasks.registering {
     description = "Generate iosApp/Configuration/Secrets.xcconfig from local.properties"
     val outputFile = rootProject.file("iosApp/Configuration/Secrets.xcconfig")
@@ -130,8 +135,8 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
-        buildConfigField("String", "SUPABASE_URL", "\"${localProp("SUPABASE_URL")}\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProp("SUPABASE_ANON_KEY")}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${envOrLocalProp("SUPABASE_URL")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${envOrLocalProp("SUPABASE_ANON_KEY")}\"")
     }
     packaging {
         resources {
@@ -141,6 +146,22 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+        }
+    }
+    flavorDimensions += "environment"
+
+    productFlavors {
+        create("production") {
+            dimension = "environment"
+            resValue("string", "app_name", "Bookskmp")
+            // Inherits defaultConfig credentials — no overrides needed.
+        }
+        create("staging") {
+            dimension = "environment"
+            applicationIdSuffix = ".staging"
+            resValue("string", "app_name", "Books Staging")
+            buildConfigField("String", "SUPABASE_URL", "\"${envOrLocalProp("STAGING_SUPABASE_URL")}\"")
+            buildConfigField("String", "SUPABASE_ANON_KEY", "\"${envOrLocalProp("STAGING_SUPABASE_ANON_KEY")}\"")
         }
     }
     testOptions {
