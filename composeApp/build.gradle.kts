@@ -175,17 +175,17 @@ android {
     flavorDimensions += "environment"
 
     productFlavors {
-        create("production") {
-            dimension = "environment"
-            resValue("string", "app_name", "Bookskmp")
-            // Inherits defaultConfig credentials — no overrides needed.
-        }
         create("staging") {
             dimension = "environment"
             applicationIdSuffix = ".staging"
             resValue("string", "app_name", "Books Staging")
             buildConfigField("String", "SUPABASE_URL", "\"${envOrLocalProp("STAGING_SUPABASE_URL")}\"")
             buildConfigField("String", "SUPABASE_ANON_KEY", "\"${envOrLocalProp("STAGING_SUPABASE_ANON_KEY")}\"")
+        }
+        create("production") {
+            dimension = "environment"
+            resValue("string", "app_name", "Bookskmp")
+            // Inherits defaultConfig credentials — no overrides needed.
         }
     }
     testOptions {
