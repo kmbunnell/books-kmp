@@ -16,6 +16,8 @@ fun envOrLocalProp(key: String): String =
         ?: localProps.getProperty(key)
         ?: error("Missing $key — add to local.properties or set as env var")
 
+fun envOrLocalPropOrEmpty(key: String): String = System.getenv(key) ?: localProps.getProperty(key) ?: ""
+
 val generateSecretsXcconfig by tasks.registering {
     description = "Generate iosApp/Configuration/Secrets.xcconfig from local.properties"
     val outputFile = rootProject.file("iosApp/Configuration/Secrets.xcconfig")
@@ -23,6 +25,27 @@ val generateSecretsXcconfig by tasks.registering {
     val key = localProp("SUPABASE_ANON_KEY")
     inputs.property("supabaseUrl", url)
     inputs.property("supabaseKey", key)
+    outputs.file(outputFile)
+    doLast {
+        // xcconfig treats // as a comment — escape with /$()/
+        val escapedUrl = url.replace("//", "/\$()/")
+        outputFile.writeText(
+            """
+            |// Auto-generated from local.properties — do not edit manually.
+            |SUPABASE_URL = $escapedUrl
+            |SUPABASE_ANON_KEY = $key
+            """.trimMargin() + "\n",
+        )
+    }
+}
+
+val generateStagingSecretsXcconfig by tasks.registering {
+    description = "Generate iosApp/Configuration/StagingSecrets.xcconfig from local.properties"
+    val outputFile = rootProject.file("iosApp/Configuration/StagingSecrets.xcconfig")
+    val url = envOrLocalPropOrEmpty("STAGING_SUPABASE_URL")
+    val key = envOrLocalPropOrEmpty("STAGING_SUPABASE_ANON_KEY")
+    inputs.property("stagingSupabaseUrl", url)
+    inputs.property("stagingSupabaseKey", key)
     outputs.file(outputFile)
     doLast {
         // xcconfig treats // as a comment — escape with /$()/
@@ -64,6 +87,7 @@ kotlin {
 
     tasks.matching { it.name.startsWith("compileKotlinIos") }.configureEach {
         dependsOn(generateSecretsXcconfig)
+        dependsOn(generateStagingSecretsXcconfig)
     }
 
     sourceSets {

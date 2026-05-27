@@ -38,6 +38,7 @@ DerivedData/
 
 # iOS secrets (never commit)
 **/Secrets.xcconfig
+iosApp/Configuration/StagingSecrets.xcconfig
 
 # Claude local files
 .claude/plan.md
