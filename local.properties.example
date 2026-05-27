@@ -1,3 +1,5 @@
 sdk.dir=/path/to/android/sdk
 SUPABASE_URL=your-supabase-url
 SUPABASE_ANON_KEY=your-supabase-anon-key
+STAGING_SUPABASE_URL=your-staging-supabase-url
+STAGING_SUPABASE_ANON_KEY=your-staging-supabase-anon-key
