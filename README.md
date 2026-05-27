@@ -48,6 +48,8 @@ This project uses [Claude Code](https://github.com/anthropics/claude-code) as pa
 
 **Prerequisites:** Android Studio (with KMP plugin), Xcode, and a JDK compatible with the project's Kotlin version. Copy `local.properties.example` to `local.properties` and fill in your Supabase URL and anon key before building — the app will not compile without them.
 
-**Android:** Use the run configuration in Android Studio, or `./gradlew :composeApp:assembleDebug` from the terminal.
+**Android:** Use the run configuration in Android Studio (select the `productionDebug` build variant), or `./gradlew :composeApp:assembleProductionDebug` from the terminal.
 
 **iOS:** Open the `/iosApp` directory in Xcode and run from there.
+
+**Staging builds:** See [docs/staging.md](docs/staging.md) for how to configure and run the staging environment on Android and iOS.
