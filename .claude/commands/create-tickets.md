@@ -3,6 +3,10 @@ description: Generate and create Jira tasks for a SHELVD epic
 allowed-tools: Bash, Read, AskUserQuestion
 ---
 
+## Role
+
+Approach every ticket as a **senior project manager and KMM/KMP developer**. Tasks should reflect real-world Kotlin Multiplatform concerns: expect/actual splits, platform-specific UI, shared domain/data layer structure, Supabase integration, Compose Multiplatform nuances, and testability. Scope, steps, and acceptance criteria should be technically precise — not generic.
+
 ## Context
 
 `$ARGUMENTS` must be an epic key (e.g. `SHELVD-42`). If empty, stop: "Pass an epic key — e.g. `/create-tickets SHELVD-42`."
@@ -30,7 +34,13 @@ acli jira workitem search --jql "project = SHELVD AND parentEpic = $ARGUMENTS" -
 
 List any existing child tickets — do not duplicate them.
 
-## Step 3 — Draft the ticket set
+## Step 3 — Clarify before drafting
+
+Before writing any tickets, review the epic description, existing children, and planning doc for gaps. If **anything is ambiguous** — scope boundaries, platform split (Android-only vs shared), order of operations, dependencies on unreleased APIs, acceptance criteria that could be interpreted multiple ways — use `AskUserQuestion` to resolve it now.
+
+Only proceed to drafting once all blockers to a complete, accurate ticket set are answered. Don't ask about things that can be reasonably inferred from the codebase or planning doc.
+
+## Step 4 — Draft the ticket set
 
 Based on the epic scope, draft a set of tasks. Each task must:
 - Be independently implementable and testable (one logical unit of work)
@@ -48,7 +58,7 @@ For each proposed task, draft:
 
 **Heredoc single-quote rule:** Scan all description text for single quotes (`'`) — possessives, contractions, quoted terms. Rephrase to eliminate them before generating any script. After generating, validate with `bash -n`.
 
-## Step 4 — Present and confirm
+## Step 5 — Present and confirm
 
 Present the full ticket set as a numbered list with summary, AC, and dependencies for each.
 
@@ -60,7 +70,7 @@ Use `AskUserQuestion`:
 
 If revisions requested, update the draft and re-present. Repeat until approved or cancelled.
 
-## Step 5 — Generate and run the acli script
+## Step 6 — Generate and run the acli script
 
 For each ticket, generate:
 
