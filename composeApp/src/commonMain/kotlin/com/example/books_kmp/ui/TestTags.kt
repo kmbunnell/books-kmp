@@ -111,6 +111,14 @@ object TestTags {
         const val DeleteErrorSnackbar = "book_detail_delete_error_snackbar"
     }
 
+    object ErrorPresentation {
+        const val SnackbarHost = "error_presentation_snackbar_host"
+        const val InlineErrorText = "error_presentation_inline_text"
+        const val ConfirmationDialog = "error_presentation_confirmation_dialog"
+        const val ConfirmationDialogConfirmButton = "error_presentation_confirmation_confirm"
+        const val ConfirmationDialogDismissButton = "error_presentation_confirmation_dismiss"
+    }
+
     object TagManagement {
         const val LoadingIndicator = "tag_management_loading"
         const val DefaultSectionHeader = "tag_management_default_header"

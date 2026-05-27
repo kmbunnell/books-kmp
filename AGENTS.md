@@ -48,6 +48,16 @@ Presentation (MVI) → Domain ← Data
 - Koin modules are the single place for dependency wiring. Never manually construct dependencies outside DI.
 - ViewModels emit typed errors via a feature-specific `XxxError` sealed interface — never localized strings. `UiState` field errors and `XxxEffect.ShowError` carry `XxxError` values. String resolution happens exclusively in Compose screens via `stringResource()`, resolved before any `LaunchedEffect`/`collect` block.
 
+### Error Presentation
+
+Every user-visible error maps to exactly one of three tiers. Reference composables live in `composeApp/src/commonMain/kotlin/com/example/books_kmp/ui/components/`.
+
+1. **Snackbar (transient)** — `AppSnackbarHost`. Operation-level failures the user can ignore or retry, and operation-level success confirmations (e.g. "Book deleted"). Both outcomes share this tier — do not introduce a separate success-toast pattern.
+2. **Inline (form validation)** — `InlineErrorText`. Field-adjacent validation messages.
+3. **Confirmation (destructive)** — `ConfirmationDialog`. Irreversible actions requiring explicit confirmation before they run.
+
+See `docs/error-presentation.md` for tier definitions, decision rules, and usage patterns. New error-surfacing UI must use these components; do not introduce ad-hoc `Snackbar`, `Text` error styling, or `AlertDialog` patterns.
+
 ---
 
 ## Technology Stack
