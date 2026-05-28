@@ -14,7 +14,11 @@
     <string name="error_passwords_do_not_match">Passwords do not match</string>
     <string name="error_email_already_in_use">An account with that email already exists</string>
     <string name="error_sign_up_failed">Sign up failed. Please try again.</string>
+    <string name="sign_up_success_title">Account Created!</string>
+    <string name="sign_up_success_message">Check your email to verify before signing in.</string>
+    <string name="button_go_to_sign_in">Go to Sign In</string>
     <string name="error_sign_in_failed">Sign in failed. Please try again.</string>
+    <string name="error_email_not_verified">Please verify your email before signing in. Check your inbox for the verification link.</string>
     <string name="error_weak_password">Password does not meet the minimum requirements</string>
     <string name="error_invalid_email_format">Please enter a valid email address</string>
     <string name="error_sign_out_failed">Sign out failed</string>

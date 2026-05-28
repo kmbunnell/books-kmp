@@ -9,6 +9,8 @@ sealed interface AuthRepositoryError {
 
     data object InvalidEmail : AuthRepositoryError
 
+    data object EmailNotVerified : AuthRepositoryError
+
     data object NetworkError : AuthRepositoryError
 
     data object Unknown : AuthRepositoryError

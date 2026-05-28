@@ -66,6 +66,7 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
             Result.Failure(
                 when (e.error) {
                     "invalid_credentials" -> AuthRepositoryError.InvalidCredentials
+                    "email_not_confirmed" -> AuthRepositoryError.EmailNotVerified
                     else -> AuthRepositoryError.Unknown
                 },
             )

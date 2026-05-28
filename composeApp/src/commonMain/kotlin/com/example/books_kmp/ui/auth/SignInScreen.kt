@@ -37,6 +37,7 @@ import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_sign_in
 import bookskmp.composeapp.generated.resources.cd_hide_password
 import bookskmp.composeapp.generated.resources.cd_show_password
+import bookskmp.composeapp.generated.resources.error_email_not_verified
 import bookskmp.composeapp.generated.resources.error_email_required
 import bookskmp.composeapp.generated.resources.error_invalid_credentials
 import bookskmp.composeapp.generated.resources.error_password_required
@@ -80,6 +81,7 @@ fun SignInScreenContent(
     val errorEmailRequired = stringResource(Res.string.error_email_required)
     val errorPasswordRequired = stringResource(Res.string.error_password_required)
     val errorInvalidCredentials = stringResource(Res.string.error_invalid_credentials)
+    val errorEmailNotVerified = stringResource(Res.string.error_email_not_verified)
     val errorSignInFailed = stringResource(Res.string.error_sign_in_failed)
     val cdShowPassword = stringResource(Res.string.cd_show_password)
     val cdHidePassword = stringResource(Res.string.cd_hide_password)
@@ -91,6 +93,7 @@ fun SignInScreenContent(
                     snackbarHostState.showSnackbar(
                         when (effect.error) {
                             SignInError.InvalidCredentials -> errorInvalidCredentials
+                            SignInError.EmailNotVerified -> errorEmailNotVerified
                             SignInError.EmptyEmail,
                             SignInError.EmptyPassword,
                             SignInError.SignInFailed -> errorSignInFailed

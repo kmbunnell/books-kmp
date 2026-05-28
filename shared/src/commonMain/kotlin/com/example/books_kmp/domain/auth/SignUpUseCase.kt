@@ -21,6 +21,7 @@ class SignUpUseCase(private val authRepository: AuthRepository) {
                         AuthRepositoryError.WeakPassword -> SignUpError.WeakPassword
                         AuthRepositoryError.InvalidEmail -> SignUpError.InvalidEmail
                         AuthRepositoryError.InvalidCredentials,
+                        AuthRepositoryError.EmailNotVerified,
                         AuthRepositoryError.NetworkError,
                         AuthRepositoryError.Unknown -> SignUpError.SignUpFailed
                     },
