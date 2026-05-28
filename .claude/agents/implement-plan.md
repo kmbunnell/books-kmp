@@ -47,7 +47,7 @@ For each implementation step in the plan:
 1. **Write the failing test(s).**
 2. **Run only the new test(s)** to confirm red:
    ```bash
-   ./gradlew :composeApp:testDebugUnitTest --tests "full.qualified.TestClassName" 2>&1 | tail -100
+   ./gradlew :composeApp:testStagingDebugUnitTest --tests "full.qualified.TestClassName" 2>&1 | tail -100
    ```
    Fix the test if it doesn't compile or fails for the wrong reason.
 3. **Write the minimum production code** to make the test(s) pass.
@@ -96,7 +96,7 @@ Apply these checks in Step 4 based on which layer the file belongs to. Fix viola
 After all implementation steps are done:
 
 ```bash
-./gradlew :composeApp:testDebugUnitTest --tests "pkg.Test1" --tests "pkg.Test2" ... 2>&1 | tail -100
+./gradlew :composeApp:testStagingDebugUnitTest --tests "pkg.Test1" --tests "pkg.Test2" ... 2>&1 | tail -100
 ```
 
 One fix attempt per failing test. If still failing, stop and check in.
@@ -104,7 +104,7 @@ One fix attempt per failing test. If still failing, stop and check in.
 ## Step 3 — Regression check, build, and lint
 
 ```bash
-./gradlew :composeApp:testDebugUnitTest :composeApp:assembleDebug :composeApp:compileKotlinIosArm64 2>&1 | tail -150
+./gradlew :composeApp:testStagingDebugUnitTest :composeApp:assembleStagingDebug :composeApp:compileKotlinIosArm64 2>&1 | tail -150
 ```
 
 ```bash

@@ -97,9 +97,10 @@ fun LibraryScreen(
         viewModel.effects.collect { effect ->
             when (effect) {
                 is LibraryEffect.ShowError -> {
-                    val message = when (effect.error) {
-                        LibraryError.LoadFailed -> loadFailedMessage
-                    }
+                    val message =
+                        when (effect.error) {
+                            LibraryError.LoadFailed -> loadFailedMessage
+                        }
                     snackbarHostState.showSnackbar(message)
                 }
             }
