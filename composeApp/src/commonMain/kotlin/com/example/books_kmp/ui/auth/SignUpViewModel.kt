@@ -19,6 +19,7 @@ data class SignUpUiState(
     val emailError: SignUpError? = null,
     val passwordError: SignUpError? = null,
     val confirmPasswordError: SignUpError? = null,
+    val verificationEmailSent: Boolean = false,
 )
 
 sealed interface SignUpIntent {
@@ -109,7 +110,7 @@ class SignUpViewModel(
                     }
                 }
             is Result.Success ->
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(isLoading = false, verificationEmailSent = true) }
         }
     }
 }

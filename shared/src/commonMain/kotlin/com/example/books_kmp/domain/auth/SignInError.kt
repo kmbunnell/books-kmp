@@ -7,5 +7,7 @@ sealed interface SignInError {
 
     data object InvalidCredentials : SignInError
 
+    data object EmailNotVerified : SignInError
+
     data object SignInFailed : SignInError
 }

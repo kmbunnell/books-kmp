@@ -19,6 +19,8 @@ object TestTags {
         const val PasswordToggle = "sign_up_password_toggle"
         const val ConfirmPasswordToggle = "sign_up_confirm_password_toggle"
         const val PasswordHint = "sign_up_password_hint"
+        const val VerificationMessage = "sign_up_verification_message"
+        const val GoToSignInButton = "sign_up_go_to_sign_in_button"
     }
 
     object Splash {

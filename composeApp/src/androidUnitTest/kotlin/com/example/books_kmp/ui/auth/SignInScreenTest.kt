@@ -187,4 +187,24 @@ class SignInScreenTest {
         }
         composeTestRule.onNodeWithText("Sign Up", substring = true).assertIsDisplayed()
     }
+
+    @Test
+    fun `shows email not verified snackbar when EmailNotVerified effect is emitted`() {
+        val effects = MutableSharedFlow<SignInEffect>(extraBufferCapacity = 1)
+        composeTestRule.setContent {
+            SignInScreenContent(
+                uiState = SignInUiState(),
+                effects = effects,
+                onSignIn = { _, _ -> },
+                onNavigateToSignUp = {},
+            )
+        }
+        composeTestRule.waitForIdle()
+        effects.tryEmit(SignInEffect.ShowError(SignInError.EmailNotVerified))
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText(
+            "Please verify your email before signing in",
+            substring = true
+        ).assertIsDisplayed()
+    }
 }

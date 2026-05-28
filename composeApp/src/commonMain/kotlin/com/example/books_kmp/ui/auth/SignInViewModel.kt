@@ -61,17 +61,17 @@ class SignInViewModel(
                         _uiState.update { it.copy(isLoading = false, emailError = SignInError.EmptyEmail) }
                     SignInError.EmptyPassword ->
                         _uiState.update { it.copy(isLoading = false, passwordError = SignInError.EmptyPassword) }
-                    SignInError.InvalidCredentials -> {
-                        _uiState.update { it.copy(isLoading = false) }
-                        _effects.emit(SignInEffect.ShowError(SignInError.InvalidCredentials))
-                    }
-                    SignInError.SignInFailed -> {
-                        _uiState.update { it.copy(isLoading = false) }
-                        _effects.emit(SignInEffect.ShowError(SignInError.SignInFailed))
-                    }
+                    SignInError.InvalidCredentials,
+                    SignInError.EmailNotVerified,
+                    SignInError.SignInFailed -> showError(result.error)
                 }
             is Result.Success ->
                 _uiState.update { it.copy(isLoading = false) }
         }
+    }
+
+    private suspend fun showError(error: SignInError) {
+        _uiState.update { it.copy(isLoading = false) }
+        _effects.emit(SignInEffect.ShowError(error))
     }
 }

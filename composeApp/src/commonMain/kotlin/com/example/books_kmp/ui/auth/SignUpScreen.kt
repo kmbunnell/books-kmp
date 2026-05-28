@@ -3,9 +3,11 @@ package com.example.books_kmp.ui.auth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -35,6 +37,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_create_account
+import bookskmp.composeapp.generated.resources.button_go_to_sign_in
 import bookskmp.composeapp.generated.resources.cd_hide_password
 import bookskmp.composeapp.generated.resources.cd_show_password
 import bookskmp.composeapp.generated.resources.error_confirm_password_required
@@ -50,6 +53,8 @@ import bookskmp.composeapp.generated.resources.label_confirm_password
 import bookskmp.composeapp.generated.resources.label_email
 import bookskmp.composeapp.generated.resources.label_password
 import bookskmp.composeapp.generated.resources.sign_up_sign_in_prompt
+import bookskmp.composeapp.generated.resources.sign_up_success_message
+import bookskmp.composeapp.generated.resources.sign_up_success_title
 import com.example.books_kmp.domain.auth.SignUpError
 import com.example.books_kmp.ui.TestTags
 import kotlinx.coroutines.flow.SharedFlow
@@ -119,6 +124,41 @@ fun SignUpScreenContent(
     }
 
     AuthFormLayout(snackbarHostState = snackbarHostState) {
+        if (uiState.verificationEmailSent) {
+            Icon(
+                imageVector = Icons.Filled.CheckCircle,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(64.dp),
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(Res.string.sign_up_success_title),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(Res.string.sign_up_success_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .testTag(TestTags.SignUp.VerificationMessage),
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = onNavigateToSignIn,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .testTag(TestTags.SignUp.GoToSignInButton),
+            ) {
+                Text(stringResource(Res.string.button_go_to_sign_in))
+            }
+            return@AuthFormLayout
+        }
+
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },

@@ -109,6 +109,20 @@ class SignInViewModelTest {
         }
 
     @Test
+    fun `ShowError effect with EmailNotVerified emitted when repository returns EmailNotVerified`() =
+        runTest {
+            fakeRepo.signInResult = Result.Failure(AuthRepositoryError.EmailNotVerified)
+            val viewModel = SignInViewModel(signInUseCase)
+
+            viewModel.effects.test {
+                viewModel.onIntent(SignInIntent.SignIn("test@example.com", "password123"))
+                val effect = awaitItem()
+                assertIs<SignInEffect.ShowError>(effect)
+                assertIs<SignInError.EmailNotVerified>(effect.error)
+            }
+        }
+
+    @Test
     fun `ShowError effect with SignInFailed emitted when repository returns NetworkError`() =
         runTest {
             fakeRepo.signInResult = Result.Failure(AuthRepositoryError.NetworkError)

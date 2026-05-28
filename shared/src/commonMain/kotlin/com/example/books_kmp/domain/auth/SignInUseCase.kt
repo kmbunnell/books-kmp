@@ -15,6 +15,7 @@ class SignInUseCase(private val authRepository: AuthRepository) {
                 Result.Failure(
                     when (result.error) {
                         AuthRepositoryError.InvalidCredentials -> SignInError.InvalidCredentials
+                        AuthRepositoryError.EmailNotVerified -> SignInError.EmailNotVerified
                         AuthRepositoryError.EmailAlreadyInUse,
                         AuthRepositoryError.WeakPassword,
                         AuthRepositoryError.InvalidEmail,

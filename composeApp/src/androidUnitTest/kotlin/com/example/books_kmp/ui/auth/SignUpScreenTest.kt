@@ -296,4 +296,34 @@ class SignUpScreenTest {
         }
         composeTestRule.onNodeWithText("Sign In", substring = true).assertIsDisplayed()
     }
+
+    @Test
+    fun `shows success state when verificationEmailSent is true`() {
+        composeTestRule.setContent {
+            SignUpScreenContent(
+                uiState = SignUpUiState(verificationEmailSent = true),
+                effects = MutableSharedFlow(),
+                onSignUp = { _, _, _ -> },
+                onNavigateToSignIn = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.SignUp.VerificationMessage).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.SignUp.GoToSignInButton).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.SignUp.EmailField).assertDoesNotExist()
+    }
+
+    @Test
+    fun `go to sign in button invokes onNavigateToSignIn`() {
+        var navigated = false
+        composeTestRule.setContent {
+            SignUpScreenContent(
+                uiState = SignUpUiState(verificationEmailSent = true),
+                effects = MutableSharedFlow(),
+                onSignUp = { _, _, _ -> },
+                onNavigateToSignIn = { navigated = true },
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.SignUp.GoToSignInButton).performClick()
+        assertEquals(true, navigated)
+    }
 }
