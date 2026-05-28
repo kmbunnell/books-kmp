@@ -26,7 +26,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -60,6 +59,7 @@ import bookskmp.composeapp.generated.resources.cd_close_scanner
 import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.cd_scan_barcode
 import bookskmp.composeapp.generated.resources.error_book_not_found
+import bookskmp.composeapp.generated.resources.error_isbn_format
 import bookskmp.composeapp.generated.resources.error_network_generic
 import bookskmp.composeapp.generated.resources.error_rate_limited
 import bookskmp.composeapp.generated.resources.error_scan_failed
@@ -77,6 +77,8 @@ import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.ui.BookCoverImage
 import com.example.books_kmp.ui.DuplicateBookDialog
 import com.example.books_kmp.ui.TestTags
+import com.example.books_kmp.ui.components.AppSnackbarHost
+import com.example.books_kmp.ui.components.InlineErrorText
 import com.example.books_kmp.ui.scan.BarcodeScannerView
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -137,7 +139,7 @@ fun AddBookScreenContent(
         }
 
         Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
+            snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
             topBar = {
                 TopAppBar(
                     title = { Text(stringResource(Res.string.title_add_book)) },
@@ -200,6 +202,7 @@ fun AddBookScreenContent(
                         isbn = uiState.isbn,
                         titleQuery = uiState.titleQuery,
                         isLoading = uiState.isLoading,
+                        isbnFormatError = uiState.isbnFormatError,
                         focusRequester = focusRequester,
                         onIntent = onIntent,
                     )
@@ -360,6 +363,7 @@ private fun LookupModeSection(
     isbn: String,
     titleQuery: String,
     isLoading: Boolean,
+    isbnFormatError: Boolean,
     focusRequester: FocusRequester,
     onIntent: (AddBookIntent) -> Unit,
 ) {
@@ -370,6 +374,7 @@ private fun LookupModeSection(
             label = { Text(stringResource(Res.string.label_isbn)) },
             singleLine = true,
             enabled = !isLoading,
+            isError = isbnFormatError,
             trailingIcon = {
                 IconButton(
                     onClick = { onIntent(AddBookIntent.StartScan) },
@@ -387,6 +392,13 @@ private fun LookupModeSection(
                     .focusRequester(focusRequester)
                     .testTag(TestTags.AddBook.IsbnField),
         )
+
+        if (isbnFormatError) {
+            InlineErrorText(
+                message = stringResource(Res.string.error_isbn_format),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

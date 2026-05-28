@@ -48,6 +48,7 @@
     <string name="cd_add_book">Add book</string>
     <string name="cd_navigate_up">Navigate up</string>
     <string name="error_book_not_found">Book not found. Try another way?</string>
+    <string name="error_isbn_format">Enter a valid 10 or 13 digit ISBN.</string>
     <string name="info_not_found_catalog">Sometimes books aren't in the catalog — including certain special editions and indie titles. Try a title search to find a similar edition, or add the book manually then use tags like "Special Edition" or "Indie" for sorting..</string>
     <string name="button_title_lookup">Title Search</string>
     <string name="button_enter_manually">Enter Manually</string>
