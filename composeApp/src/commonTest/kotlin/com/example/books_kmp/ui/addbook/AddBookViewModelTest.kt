@@ -518,6 +518,68 @@ class AddBookViewModelTest {
             assertFalse(viewModel.uiState.value.isLoading)
         }
 
+    // --- ISBN format validation tests ---
+
+    @Test
+    fun `LookupIsbn with invalid ISBN format sets isbnFormatError true and does not set isLoading`() =
+        runTest {
+            viewModel.effects.test {
+                viewModel.onIntent(AddBookIntent.IsbnChanged("123"))
+                viewModel.onIntent(AddBookIntent.LookupIsbn("123"))
+                val state = viewModel.uiState.value
+                assertFalse(state.isLoading)
+                assertTrue(state.isbnFormatError)
+                assertNull(state.foundBook)
+                expectNoEvents()
+            }
+        }
+
+    @Test
+    fun `LookupIsbn with ISBN padded by whitespace passes validation after trim`() =
+        runTest {
+            fakeService.lookupResult = Result.Success(validLookupData)
+            viewModel.onIntent(AddBookIntent.IsbnChanged("  9780140449136  "))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("  9780140449136  "))
+            val state = viewModel.uiState.value
+            assertFalse(state.isbnFormatError)
+        }
+
+    @Test
+    fun `LookupIsbn with valid ISBN format clears isbnFormatError before lookup`() =
+        runTest {
+            // First trigger the error
+            viewModel.onIntent(AddBookIntent.IsbnChanged("123"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("123"))
+            assertTrue(viewModel.uiState.value.isbnFormatError)
+
+            fakeService.lookupResult = Result.Success(validLookupData)
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            assertFalse(viewModel.uiState.value.isbnFormatError)
+        }
+
+    @Test
+    fun `IsbnChanged clears isbnFormatError`() =
+        runTest {
+            viewModel.onIntent(AddBookIntent.IsbnChanged("123"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("123"))
+            assertTrue(viewModel.uiState.value.isbnFormatError)
+
+            viewModel.onIntent(AddBookIntent.IsbnChanged("1234"))
+            assertFalse(viewModel.uiState.value.isbnFormatError)
+        }
+
+    @Test
+    fun `SetLookupMode clears isbnFormatError`() =
+        runTest {
+            viewModel.onIntent(AddBookIntent.IsbnChanged("123"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("123"))
+            assertTrue(viewModel.uiState.value.isbnFormatError)
+
+            viewModel.onIntent(AddBookIntent.SetLookupMode(LookupMode.Title))
+            assertFalse(viewModel.uiState.value.isbnFormatError)
+        }
+
     @Test
     fun `Retry in title mode re-invokes LookupByTitle with current titleQuery`() =
         runTest {

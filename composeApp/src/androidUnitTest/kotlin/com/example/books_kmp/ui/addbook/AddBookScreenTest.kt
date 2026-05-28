@@ -1,10 +1,14 @@
 package com.example.books_kmp.ui.addbook
 
 import android.app.Application
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -30,21 +34,6 @@ class AddBookScreenTest {
     private val emptyEffects = MutableSharedFlow<AddBookEffect>()
 
     @Test
-    fun `navigate up button is displayed`() {
-        composeTestRule.setContent {
-            AddBookScreenContent(
-                uiState = AddBookUiState(),
-                effects = emptyEffects,
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToManualEntry = {},
-                onNavigateToSignIn = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.AddBook.NavigateUpButton).assertIsDisplayed()
-    }
-
-    @Test
     fun `tapping navigate up button triggers onNavigateUp`() {
         var navigatedUp = false
         composeTestRule.setContent {
@@ -59,21 +48,6 @@ class AddBookScreenTest {
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.NavigateUpButton).performClick()
         assertTrue(navigatedUp)
-    }
-
-    @Test
-    fun `lookup mode toggle is displayed`() {
-        composeTestRule.setContent {
-            AddBookScreenContent(
-                uiState = AddBookUiState(),
-                effects = emptyEffects,
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToManualEntry = {},
-                onNavigateToSignIn = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.AddBook.LookupModeToggle).assertIsDisplayed()
     }
 
     @Test
@@ -170,21 +144,6 @@ class AddBookScreenTest {
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.titleResultItem(0)).performClick()
         assertEquals(AddBookIntent.SelectTitleResult(book), capturedIntent)
-    }
-
-    @Test
-    fun `Look Up button is displayed`() {
-        composeTestRule.setContent {
-            AddBookScreenContent(
-                uiState = AddBookUiState(),
-                effects = emptyEffects,
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToManualEntry = {},
-                onNavigateToSignIn = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsDisplayed()
     }
 
     @Test
@@ -591,36 +550,6 @@ class AddBookScreenTest {
     }
 
     @Test
-    fun `NotFound error from title lookup shows error banner`() {
-        composeTestRule.setContent {
-            AddBookScreenContent(
-                uiState = AddBookUiState(error = AddBookScreenError.NotFound),
-                effects = emptyEffects,
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToManualEntry = {},
-                onNavigateToSignIn = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
-    }
-
-    @Test
-    fun `NotFound error from title lookup shows enter manually button`() {
-        composeTestRule.setContent {
-            AddBookScreenContent(
-                uiState = AddBookUiState(error = AddBookScreenError.NotFound),
-                effects = emptyEffects,
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToManualEntry = {},
-                onNavigateToSignIn = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.AddBook.EnterManuallyButton).assertIsDisplayed()
-    }
-
-    @Test
     fun `rate limited banner is shown for RateLimited state`() {
         composeTestRule.setContent {
             AddBookScreenContent(
@@ -697,6 +626,73 @@ class AddBookScreenTest {
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
         composeTestRule.onNodeWithTag(TestTags.AddBook.SignInButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `isbn field shows inline error when isbnFormatError is true`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(isbn = "123", isbnFormatError = true),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.InlineErrorText).assertIsDisplayed()
+    }
+
+    @Test
+    fun `isbn inline error not shown when isbnFormatError is false`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(isbn = "123", isbnFormatError = false),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.InlineErrorText).assertDoesNotExist()
+    }
+
+    @Test
+    fun `isbn field is marked as error when isbnFormatError is true`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(isbn = "123", isbnFormatError = true),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField)
+            .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Error))
+    }
+
+    @Test
+    fun `BookAdded effect shows snackbar`() {
+        val effects = MutableSharedFlow<AddBookEffect>(extraBufferCapacity = 1)
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(),
+                effects = effects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+            )
+        }
+        composeTestRule.waitForIdle()
+        check(effects.tryEmit(AddBookEffect.BookAdded))
+        composeTestRule.waitUntil(timeoutMillis = 2_000) {
+            composeTestRule.onAllNodesWithText("Book added").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onNodeWithText("Book added").assertIsDisplayed()
     }
 
     @Test

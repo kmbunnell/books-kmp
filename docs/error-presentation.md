@@ -31,6 +31,10 @@ The standard defines **three tiers**. Every user-visible error must map to exact
 - Destructive confirmations (use Tier 3).
 - Errors that require the user to fix something before continuing — use an inline
   error banner with a Retry button on the screen body instead.
+- Retryable operation errors that block the current user flow (e.g. network
+  failure mid-lookup, rate limit). Snackbars disappear before the user can act
+  on them; use an inline error banner with a Retry button on the screen body
+  instead.
 
 **Wiring pattern:**
 

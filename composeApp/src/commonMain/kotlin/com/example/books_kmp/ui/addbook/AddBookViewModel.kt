@@ -31,6 +31,7 @@ data class AddBookUiState(
     val showDuplicateDialog: Boolean = false,
     val foundBook: BookLookupData? = null,
     val isScanning: Boolean = false,
+    val isbnFormatError: Boolean = false,
 )
 
 sealed interface AddBookScreenError {
@@ -102,7 +103,8 @@ class AddBookViewModel(
 
     fun onIntent(intent: AddBookIntent) {
         when (intent) {
-            is AddBookIntent.IsbnChanged -> _uiState.update { it.copy(isbn = intent.isbn) }
+            is AddBookIntent.IsbnChanged ->
+                _uiState.update { it.copy(isbn = intent.isbn, isbnFormatError = false) }
             is AddBookIntent.TitleChanged -> _uiState.update { it.copy(titleQuery = intent.title) }
             is AddBookIntent.SetLookupMode ->
                 _uiState.update {
@@ -113,6 +115,7 @@ class AddBookViewModel(
                         titleResults = emptyList(),
                         error = null,
                         foundBook = null,
+                        isbnFormatError = false,
                     )
                 }
             is AddBookIntent.SelectTitleResult ->
@@ -169,8 +172,13 @@ class AddBookViewModel(
     }
 
     private suspend fun handleLookupIsbn(isbn: String) {
-        _uiState.update { it.copy(isLoading = true, error = null, foundBook = null) }
-        when (val result = lookupBookUseCase(isbn)) {
+        val trimmed = isbn.trim()
+        if (trimmed.length != 10 && trimmed.length != 13) {
+            _uiState.update { it.copy(isbnFormatError = true) }
+            return
+        }
+        _uiState.update { it.copy(isLoading = true, error = null, foundBook = null, isbnFormatError = false) }
+        when (val result = lookupBookUseCase(trimmed)) {
             is Result.Success -> {
                 _uiState.update { it.copy(isLoading = false, foundBook = result.data) }
             }
