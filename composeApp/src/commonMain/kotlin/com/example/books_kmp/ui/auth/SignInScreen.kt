@@ -3,6 +3,7 @@ package com.example.books_kmp.ui.auth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -156,10 +157,6 @@ fun SignInScreenContent(
                     .testTag(TestTags.SignIn.PasswordField),
         )
         Spacer(modifier = Modifier.height(16.dp))
-        if (uiState.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.testTag(TestTags.SignIn.LoadingIndicator))
-            Spacer(modifier = Modifier.height(16.dp))
-        }
         Button(
             onClick = { onSignIn(email, password) },
             enabled = !uiState.isLoading,
@@ -168,7 +165,15 @@ fun SignInScreenContent(
                     .fillMaxWidth()
                     .testTag(TestTags.SignIn.SignInButton),
         ) {
-            Text(stringResource(Res.string.button_sign_in))
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp).testTag(TestTags.SignIn.LoadingIndicator),
+                    strokeWidth = 2.dp,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                )
+            } else {
+                Text(stringResource(Res.string.button_sign_in))
+            }
         }
         Spacer(modifier = Modifier.height(8.dp))
         TextButton(onClick = onNavigateToSignUp) {

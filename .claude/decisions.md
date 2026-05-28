@@ -6,6 +6,12 @@ Non-obvious decisions — rejected alternatives, surprising constraints, gotchas
 
 ---
 
+## 2026-05-28 — `supportingText` kept for auth form validation; not replaced with `InlineErrorText` (SHELVD-137)
+`OutlinedTextField`'s `supportingText` slot reserves space and prevents layout shifts; standalone `InlineErrorText` below the field would cause content to jump. `InlineErrorText` is for error messages outside Material's text field component.
+
+## 2026-05-28 — Splash screen has no error UI by design (SHELVD-137)
+Session restore failure sets `isLoading = false, isAuthenticated = false`, which triggers `onNotAuthenticated()` navigation to Sign In immediately — a snackbar on a transient screen would never be visible.
+
 ## 2026-05-23 — Password policy tightened to 8 chars + letters_digits (SHELVD-127)
 Improves security posture; existing accounts are not force-rotated — the stricter policy applies only to new sign-ups and password changes going forward.
 

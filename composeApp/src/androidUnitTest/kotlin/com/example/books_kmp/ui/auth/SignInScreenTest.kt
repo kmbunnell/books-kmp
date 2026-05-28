@@ -119,6 +119,23 @@ class SignInScreenTest {
     }
 
     @Test
+    fun `shows snackbar when ShowError effect with SignInFailed is emitted`() {
+        val effects = MutableSharedFlow<SignInEffect>(extraBufferCapacity = 1)
+        composeTestRule.setContent {
+            SignInScreenContent(
+                uiState = SignInUiState(),
+                effects = effects,
+                onSignIn = { _, _ -> },
+                onNavigateToSignUp = {},
+            )
+        }
+        composeTestRule.waitForIdle()
+        effects.tryEmit(SignInEffect.ShowError(SignInError.SignInFailed))
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Sign in failed. Please try again.").assertIsDisplayed()
+    }
+
+    @Test
     fun `password toggle button is displayed`() {
         composeTestRule.setContent {
             SignInScreenContent(
