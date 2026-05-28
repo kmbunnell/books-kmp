@@ -156,10 +156,10 @@ class LibraryScreenTest {
     // --- Error state tests ---
 
     @Test
-    fun `when loadFailed is true error message is shown`() {
+    fun `when error is set error message is shown`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(loadFailed = true),
+                uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -168,10 +168,10 @@ class LibraryScreenTest {
     }
 
     @Test
-    fun `when loadFailed is true retry button is shown`() {
+    fun `when error is set retry button is shown`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(loadFailed = true),
+                uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -180,10 +180,10 @@ class LibraryScreenTest {
     }
 
     @Test
-    fun `when loadFailed is true book grid is not visible`() {
+    fun `when error is set book grid is not visible`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(loadFailed = true),
+                uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -192,10 +192,10 @@ class LibraryScreenTest {
     }
 
     @Test
-    fun `when loadFailed is true search bar is not visible`() {
+    fun `when error is set search bar is not visible`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(loadFailed = true),
+                uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -204,10 +204,10 @@ class LibraryScreenTest {
     }
 
     @Test
-    fun `when loadFailed is true filter button is not visible`() {
+    fun `when error is set filter button is not visible`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(loadFailed = true),
+                uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -220,7 +220,7 @@ class LibraryScreenTest {
         val dispatched = mutableListOf<LibraryIntent>()
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(loadFailed = true),
+                uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = { dispatched.add(it) },
                 onSignOut = {},
             )
@@ -235,7 +235,7 @@ class LibraryScreenTest {
     fun `empty-library message shown when books empty and not loading or failed`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(books = emptyList(), isLoading = false, loadFailed = false),
+                uiState = LibraryUiState(books = emptyList(), isLoading = false),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -247,7 +247,7 @@ class LibraryScreenTest {
     fun `add first book button shown in empty-library state`() {
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(books = emptyList(), isLoading = false, loadFailed = false),
+                uiState = LibraryUiState(books = emptyList(), isLoading = false),
                 onIntent = {},
                 onSignOut = {},
             )
@@ -260,7 +260,7 @@ class LibraryScreenTest {
         var navigateCalled = false
         composeTestRule.setContent {
             LibraryScreenContent(
-                uiState = LibraryUiState(books = emptyList(), isLoading = false, loadFailed = false),
+                uiState = LibraryUiState(books = emptyList(), isLoading = false),
                 onIntent = {},
                 onSignOut = {},
                 onNavigateToAddBook = { navigateCalled = true },
@@ -279,7 +279,6 @@ class LibraryScreenTest {
                 books = listOf(book1),
                 filteredBooks = emptyList(),
                 isLoading = false,
-                loadFailed = false,
             )
         composeTestRule.setContent {
             LibraryScreenContent(uiState = state, onIntent = {}, onSignOut = {})
@@ -294,7 +293,6 @@ class LibraryScreenTest {
                 books = listOf(book1),
                 filteredBooks = emptyList(),
                 isLoading = false,
-                loadFailed = false,
             )
         composeTestRule.setContent {
             LibraryScreenContent(uiState = state, onIntent = {}, onSignOut = {})
@@ -309,7 +307,6 @@ class LibraryScreenTest {
                 books = listOf(book1),
                 filteredBooks = emptyList(),
                 isLoading = false,
-                loadFailed = false,
             )
         composeTestRule.setContent {
             LibraryScreenContent(uiState = state, onIntent = {}, onSignOut = {})
@@ -453,6 +450,37 @@ class LibraryScreenTest {
         composeTestRule.onNodeWithTag(TestTags.Library.SortButton).performClick()
         composeTestRule.onNodeWithTag(TestTags.Library.SortMenuAuthorAsc).performClick()
         assertEquals(LibraryIntent.ChangeSortOrder(SortOrder.AUTHOR_ASC), dispatched.last())
+    }
+
+    // --- Loading state tests ---
+
+    @Test
+    fun `loading indicator shown when isLoading true and books empty`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(isLoading = true, books = emptyList()),
+                onIntent = {},
+                onSignOut = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.LoadingIndicator).assertIsDisplayed()
+    }
+
+    @Test
+    fun `loading indicator not shown when books non-empty even if isLoading true`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState =
+                    LibraryUiState(
+                        isLoading = true,
+                        books = listOf(book1),
+                        filteredBooks = listOf(book1),
+                    ),
+                onIntent = {},
+                onSignOut = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.LoadingIndicator).assertDoesNotExist()
     }
 
     @Test

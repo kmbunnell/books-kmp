@@ -31,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -70,6 +71,7 @@ import bookskmp.composeapp.generated.resources.title_library
 import coil3.compose.AsyncImage
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.ui.TestTags
+import com.example.books_kmp.ui.components.AppSnackbarHost
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -84,9 +86,23 @@ fun LibraryScreen(
     val viewModel: LibraryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val loadFailedMessage = stringResource(Res.string.error_library_load_failed)
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             viewModel.onIntent(LibraryIntent.Refresh)
+        }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is LibraryEffect.ShowError -> {
+                    val message = when (effect.error) {
+                        LibraryError.LoadFailed -> loadFailedMessage
+                    }
+                    snackbarHostState.showSnackbar(message)
+                }
+            }
         }
     }
     LibraryScreenContent(
@@ -96,6 +112,7 @@ fun LibraryScreen(
         onNavigateToAddBook = onNavigateToAddBook,
         onNavigateToTagManagement = onNavigateToTagManagement,
         onNavigateToBookDetail = onNavigateToBookDetail,
+        snackbarHostState = snackbarHostState,
     )
 }
 
@@ -108,16 +125,18 @@ fun LibraryScreenContent(
     onNavigateToAddBook: () -> Unit = {},
     onNavigateToTagManagement: () -> Unit = {},
     onNavigateToBookDetail: (String) -> Unit = {},
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
 
     Scaffold(
+        snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.title_library)) },
                 actions = {
-                    if (!uiState.loadFailed) {
+                    if (uiState.error == null) {
                         BadgedBox(
                             badge = {
                                 if (uiState.activeFilterTagIds.isNotEmpty()) {
@@ -204,7 +223,7 @@ fun LibraryScreenContent(
         },
     ) { innerPadding ->
         when {
-            uiState.loadFailed -> {
+            uiState.error != null -> {
                 LibraryErrorContent(
                     onRetry = { onIntent(LibraryIntent.Refresh) },
                     modifier = Modifier.padding(innerPadding),
@@ -215,7 +234,9 @@ fun LibraryScreenContent(
                     modifier = Modifier.fillMaxSize().padding(innerPadding),
                     contentAlignment = Alignment.Center,
                 ) {
-                    androidx.compose.material3.CircularProgressIndicator()
+                    androidx.compose.material3.CircularProgressIndicator(
+                        modifier = Modifier.testTag(TestTags.Library.LoadingIndicator),
+                    )
                 }
             }
             uiState.books.isEmpty() -> {
