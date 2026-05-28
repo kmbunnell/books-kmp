@@ -16,6 +16,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -108,47 +109,47 @@ class LibraryViewModelTest {
         }
 
     @Test
-    fun `loadLibrary book failure sets loadFailed true and isLoading false, leaves lists empty`() =
+    fun `loadLibrary book failure sets error and isLoading false, leaves lists empty`() =
         runTest {
             bookRepo = FakeBookRepository(getBooksShouldFail = true)
             val failVm = LibraryViewModel(bookRepo, repo)
             val state = failVm.uiState.value
-            assertTrue(state.loadFailed)
+            assertTrue(state.error != null)
             assertFalse(state.isLoading)
             assertTrue(state.books.isEmpty())
             assertTrue(state.tags.isEmpty())
         }
 
     @Test
-    fun `loadLibrary tag failure sets loadFailed true and isLoading false, leaves lists empty`() =
+    fun `loadLibrary tag failure sets error and isLoading false, leaves lists empty`() =
         runTest {
             val failVm = LibraryViewModel(bookRepo, failingGetTagsRepo())
             val state = failVm.uiState.value
-            assertTrue(state.loadFailed)
+            assertTrue(state.error != null)
             assertFalse(state.isLoading)
             assertTrue(state.books.isEmpty())
             assertTrue(state.tags.isEmpty())
         }
 
     @Test
-    fun `init network error sets loadFailed flag`() =
+    fun `init network error sets error flag`() =
         runTest {
             val errorVm = LibraryViewModel(bookRepo, failingGetTagsRepo())
-            assertTrue(errorVm.uiState.value.loadFailed)
+            assertEquals(LibraryError.LoadFailed, errorVm.uiState.value.error)
             assertFalse(errorVm.uiState.value.isLoading)
         }
 
     @Test
-    fun `Refresh after failure resets loadFailed to false and re-fetches both`() =
+    fun `Refresh after failure resets error to null and re-fetches both`() =
         runTest {
             bookRepo = FakeBookRepository(getBooksShouldFail = true)
             val retryVm = LibraryViewModel(bookRepo, repo)
-            assertTrue(retryVm.uiState.value.loadFailed)
+            assertEquals(LibraryError.LoadFailed, retryVm.uiState.value.error)
 
             bookRepo.getBooksShouldFail = false
             retryVm.onIntent(LibraryIntent.Refresh)
 
-            assertFalse(retryVm.uiState.value.loadFailed)
+            assertEquals(null, retryVm.uiState.value.error)
             assertEquals(2, bookRepo.getBooksByUserCalled)
             assertEquals(listOf(tag1, tag2), retryVm.uiState.value.tags)
         }
@@ -466,6 +467,32 @@ class LibraryViewModelTest {
             val callsBefore = bookRepo.getBooksByUserCalled
             vm.onIntent(LibraryIntent.ClearFilters)
             assertEquals(callsBefore, bookRepo.getBooksByUserCalled)
+        }
+
+    @Test
+    fun `Refresh failure when data already loaded emits ShowError effect and keeps books visible`() =
+        runTest {
+            // Initial load succeeds — books populated.
+            assertEquals(listOf(book1, book2), vm.uiState.value.books)
+            assertEquals(null, vm.uiState.value.error)
+
+            val emittedEffects = mutableListOf<LibraryEffect>()
+            val collectJob = launch { vm.effects.collect { emittedEffects.add(it) } }
+
+            // Now make repo fail and trigger refresh.
+            bookRepo.getBooksShouldFail = true
+            vm.onIntent(LibraryIntent.Refresh)
+            advanceUntilIdle()
+
+            assertFalse(vm.uiState.value.isLoading)
+            // Books remain visible (not wiped)
+            assertEquals(listOf(book1, book2), vm.uiState.value.books)
+            // Error state not set (snackbar tier, not full-screen tier)
+            assertEquals(null, vm.uiState.value.error)
+            // ShowError effect emitted
+            assertTrue(emittedEffects.any { it is LibraryEffect.ShowError && it.error == LibraryError.LoadFailed })
+
+            collectJob.cancel()
         }
 
     private fun failingGetTagsRepo(): TagRepository =

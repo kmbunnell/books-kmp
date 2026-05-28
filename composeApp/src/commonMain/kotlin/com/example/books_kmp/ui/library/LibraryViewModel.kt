@@ -9,11 +9,13 @@ import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.TagRepository
 import com.example.books_kmp.util.normalise
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -25,7 +27,7 @@ data class LibraryUiState(
     val sortOrder: SortOrder = SortOrder.TITLE_ASC,
     val searchQuery: String = "",
     val isLoading: Boolean = false,
-    val loadFailed: Boolean = false,
+    val error: LibraryError? = null,
 )
 
 sealed interface LibraryIntent {
@@ -40,6 +42,14 @@ sealed interface LibraryIntent {
     data object Refresh : LibraryIntent
 }
 
+sealed interface LibraryError {
+    data object LoadFailed : LibraryError
+}
+
+sealed interface LibraryEffect {
+    data class ShowError(val error: LibraryError) : LibraryEffect
+}
+
 enum class SortOrder { TITLE_ASC, AUTHOR_ASC }
 
 class LibraryViewModel(
@@ -49,12 +59,15 @@ class LibraryViewModel(
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
 
+    private val _effects = Channel<LibraryEffect>(Channel.BUFFERED)
+    val effects = _effects.receiveAsFlow()
+
     init {
         loadLibrary()
         viewModelScope.launch {
             bookRepository.booksFlow.filterNotNull().collect { books ->
                 _uiState.update { state ->
-                    if (state.loadFailed || state.isLoading) return@update state
+                    if (state.error != null || state.isLoading) return@update state
                     state.copy(
                         books = books,
                         filteredBooks =
@@ -125,7 +138,8 @@ class LibraryViewModel(
 
     private fun loadLibrary() {
         if (_uiState.value.isLoading) return
-        _uiState.update { it.copy(isLoading = true, loadFailed = false) }
+        val hadData = _uiState.value.books.isNotEmpty()
+        _uiState.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
             coroutineScope {
                 val booksDeferred = async { bookRepository.getBooksByUser() }
@@ -148,17 +162,22 @@ class LibraryViewModel(
                                     state.searchQuery
                                 ),
                             isLoading = false,
-                            loadFailed = false,
+                            error = null,
                         )
                     }
                 } else {
-                    _uiState.update {
-                        it.copy(
-                            books = emptyList(),
-                            tags = emptyList(),
-                            isLoading = false,
-                            loadFailed = true,
-                        )
+                    if (hadData) {
+                        _uiState.update { it.copy(isLoading = false) }
+                        _effects.send(LibraryEffect.ShowError(LibraryError.LoadFailed))
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                books = emptyList(),
+                                tags = emptyList(),
+                                isLoading = false,
+                                error = LibraryError.LoadFailed,
+                            )
+                        }
                     }
                 }
             }
