@@ -35,39 +35,25 @@ class LibraryScreenTest {
     @Test
     fun `sign out button is displayed`() {
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {}, onSignOut = {})
+            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {})
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SignOutButton).assertIsDisplayed()
     }
 
     @Test
-    fun `clicking sign out button triggers onSignOut callback`() {
-        var signOutCalled = false
+    fun `clicking sign out button dispatches SignOut intent`() {
+        var capturedIntent: LibraryIntent? = null
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {}, onSignOut = { signOutCalled = true })
+            LibraryScreenContent(uiState = LibraryUiState(), onIntent = { capturedIntent = it })
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SignOutButton).performClick()
-        assertTrue(signOutCalled)
-    }
-
-    @Test
-    fun `sign out button triggers sign out callback`() {
-        var signOutCalled = false
-        composeTestRule.setContent {
-            LibraryScreenContent(
-                uiState = LibraryUiState(),
-                onIntent = {},
-                onSignOut = { signOutCalled = true },
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.Library.SignOutButton).performClick()
-        assertTrue(signOutCalled)
+        assertEquals(LibraryIntent.SignOut, capturedIntent)
     }
 
     @Test
     fun `Add Book FAB is displayed`() {
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {}, onSignOut = {})
+            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {})
         }
         composeTestRule.onNodeWithTag(TestTags.Library.AddBookFab).assertIsDisplayed()
     }
@@ -79,7 +65,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(),
                 onIntent = {},
-                onSignOut = {},
                 onNavigateToAddBook = { navigateCalled = true },
             )
         }
@@ -90,7 +75,7 @@ class LibraryScreenTest {
     @Test
     fun `manage tags button is displayed`() {
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {}, onSignOut = {})
+            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {})
         }
         composeTestRule.onNodeWithTag(TestTags.Library.ManageTagsButton).assertIsDisplayed()
     }
@@ -102,7 +87,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(),
                 onIntent = {},
-                onSignOut = {},
                 onNavigateToTagManagement = { navigateCalled = true },
             )
         }
@@ -115,7 +99,7 @@ class LibraryScreenTest {
     @Test
     fun `filter button is shown in TopAppBar`() {
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {}, onSignOut = {})
+            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {})
         }
         composeTestRule.onNodeWithTag(TestTags.Library.FilterButton).assertIsDisplayed()
     }
@@ -126,7 +110,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(activeFilterTagIds = emptySet()),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.FilterBadge).assertDoesNotExist()
@@ -138,7 +121,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(activeFilterTagIds = setOf("t1")),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.FilterBadge).assertIsDisplayed()
@@ -147,7 +129,7 @@ class LibraryScreenTest {
     @Test
     fun `tapping filter button opens TagFilterBottomSheet`() {
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {}, onSignOut = {})
+            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {})
         }
         composeTestRule.onNodeWithTag(TestTags.Library.FilterButton).performClick()
         composeTestRule.onNodeWithTag(TestTags.Library.FilterSheet).assertIsDisplayed()
@@ -161,7 +143,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.LibraryError).assertIsDisplayed()
@@ -173,7 +154,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.RetryButton).assertIsDisplayed()
@@ -185,7 +165,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.BookGrid).assertDoesNotExist()
@@ -197,7 +176,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SearchBar).assertDoesNotExist()
@@ -209,7 +187,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.FilterButton).assertDoesNotExist()
@@ -222,7 +199,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(error = LibraryError.LoadFailed),
                 onIntent = { dispatched.add(it) },
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.RetryButton).performClick()
@@ -237,7 +213,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = emptyList(), isLoading = false),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.EmptyLibrary).assertIsDisplayed()
@@ -249,7 +224,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = emptyList(), isLoading = false),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.AddFirstBookButton).assertIsDisplayed()
@@ -262,7 +236,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = emptyList(), isLoading = false),
                 onIntent = {},
-                onSignOut = {},
                 onNavigateToAddBook = { navigateCalled = true },
             )
         }
@@ -281,7 +254,7 @@ class LibraryScreenTest {
                 isLoading = false,
             )
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = state, onIntent = {}, onSignOut = {})
+            LibraryScreenContent(uiState = state, onIntent = {})
         }
         composeTestRule.onNodeWithTag(TestTags.Library.EmptyFilter).assertIsDisplayed()
     }
@@ -295,7 +268,7 @@ class LibraryScreenTest {
                 isLoading = false,
             )
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = state, onIntent = {}, onSignOut = {})
+            LibraryScreenContent(uiState = state, onIntent = {})
         }
         composeTestRule.onNodeWithTag(TestTags.Library.AddFirstBookButton).assertDoesNotExist()
     }
@@ -309,7 +282,7 @@ class LibraryScreenTest {
                 isLoading = false,
             )
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = state, onIntent = {}, onSignOut = {})
+            LibraryScreenContent(uiState = state, onIntent = {})
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SearchBar).assertIsDisplayed()
     }
@@ -322,7 +295,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.BookGrid).assertIsDisplayed()
@@ -334,7 +306,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = listOf(book1, book2), filteredBooks = listOf(book1, book2)),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.bookItem("b1")).assertIsDisplayed()
@@ -347,7 +318,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.bookItem("b1"))
@@ -360,7 +330,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.bookItem("b1"))
@@ -374,7 +343,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
                 onIntent = {},
-                onSignOut = {},
                 onNavigateToBookDetail = { navigatedId = it },
             )
         }
@@ -388,7 +356,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1)),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SearchBar).assertIsDisplayed()
@@ -400,7 +367,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1), searchQuery = "Dune"),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SearchBar).assertTextContains("Dune")
@@ -413,7 +379,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = listOf(book1), filteredBooks = listOf(book1), searchQuery = ""),
                 onIntent = { dispatched.add(it) },
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SearchBar).performTextInput("Du")
@@ -423,7 +388,7 @@ class LibraryScreenTest {
     @Test
     fun `sort button is displayed in top bar`() {
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {}, onSignOut = {})
+            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {})
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SortButton).assertIsDisplayed()
     }
@@ -431,7 +396,7 @@ class LibraryScreenTest {
     @Test
     fun `clicking sort button opens dropdown menu`() {
         composeTestRule.setContent {
-            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {}, onSignOut = {})
+            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {})
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SortButton).performClick()
         composeTestRule.onNodeWithTag(TestTags.Library.SortMenuAuthorAsc).assertIsDisplayed()
@@ -444,7 +409,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(),
                 onIntent = { dispatched.add(it) },
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.SortButton).performClick()
@@ -460,7 +424,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(isLoading = true, books = emptyList()),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.LoadingIndicator).assertIsDisplayed()
@@ -477,7 +440,6 @@ class LibraryScreenTest {
                         filteredBooks = listOf(book1),
                     ),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.LoadingIndicator).assertDoesNotExist()
@@ -489,7 +451,6 @@ class LibraryScreenTest {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = listOf(book1), filteredBooks = emptyList()),
                 onIntent = {},
-                onSignOut = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.BookGrid).assertDoesNotExist()

@@ -4,21 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.AuthSessionState
-import kotlin.coroutines.cancellation.CancellationException
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-
-sealed interface AuthError {
-    data object SignOutFailed : AuthError
-
-    data object SessionExpired : AuthError
-}
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 data class AuthUiState(
     val isLoading: Boolean = false,
@@ -26,61 +15,17 @@ data class AuthUiState(
     val userId: String? = null,
 )
 
-sealed interface AuthIntent {
-    data object SignOut : AuthIntent
-}
-
-sealed interface AuthEffect {
-    data class ShowError(val error: AuthError) : AuthEffect
-}
-
-class AuthViewModel(
-    private val authRepository: AuthRepository,
-) : ViewModel() {
-    private val _uiState = MutableStateFlow(AuthUiState(isLoading = true))
-    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
-
-    private val _effects = MutableSharedFlow<AuthEffect>()
-    val effects: SharedFlow<AuthEffect> = _effects.asSharedFlow()
-
-    init {
-        viewModelScope.launch {
-            authRepository.sessionStatus.collect { sessionState ->
+class AuthViewModel(authRepository: AuthRepository) : ViewModel() {
+    val uiState: StateFlow<AuthUiState> =
+        authRepository.sessionStatus
+            .map { sessionState ->
                 when (sessionState) {
-                    AuthSessionState.Loading ->
-                        _uiState.update { it.copy(isLoading = true, isAuthenticated = false, userId = null) }
+                    AuthSessionState.Loading -> AuthUiState(isLoading = true)
                     is AuthSessionState.Authenticated ->
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                isAuthenticated = true,
-                                userId = sessionState.userId
-                            )
-                        }
-                    AuthSessionState.NotAuthenticated ->
-                        _uiState.update { it.copy(isLoading = false, isAuthenticated = false, userId = null) }
-                    AuthSessionState.Error -> {
-                        _uiState.update { it.copy(isLoading = false, isAuthenticated = false, userId = null) }
-                        _effects.emit(AuthEffect.ShowError(AuthError.SessionExpired))
-                    }
+                        AuthUiState(isAuthenticated = true, userId = sessionState.userId)
+                    AuthSessionState.NotAuthenticated -> AuthUiState()
+                    AuthSessionState.Error -> AuthUiState()
                 }
             }
-        }
-    }
-
-    fun onIntent(intent: AuthIntent) {
-        when (intent) {
-            AuthIntent.SignOut -> viewModelScope.launch { handleSignOut() }
-        }
-    }
-
-    private suspend fun handleSignOut() {
-        try {
-            authRepository.signOut()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (_: Exception) {
-            _effects.emit(AuthEffect.ShowError(AuthError.SignOutFailed))
-        }
-    }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, AuthUiState(isLoading = true))
 }

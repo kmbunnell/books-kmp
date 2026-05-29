@@ -41,6 +41,7 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
                 when (e.error) {
                     "user_already_exists" -> AuthRepositoryError.EmailAlreadyInUse
                     "weak_password" -> AuthRepositoryError.WeakPassword
+                    "over_email_send_rate_limit" -> AuthRepositoryError.EmailRateLimitExceeded
                     "validation_failed" -> AuthRepositoryError.InvalidEmail
                     else -> AuthRepositoryError.Unknown
                 },
@@ -75,7 +76,14 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
         }
     }
 
-    override suspend fun signOut() {
-        supabase.auth.signOut()
+    override suspend fun signOut(): Result<Unit, AuthRepositoryError> {
+        return try {
+            supabase.auth.signOut()
+            Result.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            Result.Failure(AuthRepositoryError.NetworkError)
+        }
     }
 }

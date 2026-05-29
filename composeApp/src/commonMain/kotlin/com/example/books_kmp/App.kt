@@ -10,7 +10,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.books_kmp.ui.addbook.AddBookScreen
-import com.example.books_kmp.ui.auth.AuthIntent
 import com.example.books_kmp.ui.auth.AuthViewModel
 import com.example.books_kmp.ui.auth.SignInScreen
 import com.example.books_kmp.ui.auth.SignUpScreen
@@ -106,7 +105,6 @@ fun App() {
                     },
                 )
                 LibraryScreen(
-                    onSignOut = { authViewModel.onIntent(AuthIntent.SignOut) },
                     onNavigateToAddBook = { navController.navigate(Route.AddBook) },
                     onNavigateToTagManagement = { navController.navigate(Route.TagManagement) },
                     onNavigateToBookDetail = { bookId -> navController.navigate(Route.BookDetail(bookId)) },

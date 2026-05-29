@@ -9,7 +9,7 @@ class FakeAuthRepository : AuthRepository {
     val sessionFlow = MutableSharedFlow<AuthSessionState>(replay = 1)
     var signInResult: Result<Unit, AuthRepositoryError> = Result.Success(Unit)
     var signUpResult: Result<Unit, AuthRepositoryError> = Result.Success(Unit)
-    var signOutException: Exception? = null
+    var signOutResult: Result<Unit, AuthRepositoryError> = Result.Success(Unit)
     var signInCalled = false
     var signUpCalled = false
 
@@ -38,7 +38,5 @@ class FakeAuthRepository : AuthRepository {
         return signInResult
     }
 
-    override suspend fun signOut() {
-        signOutException?.let { throw it }
-    }
+    override suspend fun signOut(): Result<Unit, AuthRepositoryError> = signOutResult
 }

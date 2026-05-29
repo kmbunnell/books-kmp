@@ -66,7 +66,7 @@ fun appModule(config: SupabaseConfig): Module =
         factory { SaveManualBookUseCase(get()) }
         factory<ToggleBookTagUseCase> { DefaultToggleBookTagUseCase(get(), get()) }
         viewModel { AuthViewModel(get()) }
-        viewModel { LibraryViewModel(get(), get()) }
+        viewModel { LibraryViewModel(get(), get(), get()) }
         viewModel { SignInViewModel(get()) }
         viewModel { SignUpViewModel(get()) }
         viewModel { ManualEntryViewModel(get()) }

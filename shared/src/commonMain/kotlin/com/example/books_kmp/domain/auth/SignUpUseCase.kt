@@ -20,6 +20,7 @@ class SignUpUseCase(private val authRepository: AuthRepository) {
                         AuthRepositoryError.EmailAlreadyInUse -> SignUpError.EmailAlreadyInUse
                         AuthRepositoryError.WeakPassword -> SignUpError.WeakPassword
                         AuthRepositoryError.InvalidEmail -> SignUpError.InvalidEmail
+                        AuthRepositoryError.EmailRateLimitExceeded -> SignUpError.EmailRateLimitExceeded
                         AuthRepositoryError.InvalidCredentials,
                         AuthRepositoryError.EmailNotVerified,
                         AuthRepositoryError.NetworkError,

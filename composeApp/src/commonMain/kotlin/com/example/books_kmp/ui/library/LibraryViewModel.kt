@@ -3,6 +3,7 @@ package com.example.books_kmp.ui.library
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
@@ -40,10 +41,14 @@ sealed interface LibraryIntent {
     data object ClearFilters : LibraryIntent
 
     data object Refresh : LibraryIntent
+
+    data object SignOut : LibraryIntent
 }
 
 sealed interface LibraryError {
     data object LoadFailed : LibraryError
+
+    data object SignOutFailed : LibraryError
 }
 
 sealed interface LibraryEffect {
@@ -55,6 +60,7 @@ enum class SortOrder { TITLE_ASC, AUTHOR_ASC }
 class LibraryViewModel(
     private val bookRepository: BookRepository,
     private val tagRepository: TagRepository,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
@@ -133,6 +139,12 @@ class LibraryViewModel(
                     )
                 }
             LibraryIntent.Refresh -> loadLibrary()
+            LibraryIntent.SignOut ->
+                viewModelScope.launch {
+                    if (authRepository.signOut() is Result.Failure) {
+                        _effects.send(LibraryEffect.ShowError(LibraryError.SignOutFailed))
+                    }
+                }
         }
     }
 
