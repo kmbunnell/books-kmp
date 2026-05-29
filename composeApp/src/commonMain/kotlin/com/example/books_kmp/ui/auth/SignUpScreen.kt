@@ -40,10 +40,10 @@ import bookskmp.composeapp.generated.resources.cd_show_password
 import bookskmp.composeapp.generated.resources.error_confirm_password_required
 import bookskmp.composeapp.generated.resources.error_email_already_in_use
 import bookskmp.composeapp.generated.resources.error_email_required
-import bookskmp.composeapp.generated.resources.error_rate_limited
 import bookskmp.composeapp.generated.resources.error_invalid_email_format
 import bookskmp.composeapp.generated.resources.error_password_required
 import bookskmp.composeapp.generated.resources.error_passwords_do_not_match
+import bookskmp.composeapp.generated.resources.error_rate_limited
 import bookskmp.composeapp.generated.resources.error_sign_up_failed
 import bookskmp.composeapp.generated.resources.error_weak_password
 import bookskmp.composeapp.generated.resources.hint_password_requirement

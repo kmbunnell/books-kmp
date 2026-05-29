@@ -296,5 +296,4 @@ class SignUpScreenTest {
         }
         composeTestRule.onNodeWithText("Sign In", substring = true).assertIsDisplayed()
     }
-
 }
