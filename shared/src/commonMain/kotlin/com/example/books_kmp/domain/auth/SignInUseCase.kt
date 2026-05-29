@@ -19,6 +19,7 @@ class SignInUseCase(private val authRepository: AuthRepository) {
                         AuthRepositoryError.EmailAlreadyInUse,
                         AuthRepositoryError.WeakPassword,
                         AuthRepositoryError.InvalidEmail,
+                        AuthRepositoryError.EmailRateLimitExceeded,
                         AuthRepositoryError.NetworkError,
                         AuthRepositoryError.Unknown -> SignInError.SignInFailed
                     },

@@ -15,5 +15,7 @@ sealed interface SignUpError {
 
     data object EmailAlreadyInUse : SignUpError
 
+    data object EmailRateLimitExceeded : SignUpError
+
     data object SignUpFailed : SignUpError
 }

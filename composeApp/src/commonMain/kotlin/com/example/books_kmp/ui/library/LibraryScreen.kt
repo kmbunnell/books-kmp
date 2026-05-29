@@ -60,6 +60,7 @@ import bookskmp.composeapp.generated.resources.cd_manage_tags
 import bookskmp.composeapp.generated.resources.cd_sign_out
 import bookskmp.composeapp.generated.resources.cd_sort_books
 import bookskmp.composeapp.generated.resources.error_library_load_failed
+import bookskmp.composeapp.generated.resources.error_sign_out_failed
 import bookskmp.composeapp.generated.resources.hint_search_books
 import bookskmp.composeapp.generated.resources.library_empty_add_first
 import bookskmp.composeapp.generated.resources.library_empty_filter
@@ -78,7 +79,6 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun LibraryScreen(
-    onSignOut: () -> Unit,
     onNavigateToAddBook: () -> Unit = {},
     onNavigateToTagManagement: () -> Unit = {},
     onNavigateToBookDetail: (String) -> Unit = {},
@@ -88,6 +88,7 @@ fun LibraryScreen(
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val snackbarHostState = remember { SnackbarHostState() }
     val loadFailedMessage = stringResource(Res.string.error_library_load_failed)
+    val signOutFailedMessage = stringResource(Res.string.error_sign_out_failed)
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             viewModel.onIntent(LibraryIntent.Refresh)
@@ -100,6 +101,7 @@ fun LibraryScreen(
                     val message =
                         when (effect.error) {
                             LibraryError.LoadFailed -> loadFailedMessage
+                            LibraryError.SignOutFailed -> signOutFailedMessage
                         }
                     snackbarHostState.showSnackbar(message)
                 }
@@ -109,7 +111,6 @@ fun LibraryScreen(
     LibraryScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
-        onSignOut = onSignOut,
         onNavigateToAddBook = onNavigateToAddBook,
         onNavigateToTagManagement = onNavigateToTagManagement,
         onNavigateToBookDetail = onNavigateToBookDetail,
@@ -122,7 +123,6 @@ fun LibraryScreen(
 fun LibraryScreenContent(
     uiState: LibraryUiState,
     onIntent: (LibraryIntent) -> Unit,
-    onSignOut: () -> Unit,
     onNavigateToAddBook: () -> Unit = {},
     onNavigateToTagManagement: () -> Unit = {},
     onNavigateToBookDetail: (String) -> Unit = {},
@@ -200,7 +200,7 @@ fun LibraryScreenContent(
                         )
                     }
                     IconButton(
-                        onClick = onSignOut,
+                        onClick = { onIntent(LibraryIntent.SignOut) },
                         modifier = Modifier.testTag(TestTags.Library.SignOutButton),
                     ) {
                         Icon(

@@ -11,6 +11,8 @@ sealed interface AuthRepositoryError {
 
     data object EmailNotVerified : AuthRepositoryError
 
+    data object EmailRateLimitExceeded : AuthRepositoryError
+
     data object NetworkError : AuthRepositoryError
 
     data object Unknown : AuthRepositoryError

@@ -107,27 +107,6 @@ class SignUpViewModelTest {
         }
 
     @Test
-    fun `successful sign up sets verificationEmailSent to true`() =
-        runTest {
-            val viewModel = SignUpViewModel(signUpUseCase)
-
-            viewModel.onIntent(SignUpIntent.SignUp("test@example.com", "password123", "password123"))
-
-            assertTrue(viewModel.uiState.value.verificationEmailSent)
-        }
-
-    @Test
-    fun `failed sign up does not set verificationEmailSent`() =
-        runTest {
-            fakeRepo.signUpResult = Result.Failure(AuthRepositoryError.Unknown)
-            val viewModel = SignUpViewModel(signUpUseCase)
-
-            viewModel.onIntent(SignUpIntent.SignUp("test@example.com", "password123", "password123"))
-
-            assertFalse(viewModel.uiState.value.verificationEmailSent)
-        }
-
-    @Test
     fun `WeakPassword sets password field error when repository returns WeakPassword`() =
         runTest {
             fakeRepo.signUpResult = Result.Failure(AuthRepositoryError.WeakPassword)

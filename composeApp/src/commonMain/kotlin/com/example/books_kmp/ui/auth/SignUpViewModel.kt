@@ -19,7 +19,6 @@ data class SignUpUiState(
     val emailError: SignUpError? = null,
     val passwordError: SignUpError? = null,
     val confirmPasswordError: SignUpError? = null,
-    val verificationEmailSent: Boolean = false,
 )
 
 sealed interface SignUpIntent {
@@ -100,17 +99,19 @@ class SignUpViewModel(
                         _uiState.update { it.copy(isLoading = false, passwordError = SignUpError.WeakPassword) }
                     SignUpError.InvalidEmail ->
                         _uiState.update { it.copy(isLoading = false, emailError = SignUpError.InvalidEmail) }
-                    SignUpError.EmailAlreadyInUse -> {
-                        _uiState.update { it.copy(isLoading = false) }
-                        _effects.emit(SignUpEffect.ShowError(SignUpError.EmailAlreadyInUse))
-                    }
+                    SignUpError.EmailAlreadyInUse,
+                    SignUpError.EmailRateLimitExceeded,
                     SignUpError.SignUpFailed -> {
                         _uiState.update { it.copy(isLoading = false) }
-                        _effects.emit(SignUpEffect.ShowError(SignUpError.SignUpFailed))
+                        _effects.emit(SignUpEffect.ShowError(result.error))
                     }
                 }
             is Result.Success ->
-                _uiState.update { it.copy(isLoading = false, verificationEmailSent = true) }
+                // Email confirmation is disabled in Supabase while we lack a custom domain for
+                // App Links. Signup immediately creates an active session, so auth state
+                // observation navigates the user automatically. Re-enable verificationEmailSent
+                // once App Links + custom domain are configured (see docs/store-readiness.md).
+                _uiState.update { it.copy(isLoading = false) }
         }
     }
 }
