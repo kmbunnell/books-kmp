@@ -3,7 +3,7 @@ package com.example.books_kmp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -50,7 +50,7 @@ fun App() {
     MaterialTheme {
         val navController = rememberNavController()
         val authViewModel: AuthViewModel = koinViewModel()
-        val uiState by authViewModel.uiState.collectAsState()
+        val uiState by authViewModel.uiState.collectAsStateWithLifecycle()
 
         NavHost(navController = navController, startDestination = Route.Splash) {
             composable<Route.Splash> {
