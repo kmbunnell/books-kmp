@@ -88,13 +88,14 @@ class ManualEntryViewModelTest {
         }
 
     @Test
-    fun `SaveBook failure emits ShowError effect`() =
+    fun `SaveBook failure emits ShowError effect with SaveFailed error`() =
         runTest {
             fakeRepo.addBookShouldFail = true
             val viewModel = ManualEntryViewModel(useCase)
             viewModel.effects.test {
                 viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
-                assertIs<ManualEntryEffect.ShowError>(awaitItem())
+                val effect = awaitItem() as ManualEntryEffect.ShowError
+                assertEquals(ManualEntryError.SaveFailed, effect.error)
             }
         }
 
@@ -165,6 +166,22 @@ class ManualEntryViewModelTest {
             viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
             viewModel.onIntent(ManualEntryIntent.DismissDuplicateDialog)
             assertFalse(viewModel.uiState.value.showDuplicateDialog)
+        }
+
+    @Test
+    fun `AddAnyway failure emits ShowError effect with SaveFailed error`() =
+        runTest {
+            fakeRepo.seedBooks(
+                Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+            )
+            val viewModel = ManualEntryViewModel(useCase)
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+            fakeRepo.addBookShouldFail = true
+            viewModel.effects.test {
+                viewModel.onIntent(ManualEntryIntent.AddAnyway)
+                val effect = awaitItem() as ManualEntryEffect.ShowError
+                assertEquals(ManualEntryError.SaveFailed, effect.error)
+            }
         }
 
     @Test
