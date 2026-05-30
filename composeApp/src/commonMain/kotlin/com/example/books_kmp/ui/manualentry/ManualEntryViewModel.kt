@@ -36,13 +36,15 @@ sealed interface ManualEntryEffect {
 
     data object NavigateBack : ManualEntryEffect
 
-    data object ShowError : ManualEntryEffect
+    data class ShowError(val error: ManualEntryError) : ManualEntryEffect
 }
 
 sealed interface ManualEntryError {
     data object TitleRequired : ManualEntryError
 
     data object AuthorRequired : ManualEntryError
+
+    data object SaveFailed : ManualEntryError
 }
 
 class ManualEntryViewModel(
@@ -104,7 +106,7 @@ class ManualEntryViewModel(
                     )
                 }
                 if (error !is SaveManualBookError.DuplicateTitle) {
-                    _effects.emit(ManualEntryEffect.ShowError)
+                    _effects.emit(ManualEntryEffect.ShowError(ManualEntryError.SaveFailed))
                 }
             }
         }
@@ -120,7 +122,7 @@ class ManualEntryViewModel(
             }
             is Result.Failure -> {
                 _uiState.update { it.copy(isLoading = false) }
-                _effects.emit(ManualEntryEffect.ShowError)
+                _effects.emit(ManualEntryEffect.ShowError(ManualEntryError.SaveFailed))
             }
         }
     }
