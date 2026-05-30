@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -29,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -37,7 +35,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_add_tag
 import bookskmp.composeapp.generated.resources.button_cancel
@@ -70,6 +68,8 @@ import bookskmp.composeapp.generated.resources.title_edit_tag
 import bookskmp.composeapp.generated.resources.title_new_tag
 import bookskmp.composeapp.generated.resources.title_tag_management
 import com.example.books_kmp.ui.TestTags
+import com.example.books_kmp.ui.components.AppSnackbarHost
+import com.example.books_kmp.ui.components.ConfirmationDialog
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -80,7 +80,7 @@ fun TagManagementScreen(
     onNavigateUp: () -> Unit,
     viewModel: TagManagementViewModel = koinViewModel(),
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     TagManagementScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
@@ -127,7 +127,7 @@ fun TagManagementScreenContent(
                 },
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
     ) { innerPadding ->
         Box(
             modifier =
@@ -330,34 +330,18 @@ fun TagManagementScreenContent(
     // Delete confirmation dialog
     val pendingTag = uiState.pendingDeleteTag
     if (pendingTag != null) {
-        AlertDialog(
-            onDismissRequest = { onIntent(TagManagementIntent.CancelDelete) },
-            title = { Text(stringResource(Res.string.title_delete_tag)) },
-            text = {
-                Text(
-                    stringResource(
-                        Res.string.message_delete_tag,
-                        pendingTag.name,
-                        uiState.pendingDeleteBookCount ?: 0,
-                    ),
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { onIntent(TagManagementIntent.ConfirmDeleteTag) },
-                    modifier = Modifier.testTag(TestTags.TagManagement.DeleteDialogConfirm),
-                ) {
-                    Text(stringResource(Res.string.button_delete))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { onIntent(TagManagementIntent.CancelDelete) },
-                    modifier = Modifier.testTag(TestTags.TagManagement.DeleteDialogCancel),
-                ) {
-                    Text(stringResource(Res.string.button_cancel))
-                }
-            },
+        ConfirmationDialog(
+            title = stringResource(Res.string.title_delete_tag),
+            message =
+                stringResource(
+                    Res.string.message_delete_tag,
+                    pendingTag.name,
+                    uiState.pendingDeleteBookCount ?: 0,
+                ),
+            confirmLabel = stringResource(Res.string.button_delete),
+            dismissLabel = stringResource(Res.string.button_cancel),
+            onConfirm = { onIntent(TagManagementIntent.ConfirmDeleteTag) },
+            onDismiss = { onIntent(TagManagementIntent.CancelDelete) },
         )
     }
 }

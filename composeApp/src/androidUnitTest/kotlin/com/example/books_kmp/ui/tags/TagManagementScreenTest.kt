@@ -239,7 +239,7 @@ class TagManagementScreenTest {
                 onNavigateUp = {},
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.TagManagement.DeleteDialogConfirm).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.ConfirmationDialogConfirmButton).assertIsDisplayed()
     }
 
     @Test
@@ -272,7 +272,7 @@ class TagManagementScreenTest {
                 onNavigateUp = {},
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.TagManagement.DeleteDialogConfirm).performClick()
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.ConfirmationDialogConfirmButton).performClick()
         assertEquals(TagManagementIntent.ConfirmDeleteTag, dispatched.last())
     }
 
@@ -290,7 +290,7 @@ class TagManagementScreenTest {
                 onNavigateUp = {},
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.TagManagement.DeleteDialogCancel).performClick()
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.ConfirmationDialogDismissButton).performClick()
         assertEquals(TagManagementIntent.CancelDelete, dispatched.last())
     }
 
