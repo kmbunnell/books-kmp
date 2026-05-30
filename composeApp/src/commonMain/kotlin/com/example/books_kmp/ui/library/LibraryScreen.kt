@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.SwapVert
@@ -32,7 +34,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,6 +59,7 @@ import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.action_retry
 import bookskmp.composeapp.generated.resources.cd_add_book
 import bookskmp.composeapp.generated.resources.cd_book_cover_in_grid
+import bookskmp.composeapp.generated.resources.cd_close
 import bookskmp.composeapp.generated.resources.cd_filter_books
 import bookskmp.composeapp.generated.resources.cd_manage_tags
 import bookskmp.composeapp.generated.resources.cd_sign_out
@@ -224,7 +229,7 @@ fun LibraryScreenContent(
         },
     ) { innerPadding ->
         when {
-            uiState.error != null -> {
+            uiState.error != null && uiState.books.isEmpty() -> {
                 LibraryErrorContent(
                     onRetry = { onIntent(LibraryIntent.Refresh) },
                     modifier = Modifier.padding(innerPadding),
@@ -247,14 +252,27 @@ fun LibraryScreenContent(
                 )
             }
             uiState.filteredBooks.isEmpty() -> {
-                EmptyFilterContent(
-                    searchQuery = uiState.searchQuery,
-                    onIntent = onIntent,
-                    modifier = Modifier.padding(innerPadding),
-                )
+                Column(modifier = Modifier.padding(innerPadding)) {
+                    if (uiState.error != null) {
+                        ReloadErrorBanner(
+                            onRetry = { onIntent(LibraryIntent.Refresh) },
+                            onDismiss = { onIntent(LibraryIntent.DismissError) },
+                        )
+                    }
+                    EmptyFilterContent(
+                        searchQuery = uiState.searchQuery,
+                        onIntent = onIntent,
+                    )
+                }
             }
             else -> {
                 Column(modifier = Modifier.padding(innerPadding)) {
+                    if (uiState.error != null) {
+                        ReloadErrorBanner(
+                            onRetry = { onIntent(LibraryIntent.Refresh) },
+                            onDismiss = { onIntent(LibraryIntent.DismissError) },
+                        )
+                    }
                     OutlinedTextField(
                         value = uiState.searchQuery,
                         onValueChange = { onIntent(LibraryIntent.ChangeSearchQuery(it)) },
@@ -322,6 +340,48 @@ private fun LibraryErrorContent(
                     .testTag(TestTags.Library.RetryButton),
         ) {
             Text(stringResource(Res.string.action_retry))
+        }
+    }
+}
+
+@Composable
+private fun ReloadErrorBanner(
+    onRetry: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .testTag(TestTags.Library.ReloadErrorBanner),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(Res.string.error_library_load_failed),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(
+                onClick = onRetry,
+                modifier = Modifier.testTag(TestTags.Library.ReloadErrorBannerRetry),
+            ) {
+                Text(stringResource(Res.string.action_retry))
+            }
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier.testTag(TestTags.Library.ReloadErrorBannerDismiss),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = stringResource(Res.string.cd_close),
+                )
+            }
         }
     }
 }
