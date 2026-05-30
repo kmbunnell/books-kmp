@@ -1,5 +1,6 @@
 package com.example.books_kmp.ui.bookdetail
 
+import app.cash.turbine.test
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.BookRepositoryError
@@ -19,7 +20,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import app.cash.turbine.test
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
