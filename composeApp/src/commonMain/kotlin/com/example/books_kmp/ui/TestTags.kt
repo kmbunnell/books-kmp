@@ -110,9 +110,6 @@ object TestTags {
         const val RetryButton = "book_detail_retry_button"
         const val CoverImage = "book_detail_cover_image"
         const val DeleteButton = "book_detail_delete_button"
-        const val DeleteConfirmButton = "book_detail_delete_confirm"
-        const val DeleteCancelButton = "book_detail_delete_cancel"
-        const val DeleteErrorSnackbar = "book_detail_delete_error_snackbar"
     }
 
     object ErrorPresentation {

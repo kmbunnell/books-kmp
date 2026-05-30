@@ -18,12 +18,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import app.cash.turbine.test
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -206,13 +205,14 @@ class BookDetailViewModelTest {
         }
 
     @Test
-    fun `ToggleTag on failure sets tagToggleError non-null`() =
+    fun `ToggleTag on failure emits ShowError ToggleFailed effect`() =
         runTest {
             val failVm = BookDetailViewModel(bookId, repo, bookRepo, failingToggleUseCase())
             advanceUntilIdle()
-            failVm.onIntent(BookDetailIntent.ToggleTag(tag3.id))
-            advanceUntilIdle()
-            assertNotNull(failVm.uiState.value.tagToggleError)
+            failVm.effects.test {
+                failVm.onIntent(BookDetailIntent.ToggleTag(tag3.id))
+                assertEquals(BookDetailEffect.ShowError(BookDetailError.ToggleFailed), awaitItem())
+            }
         }
 
     // ToggleTag — removing (currently applied)
@@ -260,20 +260,6 @@ class BookDetailViewModelTest {
             assertEquals(stateAfterFirst, suspendVm.uiState.value)
             assertEquals(callCountAfterFirst, suspendingUseCase.callCount)
             suspendingUseCase.deferred.complete(Result.Success(Unit))
-        }
-
-    // DismissTagToggleError
-
-    @Test
-    fun `DismissTagToggleError clears tagToggleError`() =
-        runTest {
-            val failVm = BookDetailViewModel(bookId, repo, bookRepo, failingToggleUseCase())
-            advanceUntilIdle()
-            failVm.onIntent(BookDetailIntent.ToggleTag(tag3.id))
-            advanceUntilIdle()
-            assertNotNull(failVm.uiState.value.tagToggleError)
-            failVm.onIntent(BookDetailIntent.DismissTagToggleError)
-            assertNull(failVm.uiState.value.tagToggleError)
         }
 
     // Reload
@@ -368,24 +354,23 @@ class BookDetailViewModelTest {
     @Test
     fun `ConfirmDelete on success emits NavigateUp effect`() =
         runTest {
-            val effects = mutableListOf<BookDetailEffect>()
-            val job = launch { vm.effects.collect { effects.add(it) } }
-            vm.onIntent(BookDetailIntent.DeleteBook)
-            vm.onIntent(BookDetailIntent.ConfirmDelete)
-            advanceUntilIdle()
-            job.cancel()
-            assertTrue(effects.contains(BookDetailEffect.NavigateUp))
+            vm.effects.test {
+                vm.onIntent(BookDetailIntent.DeleteBook)
+                vm.onIntent(BookDetailIntent.ConfirmDelete)
+                assertEquals(BookDetailEffect.NavigateUp, awaitItem())
+            }
         }
 
     @Test
-    fun `ConfirmDelete on failure clears isDeleting and sets deleteError`() =
+    fun `ConfirmDelete on failure clears isDeleting and emits ShowError DeleteFailed effect`() =
         runTest {
             bookRepo.deleteBookShouldFail = true
-            vm.onIntent(BookDetailIntent.DeleteBook)
-            vm.onIntent(BookDetailIntent.ConfirmDelete)
-            advanceUntilIdle()
-            assertFalse(vm.uiState.value.isDeleting)
-            assertEquals(BookDetailError.DeleteFailed, vm.uiState.value.deleteError)
+            vm.effects.test {
+                vm.onIntent(BookDetailIntent.DeleteBook)
+                vm.onIntent(BookDetailIntent.ConfirmDelete)
+                assertFalse(vm.uiState.value.isDeleting)
+                assertEquals(BookDetailEffect.ShowError(BookDetailError.DeleteFailed), awaitItem())
+            }
         }
 
     @Test
@@ -399,18 +384,6 @@ class BookDetailViewModelTest {
             gate.complete(Unit)
             advanceUntilIdle()
             assertEquals(1, bookRepo.deleteBookCalled)
-        }
-
-    @Test
-    fun `DismissDeleteError clears deleteError`() =
-        runTest {
-            bookRepo.deleteBookShouldFail = true
-            vm.onIntent(BookDetailIntent.DeleteBook)
-            vm.onIntent(BookDetailIntent.ConfirmDelete)
-            advanceUntilIdle()
-            assertEquals(BookDetailError.DeleteFailed, vm.uiState.value.deleteError)
-            vm.onIntent(BookDetailIntent.DismissDeleteError)
-            assertNull(vm.uiState.value.deleteError)
         }
 
     // ---- Test doubles ----

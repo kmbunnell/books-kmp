@@ -22,12 +22,10 @@ data class BookDetailUiState(
     val allTags: List<Tag> = emptyList(),
     val appliedTagIds: Set<String> = emptySet(),
     val inFlightTagIds: Set<String> = emptySet(),
-    val tagToggleError: BookDetailError? = null,
     val isLoading: Boolean = false,
     val loadFailed: Boolean = false,
     val showDeleteConfirm: Boolean = false,
     val isDeleting: Boolean = false,
-    val deleteError: BookDetailError? = null,
 )
 
 sealed interface BookDetailError {
@@ -39,8 +37,6 @@ sealed interface BookDetailError {
 sealed interface BookDetailIntent {
     data class ToggleTag(val tagId: String) : BookDetailIntent
 
-    data object DismissTagToggleError : BookDetailIntent
-
     data object Reload : BookDetailIntent
 
     data object DeleteBook : BookDetailIntent
@@ -48,12 +44,12 @@ sealed interface BookDetailIntent {
     data object ConfirmDelete : BookDetailIntent
 
     data object DismissDelete : BookDetailIntent
-
-    data object DismissDeleteError : BookDetailIntent
 }
 
 sealed interface BookDetailEffect {
     data object NavigateUp : BookDetailEffect
+
+    data class ShowError(val error: BookDetailError) : BookDetailEffect
 }
 
 class BookDetailViewModel(
@@ -75,15 +71,11 @@ class BookDetailViewModel(
     fun onIntent(intent: BookDetailIntent) {
         when (intent) {
             is BookDetailIntent.ToggleTag -> handleToggleTag(intent.tagId)
-            BookDetailIntent.DismissTagToggleError ->
-                _uiState.update { it.copy(tagToggleError = null) }
             BookDetailIntent.Reload -> load()
             BookDetailIntent.DeleteBook ->
                 _uiState.update { it.copy(showDeleteConfirm = true) }
             BookDetailIntent.DismissDelete ->
                 _uiState.update { it.copy(showDeleteConfirm = false) }
-            BookDetailIntent.DismissDeleteError ->
-                _uiState.update { it.copy(deleteError = null) }
             BookDetailIntent.ConfirmDelete -> handleDelete()
         }
     }
@@ -130,14 +122,15 @@ class BookDetailViewModel(
             when (toggleBookTagUseCase(bookId, tagId, wasApplied)) {
                 is Result.Success ->
                     _uiState.update { it.copy(inFlightTagIds = it.inFlightTagIds - tagId) }
-                is Result.Failure ->
+                is Result.Failure -> {
                     _uiState.update {
                         it.copy(
                             inFlightTagIds = it.inFlightTagIds - tagId,
                             appliedTagIds = if (wasApplied) it.appliedTagIds + tagId else it.appliedTagIds - tagId,
-                            tagToggleError = BookDetailError.ToggleFailed,
                         )
                     }
+                    _effects.send(BookDetailEffect.ShowError(BookDetailError.ToggleFailed))
+                }
             }
         }
     }
@@ -148,10 +141,10 @@ class BookDetailViewModel(
         viewModelScope.launch {
             when (bookRepository.deleteBook(bookId)) {
                 is Result.Success -> _effects.send(BookDetailEffect.NavigateUp)
-                is Result.Failure ->
-                    _uiState.update {
-                        it.copy(isDeleting = false, deleteError = BookDetailError.DeleteFailed)
-                    }
+                is Result.Failure -> {
+                    _uiState.update { it.copy(isDeleting = false) }
+                    _effects.send(BookDetailEffect.ShowError(BookDetailError.DeleteFailed))
+                }
             }
         }
     }
