@@ -134,7 +134,5 @@ object TestTags {
 
         const val FormNameField = "tag_form_name_field"
         const val FormSaveButton = "tag_form_save_button"
-        const val DeleteDialogConfirm = "tag_delete_dialog_confirm"
-        const val DeleteDialogCancel = "tag_delete_dialog_cancel"
     }
 }
