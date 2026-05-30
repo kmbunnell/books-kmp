@@ -14,7 +14,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -42,6 +41,7 @@ import bookskmp.composeapp.generated.resources.label_title
 import bookskmp.composeapp.generated.resources.title_manual_entry
 import com.example.books_kmp.ui.DuplicateBookDialog
 import com.example.books_kmp.ui.TestTags
+import com.example.books_kmp.ui.components.AppSnackbarHost
 import kotlinx.coroutines.flow.SharedFlow
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -84,7 +84,14 @@ fun ManualEntryScreenContent(
             when (effect) {
                 ManualEntryEffect.NavigateToLibrary -> onNavigateToLibrary()
                 ManualEntryEffect.NavigateBack -> onNavigateBack()
-                ManualEntryEffect.ShowError -> snackbarHostState.showSnackbar(errorSaveFailed)
+                is ManualEntryEffect.ShowError -> {
+                    val message = when (effect.error) {
+                        ManualEntryError.SaveFailed -> errorSaveFailed
+                        ManualEntryError.TitleRequired -> errorTitleRequired
+                        ManualEntryError.AuthorRequired -> errorAuthorRequired
+                    }
+                    snackbarHostState.showSnackbar(message)
+                }
             }
         }
     }
@@ -113,7 +120,7 @@ fun ManualEntryScreenContent(
                 },
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
     ) { innerPadding ->
         Column(
             modifier =
