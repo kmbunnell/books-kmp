@@ -205,6 +205,108 @@ class LibraryScreenTest {
         assertTrue(dispatched.contains(LibraryIntent.Refresh))
     }
 
+    // --- Reload error banner tests (error set with data present) ---
+
+    @Test
+    fun `when error and books non-empty reload error banner is shown`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState =
+                    LibraryUiState(
+                        error = LibraryError.LoadFailed,
+                        books = listOf(book1),
+                        filteredBooks = listOf(book1),
+                    ),
+                onIntent = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.ReloadErrorBanner).assertIsDisplayed()
+    }
+
+    @Test
+    fun `when error and books non-empty book grid is still shown`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState =
+                    LibraryUiState(
+                        error = LibraryError.LoadFailed,
+                        books = listOf(book1),
+                        filteredBooks = listOf(book1),
+                    ),
+                onIntent = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.BookGrid).assertIsDisplayed()
+    }
+
+    @Test
+    fun `when error and books non-empty full-screen error is NOT shown`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState =
+                    LibraryUiState(
+                        error = LibraryError.LoadFailed,
+                        books = listOf(book1),
+                        filteredBooks = listOf(book1),
+                    ),
+                onIntent = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.LibraryError).assertDoesNotExist()
+    }
+
+    @Test
+    fun `tapping retry in banner dispatches Refresh intent`() {
+        val dispatched = mutableListOf<LibraryIntent>()
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState =
+                    LibraryUiState(
+                        error = LibraryError.LoadFailed,
+                        books = listOf(book1),
+                        filteredBooks = listOf(book1),
+                    ),
+                onIntent = { dispatched.add(it) },
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.ReloadErrorBannerRetry).performClick()
+        assertTrue(dispatched.contains(LibraryIntent.Refresh))
+    }
+
+    @Test
+    fun `tapping dismiss in banner dispatches DismissError intent`() {
+        val dispatched = mutableListOf<LibraryIntent>()
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState =
+                    LibraryUiState(
+                        error = LibraryError.LoadFailed,
+                        books = listOf(book1),
+                        filteredBooks = listOf(book1),
+                    ),
+                onIntent = { dispatched.add(it) },
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.ReloadErrorBannerDismiss).performClick()
+        assertTrue(dispatched.contains(LibraryIntent.DismissError))
+    }
+
+    @Test
+    fun `when error and books non-empty but filteredBooks empty, reload error banner is shown`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState =
+                    LibraryUiState(
+                        error = LibraryError.LoadFailed,
+                        books = listOf(book1),
+                        filteredBooks = emptyList(),
+                    ),
+                onIntent = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.ReloadErrorBanner).assertIsDisplayed()
+    }
+
     // --- Empty-library state tests ---
 
     @Test

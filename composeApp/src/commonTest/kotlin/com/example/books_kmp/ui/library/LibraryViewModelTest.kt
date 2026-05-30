@@ -474,7 +474,7 @@ class LibraryViewModelTest {
         }
 
     @Test
-    fun `Refresh failure when data already loaded emits ShowError effect and keeps books visible`() =
+    fun `Refresh failure when data already loaded sets error state and keeps books visible`() =
         runTest {
             // Initial load succeeds — books populated.
             assertEquals(listOf(book1, book2), vm.uiState.value.books)
@@ -491,12 +491,27 @@ class LibraryViewModelTest {
             assertFalse(vm.uiState.value.isLoading)
             // Books remain visible (not wiped)
             assertEquals(listOf(book1, book2), vm.uiState.value.books)
-            // Error state not set (snackbar tier, not full-screen tier)
-            assertEquals(null, vm.uiState.value.error)
-            // ShowError effect emitted
-            assertTrue(emittedEffects.any { it is LibraryEffect.ShowError && it.error == LibraryError.LoadFailed })
+            // Error state set (persistent banner tier, not transient snackbar)
+            assertEquals(LibraryError.LoadFailed, vm.uiState.value.error)
+            // No ShowError effect emitted — surfaced via banner instead
+            assertTrue(emittedEffects.isEmpty())
 
             collectJob.cancel()
+        }
+
+    @Test
+    fun `DismissError clears error without re-fetching`() =
+        runTest {
+            bookRepo.getBooksShouldFail = true
+            vm.onIntent(LibraryIntent.Refresh)
+            advanceUntilIdle()
+            assertEquals(LibraryError.LoadFailed, vm.uiState.value.error)
+            val callsBefore = bookRepo.getBooksByUserCalled
+
+            vm.onIntent(LibraryIntent.DismissError)
+
+            assertEquals(null, vm.uiState.value.error)
+            assertEquals(callsBefore, bookRepo.getBooksByUserCalled)
         }
 
     @Test

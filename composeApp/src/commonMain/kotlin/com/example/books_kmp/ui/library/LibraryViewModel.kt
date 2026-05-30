@@ -42,6 +42,8 @@ sealed interface LibraryIntent {
 
     data object Refresh : LibraryIntent
 
+    data object DismissError : LibraryIntent
+
     data object SignOut : LibraryIntent
 }
 
@@ -139,6 +141,7 @@ class LibraryViewModel(
                     )
                 }
             LibraryIntent.Refresh -> loadLibrary()
+            LibraryIntent.DismissError -> _uiState.update { it.copy(error = null) }
             LibraryIntent.SignOut ->
                 viewModelScope.launch {
                     if (authRepository.signOut() is Result.Failure) {
@@ -179,8 +182,7 @@ class LibraryViewModel(
                     }
                 } else {
                     if (hadData) {
-                        _uiState.update { it.copy(isLoading = false) }
-                        _effects.send(LibraryEffect.ShowError(LibraryError.LoadFailed))
+                        _uiState.update { it.copy(isLoading = false, error = LibraryError.LoadFailed) }
                     } else {
                         _uiState.update {
                             it.copy(
