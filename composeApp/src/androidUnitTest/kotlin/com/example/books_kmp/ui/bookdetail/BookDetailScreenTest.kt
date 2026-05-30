@@ -9,6 +9,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.material3.SnackbarHostState
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.ui.TestTags
@@ -37,6 +38,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.tagChip("t1")).assertIsDisplayed()
@@ -55,6 +57,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.tagChip("t1")).assertIsSelected()
@@ -72,6 +75,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.tagChip("t2")).assertIsNotSelected()
@@ -89,6 +93,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.tagChip("t1")).assertIsNotEnabled()
@@ -103,39 +108,11 @@ class BookDetailScreenTest {
                 onIntent = { dispatched.add(it) },
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.tagChip("t1")).performClick()
         assertEquals(BookDetailIntent.ToggleTag("t1"), dispatched.last())
-    }
-
-    @Test
-    fun `snackbar visible when tagToggleError non-null`() {
-        composeTestRule.setContent {
-            BookDetailScreenContent(
-                uiState = BookDetailUiState(tagToggleError = BookDetailError.ToggleFailed),
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToTagManagement = {},
-            )
-        }
-        composeTestRule.onNodeWithText("Something went wrong. Please try again.").assertIsDisplayed()
-    }
-
-    @Test
-    fun `DismissTagToggleError dispatched after snackbar shown`() {
-        val dispatched = mutableListOf<BookDetailIntent>()
-        composeTestRule.setContent {
-            BookDetailScreenContent(
-                uiState = BookDetailUiState(tagToggleError = BookDetailError.ToggleFailed),
-                onIntent = { dispatched.add(it) },
-                onNavigateUp = {},
-                onNavigateToTagManagement = {},
-            )
-        }
-        composeTestRule.mainClock.advanceTimeBy(5_000)
-        composeTestRule.waitForIdle()
-        assertTrue(dispatched.contains(BookDetailIntent.DismissTagToggleError))
     }
 
     @Test
@@ -147,6 +124,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = { navigated = true },
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.ManageTagsButton).performClick()
@@ -161,6 +139,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.LoadingIndicator).assertIsDisplayed()
@@ -175,6 +154,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.LoadFailedMessage).assertIsDisplayed()
@@ -191,6 +171,7 @@ class BookDetailScreenTest {
                 onIntent = { dispatched.add(it) },
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.RetryButton).performClick()
@@ -206,6 +187,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithText("Dune").assertIsDisplayed()
@@ -219,6 +201,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithText("Tag Book").assertIsDisplayed()
@@ -232,6 +215,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.CoverImage).assertIsDisplayed()
@@ -245,6 +229,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.TagsSectionLabel).assertIsDisplayed()
@@ -258,6 +243,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.CoverImage).assertIsDisplayed()
@@ -274,6 +260,7 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteButton).assertIsDisplayed()
@@ -288,6 +275,7 @@ class BookDetailScreenTest {
                 onIntent = { dispatched.add(it) },
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteButton).performClick()
@@ -302,10 +290,11 @@ class BookDetailScreenTest {
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteConfirmButton).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteCancelButton).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.ConfirmationDialogConfirmButton).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.ConfirmationDialogDismissButton).assertIsDisplayed()
     }
 
     @Test
@@ -317,9 +306,10 @@ class BookDetailScreenTest {
                 onIntent = { dispatched.add(it) },
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteConfirmButton).performClick()
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.ConfirmationDialogConfirmButton).performClick()
         assertTrue(dispatched.contains(BookDetailIntent.ConfirmDelete))
     }
 
@@ -332,22 +322,10 @@ class BookDetailScreenTest {
                 onIntent = { dispatched.add(it) },
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
+                snackbarHostState = SnackbarHostState(),
             )
         }
-        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteCancelButton).performClick()
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.ConfirmationDialogDismissButton).performClick()
         assertTrue(dispatched.contains(BookDetailIntent.DismissDelete))
-    }
-
-    @Test
-    fun `snackbar shown when deleteError is non-null`() {
-        composeTestRule.setContent {
-            BookDetailScreenContent(
-                uiState = BookDetailUiState(deleteError = BookDetailError.DeleteFailed),
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToTagManagement = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.BookDetail.DeleteErrorSnackbar).assertIsDisplayed()
     }
 }

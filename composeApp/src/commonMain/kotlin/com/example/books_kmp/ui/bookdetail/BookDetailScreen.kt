@@ -14,7 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,8 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,7 +29,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +39,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_cancel
 import bookskmp.composeapp.generated.resources.button_confirm_delete
@@ -60,6 +57,8 @@ import bookskmp.composeapp.generated.resources.title_book_detail
 import bookskmp.composeapp.generated.resources.title_delete_book
 import com.example.books_kmp.ui.BookCoverImage
 import com.example.books_kmp.ui.TestTags
+import com.example.books_kmp.ui.components.AppSnackbarHost
+import com.example.books_kmp.ui.components.ConfirmationDialog
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -71,11 +70,22 @@ fun BookDetailScreen(
     onNavigateToTagManagement: () -> Unit,
 ) {
     val viewModel: BookDetailViewModel = koinViewModel(parameters = { parametersOf(bookId) })
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val errorTagMessage = stringResource(Res.string.error_tag_operation_failed)
+    val errorDeleteMessage = stringResource(Res.string.error_delete_book_failed)
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 BookDetailEffect.NavigateUp -> onNavigateUp()
+                is BookDetailEffect.ShowError -> {
+                    val message =
+                        when (effect.error) {
+                            BookDetailError.ToggleFailed -> errorTagMessage
+                            BookDetailError.DeleteFailed -> errorDeleteMessage
+                        }
+                    snackbarHostState.showSnackbar(message)
+                }
             }
         }
     }
@@ -84,6 +94,7 @@ fun BookDetailScreen(
         onIntent = viewModel::onIntent,
         onNavigateUp = onNavigateUp,
         onNavigateToTagManagement = onNavigateToTagManagement,
+        snackbarHostState = snackbarHostState,
     )
 }
 
@@ -94,27 +105,14 @@ internal fun BookDetailScreenContent(
     onIntent: (BookDetailIntent) -> Unit,
     onNavigateUp: () -> Unit,
     onNavigateToTagManagement: () -> Unit,
+    snackbarHostState: SnackbarHostState,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val errorTagMessage = stringResource(Res.string.error_tag_operation_failed)
-    val errorDeleteMessage = stringResource(Res.string.error_delete_book_failed)
     val loadFailedMessage = stringResource(Res.string.error_book_detail_load_failed)
     val retryLabel = stringResource(Res.string.button_retry)
     val titleDeleteBook = stringResource(Res.string.title_delete_book)
     val messageDeleteBook = stringResource(Res.string.message_delete_book)
     val buttonConfirmDelete = stringResource(Res.string.button_confirm_delete)
     val buttonCancel = stringResource(Res.string.button_cancel)
-
-    LaunchedEffect(uiState.tagToggleError, uiState.deleteError) {
-        if (uiState.tagToggleError != null) {
-            snackbarHostState.showSnackbar(errorTagMessage)
-            onIntent(BookDetailIntent.DismissTagToggleError)
-        }
-        if (uiState.deleteError != null) {
-            snackbarHostState.showSnackbar(errorDeleteMessage)
-            onIntent(BookDetailIntent.DismissDeleteError)
-        }
-    }
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -146,14 +144,7 @@ internal fun BookDetailScreenContent(
                 scrollBehavior = scrollBehavior,
             )
         },
-        snackbarHost = {
-            SnackbarHost(snackbarHostState) { data ->
-                Snackbar(
-                    snackbarData = data,
-                    modifier = Modifier.testTag(TestTags.BookDetail.DeleteErrorSnackbar),
-                )
-            }
-        },
+        snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
     ) { innerPadding ->
         Box(
             modifier =
@@ -258,26 +249,13 @@ internal fun BookDetailScreenContent(
         }
 
         if (uiState.showDeleteConfirm) {
-            AlertDialog(
-                onDismissRequest = { onIntent(BookDetailIntent.DismissDelete) },
-                title = { Text(titleDeleteBook) },
-                text = { Text(messageDeleteBook) },
-                confirmButton = {
-                    TextButton(
-                        onClick = { onIntent(BookDetailIntent.ConfirmDelete) },
-                        modifier = Modifier.testTag(TestTags.BookDetail.DeleteConfirmButton),
-                    ) {
-                        Text(buttonConfirmDelete)
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { onIntent(BookDetailIntent.DismissDelete) },
-                        modifier = Modifier.testTag(TestTags.BookDetail.DeleteCancelButton),
-                    ) {
-                        Text(buttonCancel)
-                    }
-                },
+            ConfirmationDialog(
+                title = titleDeleteBook,
+                message = messageDeleteBook,
+                confirmLabel = buttonConfirmDelete,
+                dismissLabel = buttonCancel,
+                onConfirm = { onIntent(BookDetailIntent.ConfirmDelete) },
+                onDismiss = { onIntent(BookDetailIntent.DismissDelete) },
             )
         }
     }
