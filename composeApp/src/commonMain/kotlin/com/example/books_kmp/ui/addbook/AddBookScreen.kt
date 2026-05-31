@@ -23,6 +23,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_add
+import bookskmp.composeapp.generated.resources.button_add_and_tag
 import bookskmp.composeapp.generated.resources.button_enter_manually
 import bookskmp.composeapp.generated.resources.button_isbn_lookup
 import bookskmp.composeapp.generated.resources.button_look_up
@@ -93,6 +95,7 @@ fun AddBookScreen(
     onNavigateUp: () -> Unit,
     onNavigateToManualEntry: () -> Unit,
     onNavigateToSignIn: () -> Unit,
+    onNavigateToBookDetail: (String) -> Unit,
 ) {
     val viewModel: AddBookViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -103,6 +106,7 @@ fun AddBookScreen(
         onNavigateUp = onNavigateUp,
         onNavigateToManualEntry = onNavigateToManualEntry,
         onNavigateToSignIn = onNavigateToSignIn,
+        onNavigateToBookDetail = onNavigateToBookDetail,
     )
 }
 
@@ -115,6 +119,7 @@ fun AddBookScreenContent(
     onNavigateUp: () -> Unit,
     onNavigateToManualEntry: () -> Unit,
     onNavigateToSignIn: () -> Unit,
+    onNavigateToBookDetail: (String) -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -126,6 +131,7 @@ fun AddBookScreenContent(
             when (effect) {
                 AddBookEffect.BookAdded -> snackbarHostState.showSnackbar(snackbarBookAdded)
                 AddBookEffect.NavigateToManualEntry -> onNavigateToManualEntry()
+                is AddBookEffect.NavigateToBookDetail -> onNavigateToBookDetail(effect.bookId)
             }
         }
     }
@@ -284,6 +290,16 @@ fun AddBookScreenContent(
                                                 .testTag(TestTags.AddBook.AddButton),
                                     ) {
                                         Text(stringResource(Res.string.button_add))
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    OutlinedButton(
+                                        onClick = { onIntent(AddBookIntent.AddAndTag) },
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .testTag(TestTags.AddBook.AddAndTagButton),
+                                    ) {
+                                        Text(stringResource(Res.string.button_add_and_tag))
                                     }
                                 }
                                 IconButton(
@@ -557,6 +573,7 @@ private fun AddBookScreenPreview_Empty() {
         onNavigateUp = {},
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
+        onNavigateToBookDetail = {},
     )
 }
 
@@ -570,6 +587,7 @@ private fun AddBookScreenPreview_TitleMode() {
         onNavigateUp = {},
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
+        onNavigateToBookDetail = {},
     )
 }
 
@@ -583,6 +601,7 @@ private fun AddBookScreenPreview_Loading() {
         onNavigateUp = {},
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
+        onNavigateToBookDetail = {},
     )
 }
 
@@ -596,6 +615,7 @@ private fun AddBookScreenPreview_Error() {
         onNavigateUp = {},
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
+        onNavigateToBookDetail = {},
     )
 }
 
@@ -619,5 +639,6 @@ private fun AddBookScreenPreview_FoundBook() {
         onNavigateUp = {},
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
+        onNavigateToBookDetail = {},
     )
 }

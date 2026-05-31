@@ -8,13 +8,14 @@ Built with **Kotlin Multiplatform** and **Compose Multiplatform**, targeting bot
 
 ## Screenshots
 
-| Android                               | iOS |
-|---------------------------------------|-----|
-| ![Library](assets/andr_library.webp)  | ![Library](assets/ios_library.webp) |
-| ![Tag Filter](assets/andr_sort.webp)  | ![Tag filter](assets/ios_sort_Tag.webp) |
-| ![Tags](assets/andr_tag.webp)         | ![Tags](assets/ios_tag.webp) |
-| ![ISBN search](assets/andr_isbn.webp) | ![Title search](assets/ios_title_search.webp) |
-|                                       | ![Custom tag](assets/ios_custom_tag.webp) |
+| Android                                 | iOS |
+|-----------------------------------------|-----|
+| ![Library](assets/andr_library.webp)    | ![Library](assets/ios_library.webp) |
+| ![Tag Filter](assets/andr_sort.webp)    | ![Tag filter](assets/ios_sort_Tag.webp) |
+| ![Tags](assets/andr_tag.webp)           | ![Tags](assets/ios_tag.webp) |
+| ![ISBN search](assets/andr_isbn_2.webp) | ![Title search](assets/ios_title_search.webp) |
+|                                         | ![Custom tag](assets/ios_custom_tag.webp) |
+| ![Add Book](assets/andr_addbook2.webp)  | ![Add Book](assets/ios_addbook2.webp) |
 
 ## Tech Stack
 

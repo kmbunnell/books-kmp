@@ -119,6 +119,11 @@ fun App() {
                             popUpTo(navController.graph.id) { inclusive = true }
                         }
                     },
+                    onNavigateToBookDetail = { bookId ->
+                        navController.navigate(Route.BookDetail(bookId)) {
+                            popUpTo<Route.AddBook> { inclusive = true }
+                        }
+                    },
                 )
             }
             composable<Route.ManualEntry> {

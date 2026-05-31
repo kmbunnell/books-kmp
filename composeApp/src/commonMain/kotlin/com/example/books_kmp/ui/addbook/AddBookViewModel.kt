@@ -32,6 +32,7 @@ data class AddBookUiState(
     val foundBook: BookLookupData? = null,
     val isScanning: Boolean = false,
     val isbnFormatError: Boolean = false,
+    val pendingAddAndTag: Boolean = false,
 )
 
 sealed interface AddBookScreenError {
@@ -56,6 +57,8 @@ sealed interface AddBookIntent {
     data class LookupIsbn(val isbn: String) : AddBookIntent
 
     data object ConfirmBook : AddBookIntent
+
+    data object AddAndTag : AddBookIntent
 
     data object CancelBookPreview : AddBookIntent
 
@@ -88,6 +91,8 @@ sealed interface AddBookEffect {
     data object BookAdded : AddBookEffect
 
     data object NavigateToManualEntry : AddBookEffect
+
+    data class NavigateToBookDetail(val bookId: String) : AddBookEffect
 }
 
 class AddBookViewModel(
@@ -121,14 +126,16 @@ class AddBookViewModel(
             is AddBookIntent.SelectTitleResult ->
                 _uiState.update { it.copy(foundBook = intent.book) }
             AddBookIntent.CancelBookPreview -> _uiState.update { it.copy(foundBook = null, isbn = "") }
-            AddBookIntent.DismissDuplicateDialog ->
+            AddBookIntent.DismissDuplicateDialog -> {
                 _uiState.update {
                     it.copy(
                         showDuplicateDialog = false,
                         foundBook = null,
-                        isbn = ""
+                        isbn = "",
+                        pendingAddAndTag = false,
                     )
                 }
+            }
             AddBookIntent.StartScan ->
                 _uiState.update { it.copy(isScanning = true, isbn = "", error = null, foundBook = null) }
             AddBookIntent.ScanDismissed -> _uiState.update { it.copy(isScanning = false) }
@@ -150,6 +157,7 @@ class AddBookViewModel(
             is AddBookIntent.LookupIsbn -> launchIfIdle { handleLookupIsbn(intent.isbn) }
             is AddBookIntent.LookupByTitle -> launchIfIdle { handleLookupByTitle(intent.title) }
             AddBookIntent.ConfirmBook -> launchIfIdle { handleConfirmBook() }
+            AddBookIntent.AddAndTag -> launchIfIdle { handleAddAndTag() }
             AddBookIntent.AddAnyway -> launchIfIdle { handleAddAnyway() }
             AddBookIntent.Retry ->
                 launchIfIdle {
@@ -165,6 +173,17 @@ class AddBookViewModel(
             }
         }
     }
+
+    private fun AddBookError.toScreenError(): AddBookScreenError? =
+        when (this) {
+            is AddBookError.DuplicateTitle -> null
+            is AddBookError.Duplicate -> AddBookScreenError.NetworkError
+            AddBookError.NotFound -> AddBookScreenError.NetworkError
+            AddBookError.NetworkError -> AddBookScreenError.NetworkError
+            AddBookError.MalformedResponse -> AddBookScreenError.NetworkError
+            AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
+            AddBookError.RateLimited -> AddBookScreenError.RateLimited
+        }
 
     private fun launchIfIdle(block: suspend () -> Unit) {
         if (_uiState.value.isLoading) return
@@ -247,17 +266,30 @@ class AddBookViewModel(
                     it.copy(
                         isLoading = false,
                         showDuplicateDialog = error is AddBookError.DuplicateTitle,
-                        // Duplicate and NotFound are unreachable from addBookUseCase; defensive
-                        error =
-                            when (error) {
-                                is AddBookError.DuplicateTitle -> null
-                                is AddBookError.Duplicate -> AddBookScreenError.NetworkError
-                                AddBookError.NotFound -> AddBookScreenError.NetworkError
-                                AddBookError.NetworkError -> AddBookScreenError.NetworkError
-                                AddBookError.MalformedResponse -> AddBookScreenError.NetworkError
-                                AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
-                                AddBookError.RateLimited -> AddBookScreenError.RateLimited
-                            },
+                        error = error.toScreenError(),
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun handleAddAndTag() {
+        val lookup = _uiState.value.foundBook ?: return
+        _uiState.update { it.copy(isLoading = true) }
+        when (val result = addBookUseCase(lookup)) {
+            is Result.Success -> {
+                val mode = _uiState.value.lookupMode
+                _uiState.update { AddBookUiState(lookupMode = mode) }
+                _effects.emit(AddBookEffect.NavigateToBookDetail(result.data.id))
+            }
+            is Result.Failure -> {
+                val error = result.error
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        showDuplicateDialog = error is AddBookError.DuplicateTitle,
+                        pendingAddAndTag = error is AddBookError.DuplicateTitle,
+                        error = error.toScreenError(),
                     )
                 }
             }
@@ -270,26 +302,31 @@ class AddBookViewModel(
         when (val result = addBookUseCase(lookup, forceAdd = true)) {
             is Result.Success -> {
                 val mode = _uiState.value.lookupMode
+                val wasPendingAddAndTag = _uiState.value.pendingAddAndTag
                 _uiState.update { AddBookUiState(lookupMode = mode) }
-                _effects.emit(AddBookEffect.BookAdded)
+                if (wasPendingAddAndTag) {
+                    _effects.emit(AddBookEffect.NavigateToBookDetail(result.data.id))
+                } else {
+                    _effects.emit(AddBookEffect.BookAdded)
+                }
             }
-            is Result.Failure ->
+            is Result.Failure -> {
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error =
-                            when (result.error) {
-                                AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
-                                AddBookError.RateLimited -> AddBookScreenError.RateLimited
-                                // Duplicate, DuplicateTitle, and NotFound are unreachable from addBookUseCase(forceAdd=true); defensive
-                                is AddBookError.Duplicate -> AddBookScreenError.NetworkError
-                                is AddBookError.DuplicateTitle -> AddBookScreenError.NetworkError
-                                AddBookError.NotFound -> AddBookScreenError.NetworkError
-                                AddBookError.NetworkError -> AddBookScreenError.NetworkError
-                                AddBookError.MalformedResponse -> AddBookScreenError.NetworkError
-                            },
+                        pendingAddAndTag = false,
+                        error = when (result.error) {
+                            is AddBookError.DuplicateTitle,
+                            is AddBookError.Duplicate,
+                            AddBookError.NotFound,
+                            AddBookError.NetworkError,
+                            AddBookError.MalformedResponse -> AddBookScreenError.NetworkError
+                            AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
+                            AddBookError.RateLimited -> AddBookScreenError.RateLimited
+                        },
                     )
                 }
+            }
         }
     }
 }
