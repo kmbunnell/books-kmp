@@ -217,19 +217,10 @@ fun AddBookScreenContent(
                                     .fillMaxWidth()
                                     .testTag(TestTags.AddBook.titleResultItem(index)),
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                            BookMetadataCard(
+                                book = book,
                                 modifier = Modifier.fillMaxWidth().padding(12.dp),
-                            ) {
-                                BookCoverImage(
-                                    url = book.coverImageUrl,
-                                    contentDescription = "",
-                                    modifier = Modifier.height(200.dp),
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(text = book.title)
-                                Text(text = book.authors.joinToString(", "))
-                            }
+                            )
                         }
                     }
 
@@ -285,22 +276,12 @@ fun AddBookScreenContent(
                                             .fillMaxWidth()
                                             .padding(16.dp),
                                 ) {
-                                    BookCoverImage(
-                                        url = book.coverImageUrl,
-                                        contentDescription = stringResource(Res.string.cd_book_cover),
-                                        modifier =
-                                            Modifier
-                                                .height(200.dp)
-                                                .testTag(TestTags.AddBook.BookPreviewCover),
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = book.title,
-                                        modifier = Modifier.testTag(TestTags.AddBook.BookPreviewTitle),
-                                    )
-                                    Text(
-                                        text = book.authors.joinToString(", "),
-                                        modifier = Modifier.testTag(TestTags.AddBook.BookPreviewAuthors),
+                                    BookMetadataCard(
+                                        book = book,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        coverContentDescription = stringResource(Res.string.cd_book_cover),
+                                        titleModifier = Modifier.testTag(TestTags.AddBook.BookPreviewTitle),
+                                        authorsModifier = Modifier.testTag(TestTags.AddBook.BookPreviewAuthors),
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Button(
@@ -527,6 +508,29 @@ private fun ErrorSection(
             ) {
                 Text(stringResource(Res.string.button_retry))
             }
+    }
+}
+
+@Composable
+private fun BookMetadataCard(
+    book: BookLookupData,
+    modifier: Modifier = Modifier,
+    coverContentDescription: String = "",
+    titleModifier: Modifier = Modifier,
+    authorsModifier: Modifier = Modifier,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier,
+    ) {
+        BookCoverImage(
+            url = book.coverImageUrl,
+            contentDescription = coverContentDescription,
+            modifier = Modifier.height(200.dp),
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = book.title, modifier = titleModifier)
+        Text(text = book.authors.joinToString(", "), modifier = authorsModifier)
     }
 }
 
