@@ -36,6 +36,7 @@
     <string name="label_isbn">ISBN</string>
     <string name="button_look_up">Look Up</string>
     <string name="button_add">Add</string>
+    <string name="button_add_and_tag">Add and Tag</string>
     <string name="error_duplicate_title">Duplicate Book</string>
     <string name="error_duplicate_message">This book is already in your library.</string>
     <string name="button_ok">OK</string>

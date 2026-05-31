@@ -8,6 +8,7 @@ import com.example.books_kmp.domain.library.FakeBookLookupService
 import com.example.books_kmp.domain.library.FakeBookRepository
 import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.library.LookupByTitleUseCase
+import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.domain.model.BookLookupError
 import kotlin.test.AfterTest
@@ -578,6 +579,102 @@ class AddBookViewModelTest {
 
             viewModel.onIntent(AddBookIntent.SetLookupMode(LookupMode.Title))
             assertFalse(viewModel.uiState.value.isbnFormatError)
+        }
+
+    // --- Add and Tag tests ---
+
+    @Test
+    fun `AddAndTag success emits NavigateToBookDetail with bookId and resets state`() =
+        runTest {
+            fakeService.lookupResult = Result.Success(validLookupData)
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            assertNotNull(viewModel.uiState.value.foundBook)
+
+            viewModel.effects.test {
+                viewModel.onIntent(AddBookIntent.AddAndTag)
+                val effect = awaitItem()
+                assertIs<AddBookEffect.NavigateToBookDetail>(effect)
+                assertEquals("fake-id", effect.bookId)
+            }
+            assertEquals(AddBookUiState(), viewModel.uiState.value)
+        }
+
+    @Test
+    fun `AddAndTag duplicate then AddAnyway emits NavigateToBookDetail`() =
+        runTest {
+            val noIsbnBook =
+                BookLookupData(
+                    isbn = null,
+                    title = "The Iliad",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                )
+            fakeRepo.seedBooks(
+                Book(
+                    id = "existing-id",
+                    isbn = null,
+                    title = "The Iliad",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                ),
+            )
+            viewModel.onIntent(AddBookIntent.SelectTitleResult(noIsbnBook))
+            assertNotNull(viewModel.uiState.value.foundBook)
+
+            viewModel.onIntent(AddBookIntent.AddAndTag)
+            assertTrue(viewModel.uiState.value.showDuplicateDialog)
+
+            viewModel.effects.test {
+                viewModel.onIntent(AddBookIntent.AddAnyway)
+                val effect = awaitItem()
+                assertIs<AddBookEffect.NavigateToBookDetail>(effect)
+                assertEquals("fake-id", effect.bookId)
+            }
+        }
+
+    @Test
+    fun `AddAndTag failure sets NetworkError and does not emit NavigateToBookDetail`() =
+        runTest {
+            fakeService.lookupResult = Result.Success(validLookupData)
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            fakeRepo.addBookShouldFail = true
+
+            viewModel.effects.test {
+                viewModel.onIntent(AddBookIntent.AddAndTag)
+                expectNoEvents()
+            }
+            assertIs<AddBookScreenError.NetworkError>(viewModel.uiState.value.error)
+        }
+
+    @Test
+    fun `AddAndTag duplicate DismissDialog clears flag so subsequent AddAnyway emits BookAdded`() =
+        runTest {
+            val noIsbnBook =
+                BookLookupData(isbn = null, title = "The Iliad", authors = listOf("Homer"), coverImageUrl = null)
+            fakeRepo.seedBooks(
+                Book(id = "existing-id", isbn = null, title = "The Iliad", authors = listOf("Homer"), coverImageUrl = null),
+            )
+
+            // AddAndTag → duplicate dialog → flag set
+            viewModel.onIntent(AddBookIntent.SelectTitleResult(noIsbnBook))
+            viewModel.onIntent(AddBookIntent.AddAndTag)
+            assertTrue(viewModel.uiState.value.showDuplicateDialog)
+
+            // Dismiss clears the flag
+            viewModel.onIntent(AddBookIntent.DismissDuplicateDialog)
+            assertFalse(viewModel.uiState.value.pendingAddAndTag)
+
+            // Re-select and go through ConfirmBook → duplicate → AddAnyway
+            viewModel.onIntent(AddBookIntent.SelectTitleResult(noIsbnBook))
+            viewModel.onIntent(AddBookIntent.ConfirmBook)
+            assertTrue(viewModel.uiState.value.showDuplicateDialog)
+
+            viewModel.effects.test {
+                viewModel.onIntent(AddBookIntent.AddAnyway)
+                assertIs<AddBookEffect.BookAdded>(awaitItem())
+            }
         }
 
     @Test

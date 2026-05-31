@@ -63,6 +63,7 @@ object TestTags {
         const val BookPreviewTitle = "add_book_preview_title"
         const val BookPreviewAuthors = "add_book_preview_authors"
         const val AddButton = "add_book_add_button"
+        const val AddAndTagButton = "add_book_add_and_tag_button"
         const val CancelButton = "add_book_cancel_button"
         const val DuplicateDialog = "add_book_duplicate_dialog"
         const val DuplicateDialogAddAnywayButton = "add_book_duplicate_dialog_add_anyway"
