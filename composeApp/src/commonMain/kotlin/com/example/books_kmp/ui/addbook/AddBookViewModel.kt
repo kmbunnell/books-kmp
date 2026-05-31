@@ -315,15 +315,16 @@ class AddBookViewModel(
                     it.copy(
                         isLoading = false,
                         pendingAddAndTag = false,
-                        error = when (result.error) {
-                            is AddBookError.DuplicateTitle,
-                            is AddBookError.Duplicate,
-                            AddBookError.NotFound,
-                            AddBookError.NetworkError,
-                            AddBookError.MalformedResponse -> AddBookScreenError.NetworkError
-                            AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
-                            AddBookError.RateLimited -> AddBookScreenError.RateLimited
-                        },
+                        error =
+                            when (result.error) {
+                                is AddBookError.DuplicateTitle,
+                                is AddBookError.Duplicate,
+                                AddBookError.NotFound,
+                                AddBookError.NetworkError,
+                                AddBookError.MalformedResponse -> AddBookScreenError.NetworkError
+                                AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
+                                AddBookError.RateLimited -> AddBookScreenError.RateLimited
+                            },
                     )
                 }
             }
