@@ -1,5 +1,6 @@
 package com.example.books_kmp.ui.addbook
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -38,6 +40,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -162,49 +166,51 @@ fun AddBookScreenContent(
                         .padding(innerPadding)
                         .padding(horizontal = 16.dp),
             ) {
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
+                if (uiState.foundBook == null) {
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    val isbnLabel = stringResource(Res.string.label_isbn_search)
-                    val titleLabel = stringResource(Res.string.label_title_search)
-                    SingleChoiceSegmentedButtonRow(
-                        modifier = Modifier.fillMaxWidth().testTag(TestTags.AddBook.LookupModeToggle),
-                    ) {
-                        LookupMode.entries.forEachIndexed { index, mode ->
-                            SegmentedButton(
-                                selected = uiState.lookupMode == mode,
-                                onClick = { onIntent(AddBookIntent.SetLookupMode(mode)) },
-                                shape =
-                                    SegmentedButtonDefaults.itemShape(
-                                        index = index,
-                                        count = LookupMode.entries.size,
-                                    ),
-                                label = {
-                                    Text(if (mode == LookupMode.ISBN) isbnLabel else titleLabel)
-                                },
-                                modifier =
-                                    Modifier.testTag(
-                                        if (mode == LookupMode.ISBN) {
-                                            TestTags.AddBook.IsbnModeButton
-                                        } else {
-                                            TestTags.AddBook.TitleModeButton
-                                        },
-                                    ),
-                            )
+                        val isbnLabel = stringResource(Res.string.label_isbn_search)
+                        val titleLabel = stringResource(Res.string.label_title_search)
+                        SingleChoiceSegmentedButtonRow(
+                            modifier = Modifier.fillMaxWidth().testTag(TestTags.AddBook.LookupModeToggle),
+                        ) {
+                            LookupMode.entries.forEachIndexed { index, mode ->
+                                SegmentedButton(
+                                    selected = uiState.lookupMode == mode,
+                                    onClick = { onIntent(AddBookIntent.SetLookupMode(mode)) },
+                                    shape =
+                                        SegmentedButtonDefaults.itemShape(
+                                            index = index,
+                                            count = LookupMode.entries.size,
+                                        ),
+                                    label = {
+                                        Text(if (mode == LookupMode.ISBN) isbnLabel else titleLabel)
+                                    },
+                                    modifier =
+                                        Modifier.testTag(
+                                            if (mode == LookupMode.ISBN) {
+                                                TestTags.AddBook.IsbnModeButton
+                                            } else {
+                                                TestTags.AddBook.TitleModeButton
+                                            },
+                                        ),
+                                )
+                            }
                         }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        LookupModeSection(
+                            lookupMode = uiState.lookupMode,
+                            isbn = uiState.isbn,
+                            titleQuery = uiState.titleQuery,
+                            isLoading = uiState.isLoading,
+                            isbnFormatError = uiState.isbnFormatError,
+                            focusRequester = focusRequester,
+                            onIntent = onIntent,
+                        )
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    LookupModeSection(
-                        lookupMode = uiState.lookupMode,
-                        isbn = uiState.isbn,
-                        titleQuery = uiState.titleQuery,
-                        isLoading = uiState.isLoading,
-                        isbnFormatError = uiState.isbnFormatError,
-                        focusRequester = focusRequester,
-                        onIntent = onIntent,
-                    )
                 }
 
                 if (uiState.foundBook == null) {
@@ -236,20 +242,6 @@ fun AddBookScreenContent(
                                 firstButtonText = stringResource(Res.string.button_isbn_lookup),
                                 onFirstButtonClick = { onIntent(AddBookIntent.SetLookupMode(LookupMode.ISBN)) },
                                 onEnterManually = { onIntent(AddBookIntent.EnterManually) },
-                            )
-                        }
-                    }
-                }
-
-                if (uiState.isLoading) {
-                    item {
-                        Spacer(modifier = Modifier.height(32.dp))
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.testTag(TestTags.AddBook.LoadingIndicator),
                             )
                         }
                     }
@@ -310,6 +302,27 @@ fun AddBookScreenContent(
                         }
                     }
                 }
+            }
+        }
+
+        if (uiState.isLoading) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f))
+                        .pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
+                                }
+                            }
+                        },
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.testTag(TestTags.AddBook.LoadingIndicator),
+                )
             }
         }
 
