@@ -654,7 +654,13 @@ class AddBookViewModelTest {
             val noIsbnBook =
                 BookLookupData(isbn = null, title = "The Iliad", authors = listOf("Homer"), coverImageUrl = null)
             fakeRepo.seedBooks(
-                Book(id = "existing-id", isbn = null, title = "The Iliad", authors = listOf("Homer"), coverImageUrl = null),
+                Book(
+                    id = "existing-id",
+                    isbn = null,
+                    title = "The Iliad",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null
+                ),
             )
 
             // AddAndTag → duplicate dialog → flag set
