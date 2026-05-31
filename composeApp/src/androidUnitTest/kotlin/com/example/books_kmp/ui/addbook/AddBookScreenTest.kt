@@ -1,6 +1,9 @@
 package com.example.books_kmp.ui.addbook
 
 import android.app.Application
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -710,5 +713,43 @@ class AddBookScreenTest {
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.SignInButton).performClick()
         assertTrue(navigatedToSignIn)
+    }
+
+    @Test
+    fun `lookup form is not rendered when foundBook is set`() {
+        val book = BookLookupData("isbn", "The Iliad", listOf("Homer"), null)
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(foundBook = book),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.LookupModeToggle).assertDoesNotExist()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField).assertDoesNotExist()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertDoesNotExist()
+    }
+
+    @Test
+    fun `lookup form reappears when foundBook is cleared`() {
+        val book = BookLookupData("isbn", "The Iliad", listOf("Homer"), null)
+        var uiState by mutableStateOf(AddBookUiState(foundBook = book))
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = uiState,
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.LookupModeToggle).assertDoesNotExist()
+        uiState = AddBookUiState(foundBook = null)
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.LookupModeToggle).assertIsDisplayed()
     }
 }
