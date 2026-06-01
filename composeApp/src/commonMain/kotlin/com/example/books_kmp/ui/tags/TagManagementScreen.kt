@@ -1,7 +1,6 @@
 package com.example.books_kmp.ui.tags
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +28,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -74,6 +74,39 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 private const val MAX_TAG_NAME_LENGTH = 20
+
+@Composable
+private fun CollapsibleSectionHeader(
+    title: String,
+    expanded: Boolean,
+    testTag: String,
+    onToggle: () -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    ) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onToggle)
+                    .testTag(testTag),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = title,
+                modifier = Modifier.padding(start = 8.dp),
+            )
+            IconButton(onClick = onToggle) {
+                val icon = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
+                val cd = if (expanded) Res.string.cd_collapse_section else Res.string.cd_expand_section
+                Icon(imageVector = icon, contentDescription = stringResource(cd))
+            }
+        }
+    }
+}
 
 @Composable
 fun TagManagementScreen(
@@ -145,27 +178,12 @@ fun TagManagementScreenContent(
                 var defaultExpanded by rememberSaveable { mutableStateOf(false) }
                 var customExpanded by rememberSaveable { mutableStateOf(true) }
 
-                // Default section
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .clickable { defaultExpanded = !defaultExpanded }
-                            .testTag(TestTags.TagManagement.DefaultSectionHeader),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(Res.string.section_default_tags),
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                    IconButton(onClick = { defaultExpanded = !defaultExpanded }) {
-                        val icon = if (defaultExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
-                        val cd = if (defaultExpanded) Res.string.cd_collapse_section else Res.string.cd_expand_section
-                        Icon(imageVector = icon, contentDescription = stringResource(cd))
-                    }
-                }
+                CollapsibleSectionHeader(
+                    title = stringResource(Res.string.section_default_tags),
+                    expanded = defaultExpanded,
+                    testTag = TestTags.TagManagement.DefaultSectionHeader,
+                    onToggle = { defaultExpanded = !defaultExpanded },
+                )
                 AnimatedVisibility(visible = defaultExpanded) {
                     Column {
                         uiState.defaultTags.forEach { tag ->
@@ -180,27 +198,12 @@ fun TagManagementScreenContent(
                     }
                 }
 
-                // Custom section
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .clickable { customExpanded = !customExpanded }
-                            .testTag(TestTags.TagManagement.CustomSectionHeader),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(Res.string.section_custom_tags),
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                    IconButton(onClick = { customExpanded = !customExpanded }) {
-                        val icon = if (customExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
-                        val cd = if (customExpanded) Res.string.cd_collapse_section else Res.string.cd_expand_section
-                        Icon(imageVector = icon, contentDescription = stringResource(cd))
-                    }
-                }
+                CollapsibleSectionHeader(
+                    title = stringResource(Res.string.section_custom_tags),
+                    expanded = customExpanded,
+                    testTag = TestTags.TagManagement.CustomSectionHeader,
+                    onToggle = { customExpanded = !customExpanded },
+                )
                 AnimatedVisibility(visible = customExpanded) {
                     Column {
                         var expandedTagId by rememberSaveable { mutableStateOf<String?>(null) }
