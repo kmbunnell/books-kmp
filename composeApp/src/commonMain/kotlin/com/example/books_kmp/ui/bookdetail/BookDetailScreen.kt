@@ -35,7 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bookskmp.composeapp.generated.resources.Res
@@ -117,7 +116,7 @@ internal fun BookDetailScreenContent(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = { Text(uiState.book?.title ?: stringResource(Res.string.title_book_detail)) },
+                title = { Text(stringResource(Res.string.title_book_detail)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
@@ -192,30 +191,6 @@ internal fun BookDetailScreenContent(
                                         .height(200.dp)
                                         .testTag(TestTags.BookDetail.CoverImage),
                             )
-                        }
-                        uiState.book?.let { book ->
-                            Text(
-                                text = book.title,
-                                style = MaterialTheme.typography.titleLarge,
-                                textAlign = TextAlign.Center,
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp)
-                                        .padding(top = 8.dp),
-                            )
-                            if (book.authors.isNotEmpty()) {
-                                Text(
-                                    text = book.authors.joinToString(", "),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    textAlign = TextAlign.Center,
-                                    modifier =
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 16.dp)
-                                            .padding(bottom = 8.dp),
-                                )
-                            }
                         }
                         Column(
                             modifier =
