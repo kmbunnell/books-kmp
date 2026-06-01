@@ -3,6 +3,7 @@ package com.example.books_kmp.ui.auth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -51,6 +52,7 @@ import bookskmp.composeapp.generated.resources.label_confirm_password
 import bookskmp.composeapp.generated.resources.label_email
 import bookskmp.composeapp.generated.resources.label_password
 import bookskmp.composeapp.generated.resources.sign_up_sign_in_prompt
+import bookskmp.composeapp.generated.resources.title_sign_up
 import com.example.books_kmp.domain.auth.SignUpError
 import com.example.books_kmp.ui.TestTags
 import kotlinx.coroutines.flow.SharedFlow
@@ -122,6 +124,11 @@ fun SignUpScreenContent(
     }
 
     AuthFormLayout(snackbarHostState = snackbarHostState) {
+        Text(
+            text = stringResource(Res.string.title_sign_up),
+            style = MaterialTheme.typography.headlineMedium,
+        )
+        Spacer(modifier = Modifier.height(32.dp))
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -242,7 +249,7 @@ fun SignUpScreenContent(
                     .focusRequester(confirmPasswordFocusRequester)
                     .testTag(TestTags.SignUp.ConfirmPasswordField),
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = hintPasswordRequirement,
             style = MaterialTheme.typography.bodySmall,
@@ -253,10 +260,6 @@ fun SignUpScreenContent(
                     .testTag(TestTags.SignUp.PasswordHint),
         )
         Spacer(modifier = Modifier.height(16.dp))
-        if (uiState.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.testTag(TestTags.SignUp.LoadingIndicator))
-            Spacer(modifier = Modifier.height(16.dp))
-        }
         Button(
             onClick = { onSignUp(email, password, confirmPassword) },
             enabled = !uiState.isLoading,
@@ -265,7 +268,15 @@ fun SignUpScreenContent(
                     .fillMaxWidth()
                     .testTag(TestTags.SignUp.CreateAccountButton),
         ) {
-            Text(stringResource(Res.string.button_create_account))
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp).testTag(TestTags.SignUp.LoadingIndicator),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            } else {
+                Text(stringResource(Res.string.button_create_account))
+            }
         }
         Spacer(modifier = Modifier.height(8.dp))
         TextButton(onClick = onNavigateToSignIn) {

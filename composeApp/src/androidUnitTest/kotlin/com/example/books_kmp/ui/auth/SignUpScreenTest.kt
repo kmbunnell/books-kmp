@@ -267,7 +267,9 @@ class SignUpScreenTest {
                 onNavigateToSignIn = {},
             )
         }
-        composeTestRule.onNodeWithText("Password must be at least 6 characters").assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText("Password must be at least 8 characters with letters and digits")
+            .assertIsDisplayed()
     }
 
     @Test
