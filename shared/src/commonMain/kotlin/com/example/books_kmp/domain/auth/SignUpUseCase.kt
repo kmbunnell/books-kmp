@@ -12,8 +12,9 @@ class SignUpUseCase(private val authRepository: AuthRepository) {
         if (password.isBlank()) return Result.Failure(SignUpError.EmptyPassword)
         if (confirmPassword.isBlank()) return Result.Failure(SignUpError.EmptyConfirmPassword)
         if (password != confirmPassword) return Result.Failure(SignUpError.PasswordMismatch)
-        if (password.length < 8 || password.none(Char::isLetter) || password.none(Char::isDigit))
+        if (password.length < 8 || password.none(Char::isLetter) || password.none(Char::isDigit)) {
             return Result.Failure(SignUpError.WeakPassword)
+        }
         return when (val result = authRepository.signUp(email, password)) {
             is Result.Success -> result
             is Result.Failure ->
