@@ -179,25 +179,11 @@ class BookDetailScreenTest {
     }
 
     @Test
-    fun `top app bar shows book title when book is loaded`() {
+    fun `top app bar always shows Tag Book title`() {
         val book = Book(id = "b1", isbn = null, title = "Dune", authors = listOf("Frank Herbert"), coverImageUrl = null)
         composeTestRule.setContent {
             BookDetailScreenContent(
                 uiState = BookDetailUiState(book = book),
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToTagManagement = {},
-                snackbarHostState = SnackbarHostState(),
-            )
-        }
-        composeTestRule.onNodeWithText("Dune").assertIsDisplayed()
-    }
-
-    @Test
-    fun `top app bar shows placeholder title`() {
-        composeTestRule.setContent {
-            BookDetailScreenContent(
-                uiState = BookDetailUiState(),
                 onIntent = {},
                 onNavigateUp = {},
                 onNavigateToTagManagement = {},
