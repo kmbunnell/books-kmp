@@ -30,9 +30,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -119,7 +117,7 @@ internal fun BookDetailScreenContent(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.title_book_detail)) },
+                title = { Text(uiState.book?.title ?: stringResource(Res.string.title_book_detail)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
@@ -169,6 +167,7 @@ internal fun BookDetailScreenContent(
                     ) {
                         Text(
                             text = loadFailedMessage,
+                            style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.testTag(TestTags.BookDetail.LoadFailedMessage),
                         )
                         Button(
@@ -181,22 +180,6 @@ internal fun BookDetailScreenContent(
                 }
                 else -> {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        var coverLoaded by remember(uiState.book?.coverImageUrl) {
-                            mutableStateOf(false)
-                        }
-                        if (!coverLoaded) {
-                            uiState.book?.title?.let { title ->
-                                Text(
-                                    text = title,
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    textAlign = TextAlign.Center,
-                                    modifier =
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 16.dp, vertical = 16.dp),
-                                )
-                            }
-                        }
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
@@ -204,12 +187,35 @@ internal fun BookDetailScreenContent(
                             BookCoverImage(
                                 url = uiState.book?.coverImageUrl,
                                 contentDescription = stringResource(Res.string.cd_book_cover),
-                                onSuccess = { coverLoaded = true },
                                 modifier =
                                     Modifier
                                         .height(200.dp)
                                         .testTag(TestTags.BookDetail.CoverImage),
                             )
+                        }
+                        uiState.book?.let { book ->
+                            Text(
+                                text = book.title,
+                                style = MaterialTheme.typography.titleLarge,
+                                textAlign = TextAlign.Center,
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp)
+                                        .padding(top = 8.dp),
+                            )
+                            if (book.authors.isNotEmpty()) {
+                                Text(
+                                    text = book.authors.joinToString(", "),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp)
+                                            .padding(bottom = 8.dp),
+                                )
+                            }
                         }
                         Column(
                             modifier =
@@ -222,7 +228,7 @@ internal fun BookDetailScreenContent(
                                 style = MaterialTheme.typography.titleSmall,
                                 modifier =
                                     Modifier
-                                        .padding(top = 16.dp, bottom = 4.dp)
+                                        .padding(top = 16.dp, bottom = 8.dp)
                                         .testTag(TestTags.BookDetail.TagsSectionLabel),
                             )
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

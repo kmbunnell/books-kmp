@@ -331,6 +331,7 @@ private fun LibraryErrorContent(
     ) {
         Text(
             text = stringResource(Res.string.error_library_load_failed),
+            style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.testTag(TestTags.Library.LibraryError),
         )
         Button(
@@ -360,7 +361,7 @@ private fun ReloadErrorBanner(
                 .testTag(TestTags.Library.ReloadErrorBanner),
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -402,6 +403,7 @@ private fun EmptyLibraryContent(
     ) {
         Text(
             text = stringResource(Res.string.library_empty_title),
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.testTag(TestTags.Library.EmptyLibrary),
         )
         Button(
@@ -431,7 +433,7 @@ private fun EmptyFilterContent(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
                     .testTag(TestTags.Library.SearchBar),
         )
         Box(
@@ -455,7 +457,6 @@ private fun BookGridItem(
     Column(
         modifier =
             modifier
-                .padding(4.dp)
                 .clickable(onClick = onClick, role = Role.Button),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
