@@ -1,6 +1,5 @@
 package com.example.books_kmp
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,6 +17,7 @@ import com.example.books_kmp.ui.bookdetail.BookDetailScreen
 import com.example.books_kmp.ui.library.LibraryScreen
 import com.example.books_kmp.ui.manualentry.ManualEntryScreen
 import com.example.books_kmp.ui.tags.TagManagementScreen
+import com.example.books_kmp.ui.theme.AppTheme
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -47,7 +47,7 @@ private fun NavigateToLibraryOnAuth(
 
 @Composable
 fun App() {
-    MaterialTheme {
+    AppTheme {
         val navController = rememberNavController()
         val authViewModel: AuthViewModel = koinViewModel()
         val uiState by authViewModel.uiState.collectAsStateWithLifecycle()
@@ -86,7 +86,7 @@ fun App() {
                     isAuthenticated = uiState.isAuthenticated,
                     onAuthenticated = {
                         navController.navigate(Route.Library) {
-                            popUpTo<Route.SignIn> { inclusive = true }
+                            popUpTo<Route.SignUp> { inclusive = true }
                         }
                     },
                 )
