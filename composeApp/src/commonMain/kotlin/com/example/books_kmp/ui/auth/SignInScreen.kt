@@ -13,6 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -45,6 +46,7 @@ import bookskmp.composeapp.generated.resources.error_sign_in_failed
 import bookskmp.composeapp.generated.resources.label_email
 import bookskmp.composeapp.generated.resources.label_password
 import bookskmp.composeapp.generated.resources.sign_in_sign_up_prompt
+import bookskmp.composeapp.generated.resources.title_sign_in
 import com.example.books_kmp.domain.auth.SignInError
 import com.example.books_kmp.ui.TestTags
 import kotlinx.coroutines.flow.SharedFlow
@@ -104,6 +106,11 @@ fun SignInScreenContent(
     }
 
     AuthFormLayout(snackbarHostState = snackbarHostState) {
+        Text(
+            text = stringResource(Res.string.title_sign_in),
+            style = MaterialTheme.typography.headlineMedium,
+        )
+        Spacer(modifier = Modifier.height(32.dp))
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -172,7 +179,7 @@ fun SignInScreenContent(
                 CircularProgressIndicator(
                     modifier = Modifier.size(18.dp).testTag(TestTags.SignIn.LoadingIndicator),
                     strokeWidth = 2.dp,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                    color = MaterialTheme.colorScheme.onPrimary,
                 )
             } else {
                 Text(stringResource(Res.string.button_sign_in))

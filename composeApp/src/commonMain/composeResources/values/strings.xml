@@ -21,7 +21,10 @@
     <string name="error_sign_out_failed">Sign out failed</string>
     <string name="cd_show_password">Show password</string>
     <string name="cd_hide_password">Hide password</string>
-    <string name="hint_password_requirement">Password must be at least 6 characters</string>
+    <string name="hint_password_requirement">Password must be at least 8 characters with letters and digits</string>
+    <string name="title_sign_in">Sign In</string>
+    <string name="title_sign_up">Create Account</string>
+    <string name="title_splash">Shelvd</string>
     <string name="title_library">Library</string>
     <string name="cd_sign_out">Sign out</string>
     <string name="title_manual_entry">Add Book Manually</string>
