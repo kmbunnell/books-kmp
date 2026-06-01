@@ -131,4 +131,43 @@ class SignUpUseCaseTest {
             assertIs<Result.Failure<SignUpError>>(result)
             assertEquals(SignUpError.EmptyEmail, result.error)
         }
+
+    @Test
+    fun `returns Failure with WeakPassword when password is shorter than 8 characters`() =
+        runTest {
+            val result = useCase("test@example.com", "abc123", "abc123")
+
+            assertIs<Result.Failure<SignUpError>>(result)
+            assertEquals(SignUpError.WeakPassword, result.error)
+            assertFalse(fakeRepo.signUpCalled)
+        }
+
+    @Test
+    fun `returns Failure with WeakPassword when password has no digits`() =
+        runTest {
+            val result = useCase("test@example.com", "abcdefgh", "abcdefgh")
+
+            assertIs<Result.Failure<SignUpError>>(result)
+            assertEquals(SignUpError.WeakPassword, result.error)
+            assertFalse(fakeRepo.signUpCalled)
+        }
+
+    @Test
+    fun `returns Failure with WeakPassword when password has no letters`() =
+        runTest {
+            val result = useCase("test@example.com", "12345678", "12345678")
+
+            assertIs<Result.Failure<SignUpError>>(result)
+            assertEquals(SignUpError.WeakPassword, result.error)
+            assertFalse(fakeRepo.signUpCalled)
+        }
+
+    @Test
+    fun `returns Success when password meets length and character requirements`() =
+        runTest {
+            val result = useCase("test@example.com", "Valid1pw", "Valid1pw")
+
+            assertIs<Result.Success<Unit>>(result)
+            assertTrue(fakeRepo.signUpCalled)
+        }
 }
