@@ -97,6 +97,7 @@ private fun CollapsibleSectionHeader(
         ) {
             Text(
                 text = title,
+                style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(start = 8.dp),
             )
             IconButton(onClick = onToggle) {
@@ -172,8 +173,7 @@ fun TagManagementScreenContent(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp),
+                        .verticalScroll(rememberScrollState()),
             ) {
                 var defaultExpanded by rememberSaveable { mutableStateOf(false) }
                 var customExpanded by rememberSaveable { mutableStateOf(true) }
@@ -185,14 +185,14 @@ fun TagManagementScreenContent(
                     onToggle = { defaultExpanded = !defaultExpanded },
                 )
                 AnimatedVisibility(visible = defaultExpanded) {
-                    Column {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                         uiState.defaultTags.forEach { tag ->
                             Text(
                                 text = tag.name,
                                 modifier =
                                     Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 8.dp, vertical = 12.dp),
+                                        .padding(horizontal = 8.dp, vertical = 8.dp),
                             )
                         }
                     }
@@ -205,11 +205,11 @@ fun TagManagementScreenContent(
                     onToggle = { customExpanded = !customExpanded },
                 )
                 AnimatedVisibility(visible = customExpanded) {
-                    Column {
+                    Column(modifier = Modifier.fillMaxWidth()) {
                         var expandedTagId by rememberSaveable { mutableStateOf<String?>(null) }
                         uiState.customTags.forEach { tag ->
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Text(
@@ -252,7 +252,10 @@ fun TagManagementScreenContent(
                         }
                         TextButton(
                             onClick = { onIntent(TagManagementIntent.OpenCreateForm) },
-                            modifier = Modifier.testTag(TestTags.TagManagement.AddTagButton),
+                            modifier =
+                                Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .testTag(TestTags.TagManagement.AddTagButton),
                         ) {
                             Text(stringResource(Res.string.button_add_tag))
                         }
@@ -293,6 +296,7 @@ fun TagManagementScreenContent(
                         } else {
                             stringResource(Res.string.title_edit_tag)
                         },
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 OutlinedTextField(
                     value = formState.draftName,

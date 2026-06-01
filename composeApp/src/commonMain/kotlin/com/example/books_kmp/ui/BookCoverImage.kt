@@ -13,7 +13,6 @@ fun BookCoverImage(
     url: String?,
     contentDescription: String,
     modifier: Modifier = Modifier,
-    onSuccess: () -> Unit = {},
 ) {
     AsyncImage(
         model = url,
@@ -21,7 +20,6 @@ fun BookCoverImage(
         placeholder = painterResource(Res.drawable.placeholder),
         error = painterResource(Res.drawable.placeholder),
         contentScale = ContentScale.Fit,
-        onSuccess = { onSuccess() },
         modifier = modifier,
     )
 }

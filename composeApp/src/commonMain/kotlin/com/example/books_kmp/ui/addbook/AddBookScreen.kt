@@ -241,6 +241,7 @@ fun AddBookScreenContent(
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = stringResource(Res.string.title_results_enter_manually),
+                                style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center,
                             )
@@ -492,6 +493,7 @@ private fun ErrorSection(
     Spacer(modifier = Modifier.height(8.dp))
     Text(
         text = message,
+        style = MaterialTheme.typography.bodyMedium,
         modifier =
             Modifier
                 .testTag(TestTags.AddBook.ErrorBanner)
@@ -509,7 +511,7 @@ private fun ErrorSection(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = stringResource(Res.string.info_not_found_catalog),
-                    modifier = Modifier.padding(12.dp),
+                    modifier = Modifier.padding(16.dp),
                 )
             }
         }
@@ -558,8 +560,16 @@ private fun BookMetadataCard(
             modifier = Modifier.height(200.dp),
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(text = book.title, modifier = titleModifier)
-        Text(text = book.authors.joinToString(", "), modifier = authorsModifier)
+        Text(
+            text = book.title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = titleModifier,
+        )
+        Text(
+            text = book.authors.joinToString(", "),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = authorsModifier,
+        )
     }
 }
 
