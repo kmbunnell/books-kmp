@@ -6,6 +6,8 @@ Books-KMP is a cross-platform mobile book library app built with **Kotlin Multip
 
 See `docs/overview.md` for tech-choice rationale, schema notes, and planned features. Schema, models, screens, and navigation are authoritative in code.
 
+**Branch workflow:** `develop` is the integration branch. Feature branches are cut from `develop` and PR'd back into `develop`. `main` is unused. Always use `develop` as the base when diffing or creating PRs (e.g. `git diff develop`, `gh pr create --base develop`).
+
 When planning a feature or starting implementation, read `.claude/decisions.md` first to account for past decisions that may affect the approach. When a notable decision is made during a session — a spec that evolved, a code approach chosen over an alternative, or a trade-off accepted — log it in `.claude/decisions.md` using the format defined there.
 
 ---

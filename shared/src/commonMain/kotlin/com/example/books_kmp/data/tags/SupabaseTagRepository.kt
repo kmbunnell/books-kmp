@@ -10,17 +10,25 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Count
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
-class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepository {
-    internal var cache: List<Tag>? = null
+class SupabaseTagRepository(
+    private val supabase: SupabaseClient,
+    initialCache: List<Tag>? = null,
+) : TagRepository {
+    private val tagsCache = MutableStateFlow(initialCache)
+    override val tagsFlow: StateFlow<List<Tag>?> = tagsCache.asStateFlow()
 
     override suspend fun getTags(): Result<List<Tag>, TagError> {
         val tags =
-            cache ?: when (val fetchResult = fetchTags()) {
+            tagsCache.value ?: when (val fetchResult = fetchTags()) {
                 is Result.Failure -> return fetchResult
-                is Result.Success -> fetchResult.data.also { cache = it }
+                is Result.Success -> fetchResult.data.sortedWith(TAG_SORT_ORDER).also { tagsCache.value = it }
             }
-        return Result.Success(tags.sortedWith(TAG_SORT_ORDER))
+        return Result.Success(tags)
     }
 
     override suspend fun createTag(name: String): Result<Tag, TagError> {
@@ -37,7 +45,7 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
                     select()
                 }.decodeSingle<TagDto>()
             val tag = dto.toTag()
-            cache = cache?.plus(tag)
+            tagsCache.update { it?.plus(tag)?.sortedWith(TAG_SORT_ORDER) }
             Result.Success(tag)
         } catch (e: CancellationException) {
             throw e
@@ -63,7 +71,7 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
                         select()
                     }.decodeSingle<TagDto>()
             val tag = dto.toTag()
-            cache = cache?.map { if (it.id == id) tag else it }
+            tagsCache.update { current -> current?.map { if (it.id == id) tag else it }?.sortedWith(TAG_SORT_ORDER) }
             Result.Success(tag)
         } catch (e: CancellationException) {
             throw e
@@ -77,7 +85,7 @@ class SupabaseTagRepository(private val supabase: SupabaseClient) : TagRepositor
     override suspend fun deleteTag(id: String): Result<Unit, TagError> =
         try {
             supabase.from(TABLE_TAGS).delete { filter { eq("id", id) } }
-            cache = cache?.filterNot { it.id == id }
+            tagsCache.update { current -> current?.filterNot { it.id == id } }
             Result.Success(Unit)
         } catch (e: CancellationException) {
             throw e

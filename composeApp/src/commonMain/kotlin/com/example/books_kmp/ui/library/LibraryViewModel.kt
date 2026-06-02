@@ -71,7 +71,26 @@ class LibraryViewModel(
     val effects = _effects.receiveAsFlow()
 
     init {
-        loadLibrary()
+        viewModelScope.launch {
+            tagRepository.tagsFlow.filterNotNull().collect { tags ->
+                _uiState.update { state ->
+                    if (state.error != null || state.isLoading) return@update state
+                    val validTagIds = tags.map { it.id }.toSet()
+                    val newActiveIds = state.activeFilterTagIds intersect validTagIds
+                    state.copy(
+                        tags = tags,
+                        activeFilterTagIds = newActiveIds,
+                        filteredBooks =
+                            computeFilteredBooks(
+                                state.books,
+                                newActiveIds,
+                                state.sortOrder,
+                                state.searchQuery,
+                            ),
+                    )
+                }
+            }
+        }
         viewModelScope.launch {
             bookRepository.booksFlow.filterNotNull().collect { books ->
                 _uiState.update { state ->
@@ -89,6 +108,7 @@ class LibraryViewModel(
                 }
             }
         }
+        loadLibrary()
     }
 
     fun onIntent(intent: LibraryIntent) {
@@ -162,17 +182,14 @@ class LibraryViewModel(
                 val booksResult = booksDeferred.await()
                 val tagsResult = tagsDeferred.await()
                 if (booksResult is Result.Success && tagsResult is Result.Success) {
-                    val fetchedIds = tagsResult.data.map { it.id }.toSet()
                     _uiState.update { state ->
-                        val newActiveIds = state.activeFilterTagIds intersect fetchedIds
                         state.copy(
                             books = booksResult.data,
                             tags = tagsResult.data,
-                            activeFilterTagIds = newActiveIds,
                             filteredBooks =
                                 computeFilteredBooks(
                                     booksResult.data,
-                                    newActiveIds,
+                                    state.activeFilterTagIds,
                                     state.sortOrder,
                                     state.searchQuery
                                 ),

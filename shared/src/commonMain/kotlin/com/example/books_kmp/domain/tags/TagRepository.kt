@@ -2,8 +2,11 @@ package com.example.books_kmp.domain.tags
 
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Tag
+import kotlinx.coroutines.flow.StateFlow
 
 interface TagRepository {
+    val tagsFlow: StateFlow<List<Tag>?>
+
     suspend fun getTags(): Result<List<Tag>, TagError>
 
     suspend fun createTag(name: String): Result<Tag, TagError>

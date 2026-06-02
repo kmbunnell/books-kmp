@@ -3,10 +3,17 @@ package com.example.books_kmp.domain.tags
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.TAG_SORT_ORDER
 import com.example.books_kmp.domain.model.Tag
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class FakeTagRepository : TagRepository {
     private val tags = mutableListOf<Tag>()
     private val bookTags = mutableListOf<Pair<String, String>>()
+
+    private val _tagsFlow = MutableStateFlow<List<Tag>?>(null)
+    override val tagsFlow: StateFlow<List<Tag>?> = _tagsFlow.asStateFlow()
 
     var getTagsCalled = 0
     var createTagCalled = 0
@@ -22,7 +29,9 @@ class FakeTagRepository : TagRepository {
 
     override suspend fun getTags(): Result<List<Tag>, TagError> {
         getTagsCalled++
-        return Result.Success(tags.sortedWith(TAG_SORT_ORDER))
+        val result = tags.sortedWith(TAG_SORT_ORDER)
+        _tagsFlow.value = result
+        return Result.Success(result)
     }
 
     override suspend fun createTag(name: String): Result<Tag, TagError> {
@@ -34,6 +43,7 @@ class FakeTagRepository : TagRepository {
         }
         val tag = Tag(id = "fake-${tags.size}", name = trimmed, isDefault = false)
         tags.add(tag)
+        _tagsFlow.update { it?.plus(tag)?.sortedWith(TAG_SORT_ORDER) }
         return Result.Success(tag)
     }
 
@@ -51,6 +61,7 @@ class FakeTagRepository : TagRepository {
         if (index == -1) return Result.Failure(TagError.NotFound)
         val updated = tags[index].copy(name = trimmed)
         tags[index] = updated
+        _tagsFlow.update { current -> current?.map { if (it.id == id) updated else it }?.sortedWith(TAG_SORT_ORDER) }
         return Result.Success(updated)
     }
 
@@ -58,6 +69,7 @@ class FakeTagRepository : TagRepository {
         deleteTagCalled++
         tags.removeAll { it.id == id }
         bookTags.removeAll { it.second == id }
+        _tagsFlow.update { current -> current?.filterNot { it.id == id } }
         return Result.Success(Unit)
     }
 

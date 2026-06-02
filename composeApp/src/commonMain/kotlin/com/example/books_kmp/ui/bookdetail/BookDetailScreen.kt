@@ -36,10 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.button_cancel
 import bookskmp.composeapp.generated.resources.button_confirm_delete
@@ -72,14 +69,8 @@ fun BookDetailScreen(
     val viewModel: BookDetailViewModel = koinViewModel(parameters = { parametersOf(bookId) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val lifecycleOwner = LocalLifecycleOwner.current
     val errorTagMessage = stringResource(Res.string.error_tag_operation_failed)
     val errorDeleteMessage = stringResource(Res.string.error_delete_book_failed)
-    LaunchedEffect(lifecycleOwner) {
-        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            viewModel.onIntent(BookDetailIntent.Reload)
-        }
-    }
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
             when (effect) {

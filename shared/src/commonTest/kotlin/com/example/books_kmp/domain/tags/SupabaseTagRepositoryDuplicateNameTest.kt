@@ -15,17 +15,13 @@ class SupabaseTagRepositoryDuplicateNameTest {
         createSupabaseClient("https://test.supabase.co", "test-key") {
             install(Postgrest)
         }
-    private val repo = SupabaseTagRepository(supabase)
 
-    private fun seedTags(vararg tags: Tag) {
-        repo.cache = tags.toList()
-    }
+    private fun repoWith(vararg tags: Tag) = SupabaseTagRepository(supabase, tags.toList())
 
     @Test
     fun `createTag returns DuplicateName when name matches existing tag case-insensitively`() =
         runTest {
-            seedTags(Tag(id = "1", name = "Fiction", isDefault = false))
-            val result = repo.createTag("fiction")
+            val result = repoWith(Tag(id = "1", name = "Fiction", isDefault = false)).createTag("fiction")
             assertIs<Result.Failure<TagError>>(result)
             assertEquals(TagError.DuplicateName, result.error)
         }
@@ -33,8 +29,7 @@ class SupabaseTagRepositoryDuplicateNameTest {
     @Test
     fun `createTag returns DuplicateName for name differing only by whitespace trimming`() =
         runTest {
-            seedTags(Tag(id = "1", name = "Read", isDefault = false))
-            val result = repo.createTag(" Read ")
+            val result = repoWith(Tag(id = "1", name = "Read", isDefault = false)).createTag(" Read ")
             assertIs<Result.Failure<TagError>>(result)
             assertEquals(TagError.DuplicateName, result.error)
         }
@@ -42,11 +37,10 @@ class SupabaseTagRepositoryDuplicateNameTest {
     @Test
     fun `renameTag returns DuplicateName when new name conflicts with a different tag`() =
         runTest {
-            seedTags(
+            val result = repoWith(
                 Tag(id = "1", name = "Fiction", isDefault = false),
                 Tag(id = "2", name = "Read", isDefault = false),
-            )
-            val result = repo.renameTag("1", "read")
+            ).renameTag("1", "read")
             assertIs<Result.Failure<TagError>>(result)
             assertEquals(TagError.DuplicateName, result.error)
         }
@@ -54,13 +48,12 @@ class SupabaseTagRepositoryDuplicateNameTest {
     @Test
     fun `getTags returns default tags before custom tags, each group sorted alphabetically`() =
         runTest {
-            seedTags(
+            val result = repoWith(
                 Tag(id = "1", name = "Zzz", isDefault = false),
                 Tag(id = "2", name = "Fiction", isDefault = true),
                 Tag(id = "3", name = "Aaa", isDefault = false),
                 Tag(id = "4", name = "History", isDefault = true),
-            )
-            val result = repo.getTags()
+            ).getTags()
             assertIs<Result.Success<List<Tag>>>(result)
             assertEquals(listOf("Fiction", "History", "Aaa", "Zzz"), result.data.map { it.name })
         }
