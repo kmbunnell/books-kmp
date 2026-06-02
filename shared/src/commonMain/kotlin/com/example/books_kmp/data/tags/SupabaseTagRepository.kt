@@ -19,7 +19,7 @@ class SupabaseTagRepository(
     private val supabase: SupabaseClient,
     initialCache: List<Tag>? = null,
 ) : TagRepository {
-    private val tagsCache = MutableStateFlow(initialCache)
+    private val tagsCache = MutableStateFlow(initialCache?.sortedWith(TAG_SORT_ORDER))
     override val tagsFlow: StateFlow<List<Tag>?> = tagsCache.asStateFlow()
 
     override suspend fun getTags(): Result<List<Tag>, TagError> {
