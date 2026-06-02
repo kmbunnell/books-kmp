@@ -9,12 +9,14 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -153,25 +155,23 @@ class TagManagementViewModelTest {
     @Test
     fun `SubmitForm in Create mode with unique name clears tagFormState and refreshes lists`() =
         runTest {
-            val countBefore = repo.getTagsCalled
             vm.onIntent(TagManagementIntent.OpenCreateForm)
             vm.onIntent(TagManagementIntent.UpdateFormName("Brand New Tag"))
             vm.onIntent(TagManagementIntent.SubmitForm)
             val state = vm.uiState.value
             assertNull(state.tagFormState)
-            assertTrue(repo.getTagsCalled > countBefore)
+            assertTrue(state.customTags.any { it.name == "Brand New Tag" })
         }
 
     @Test
     fun `SubmitForm in Edit mode with unique name clears tagFormState and refreshes lists`() =
         runTest {
-            val countBefore = repo.getTagsCalled
             vm.onIntent(TagManagementIntent.OpenEditForm(customTag1))
             vm.onIntent(TagManagementIntent.UpdateFormName("Renamed Tag"))
             vm.onIntent(TagManagementIntent.SubmitForm)
             val state = vm.uiState.value
             assertNull(state.tagFormState)
-            assertTrue(repo.getTagsCalled > countBefore)
+            assertTrue(state.customTags.any { it.id == customTag1.id && it.name == "Renamed Tag" })
         }
 
     @Test
@@ -216,12 +216,11 @@ class TagManagementViewModelTest {
     fun `ConfirmDeleteTag deletes tag, clears pendingDelete state, and refreshes lists`() =
         runTest {
             vm.onIntent(TagManagementIntent.RequestDeleteTag(customTag1))
-            val countBefore = repo.getTagsCalled
             vm.onIntent(TagManagementIntent.ConfirmDeleteTag)
             val state = vm.uiState.value
             assertNull(state.pendingDeleteTag)
             assertNull(state.pendingDeleteBookCount)
-            assertTrue(repo.getTagsCalled > countBefore)
+            assertFalse(state.customTags.any { it.id == customTag1.id })
             assertTrue(repo.deleteTagCalled >= 1)
         }
 
@@ -247,6 +246,8 @@ class TagManagementViewModelTest {
 
     private fun failingGetTagsRepo(): TagRepository =
         object : TagRepository {
+            override val tagsFlow = MutableStateFlow<List<Tag>?>(null)
+
             override suspend fun getTags() = Result.Failure<TagError>(TagError.NetworkError(RuntimeException("fail")))
 
             override suspend fun createTag(name: String) = Result.Success(Tag("", name, false))

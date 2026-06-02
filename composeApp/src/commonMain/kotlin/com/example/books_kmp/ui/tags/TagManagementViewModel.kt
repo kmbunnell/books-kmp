@@ -9,6 +9,7 @@ import com.example.books_kmp.domain.tags.TagRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -70,9 +71,22 @@ class TagManagementViewModel(
 
     init {
         viewModelScope.launch {
+            tagRepository.tagsFlow.filterNotNull().collect { tags ->
+                _uiState.update {
+                    it.copy(
+                        defaultTags = tags.filter { tag -> tag.isDefault },
+                        customTags = tags.filterNot { tag -> tag.isDefault },
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            loadTags()
-            _uiState.update { it.copy(isLoading = false) }
+            when (tagRepository.getTags()) {
+                is Result.Success -> _uiState.update { it.copy(isLoading = false) }
+                is Result.Failure ->
+                    _uiState.update { it.copy(isLoading = false, error = TagManagementError.NetworkError) }
+            }
         }
     }
 
@@ -122,21 +136,6 @@ class TagManagementViewModel(
         }
     }
 
-    private suspend fun loadTags() {
-        when (val result = tagRepository.getTags()) {
-            is Result.Success -> {
-                val tags = result.data
-                _uiState.update { state ->
-                    state.copy(
-                        defaultTags = tags.filter { it.isDefault },
-                        customTags = tags.filter { !it.isDefault },
-                    )
-                }
-            }
-            is Result.Failure -> _uiState.update { it.copy(error = TagManagementError.NetworkError) }
-        }
-    }
-
     private suspend fun handleSubmitForm() {
         if (_uiState.value.isLoading) return
         val form = _uiState.value.tagFormState ?: return
@@ -151,11 +150,7 @@ class TagManagementViewModel(
                 is TagFormMode.Edit -> tagRepository.renameTag(mode.tag.id, form.draftName.trim())
             }
         when (result) {
-            is Result.Success -> {
-                _uiState.update { it.copy(tagFormState = null) }
-                loadTags()
-                _uiState.update { it.copy(isLoading = false) }
-            }
+            is Result.Success -> _uiState.update { it.copy(tagFormState = null, isLoading = false) }
             is Result.Failure -> {
                 _uiState.update { it.copy(isLoading = false) }
                 when (result.error) {
@@ -189,11 +184,10 @@ class TagManagementViewModel(
         if (_uiState.value.isLoading) return
         _uiState.update { it.copy(isLoading = true) }
         when (val result = tagRepository.deleteTag(tag.id)) {
-            is Result.Success -> {
-                _uiState.update { it.copy(pendingDeleteTag = null, pendingDeleteBookCount = null) }
-                loadTags()
-                _uiState.update { it.copy(isLoading = false) }
-            }
+            is Result.Success ->
+                _uiState.update {
+                    it.copy(pendingDeleteTag = null, pendingDeleteBookCount = null, isLoading = false)
+                }
             is Result.Failure ->
                 _uiState.update { it.copy(isLoading = false, error = TagManagementError.NetworkError) }
         }

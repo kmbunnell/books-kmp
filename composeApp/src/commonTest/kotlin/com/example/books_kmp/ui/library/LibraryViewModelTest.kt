@@ -18,6 +18,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -113,7 +114,7 @@ class LibraryViewModelTest {
         }
 
     @Test
-    fun `loadLibrary book failure sets error and isLoading false, leaves lists empty`() =
+    fun `loadLibrary book failure sets error and isLoading false, leaves books empty`() =
         runTest {
             bookRepo = FakeBookRepository(getBooksShouldFail = true)
             val failVm = LibraryViewModel(bookRepo, repo, FakeAuthRepository())
@@ -121,7 +122,6 @@ class LibraryViewModelTest {
             assertTrue(state.error != null)
             assertFalse(state.isLoading)
             assertTrue(state.books.isEmpty())
-            assertTrue(state.tags.isEmpty())
         }
 
     @Test
@@ -543,6 +543,8 @@ class LibraryViewModelTest {
 
     private fun failingGetTagsRepo(): TagRepository =
         object : TagRepository {
+            override val tagsFlow = MutableStateFlow<List<Tag>?>(null)
+
             override suspend fun getTags() = Result.Failure<TagError>(TagError.NetworkError(RuntimeException("fail")))
 
             override suspend fun createTag(name: String) = Result.Success(Tag("", name, false))

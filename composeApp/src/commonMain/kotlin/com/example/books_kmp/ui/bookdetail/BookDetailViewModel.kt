@@ -13,6 +13,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -65,6 +66,11 @@ class BookDetailViewModel(
     val effects = _effects.receiveAsFlow()
 
     init {
+        viewModelScope.launch {
+            tagRepository.tagsFlow.filterNotNull().collect { tags ->
+                _uiState.update { it.copy(allTags = tags.sortedBy { tag -> tag.name }) }
+            }
+        }
         load()
     }
 
@@ -94,7 +100,7 @@ class BookDetailViewModel(
                 _uiState.update {
                     it.copy(
                         book = book,
-                        allTags = tags.sortedBy { it.name },
+                        allTags = tags.sortedBy { tag -> tag.name },
                         appliedTagIds = book.tags.toSet(),
                         isLoading = false,
                     )
