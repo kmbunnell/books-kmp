@@ -127,7 +127,9 @@ class LibraryViewModelTest {
     @Test
     fun `loadLibrary tag failure sets error and isLoading false, leaves lists empty`() =
         runTest {
-            val failVm = LibraryViewModel(bookRepo, failingGetTagsRepo(), FakeAuthRepository())
+            val freshBookRepo = FakeBookRepository()
+            freshBookRepo.seedBooks(book1, book2)
+            val failVm = LibraryViewModel(freshBookRepo, failingGetTagsRepo(), FakeAuthRepository())
             val state = failVm.uiState.value
             assertTrue(state.error != null)
             assertFalse(state.isLoading)
