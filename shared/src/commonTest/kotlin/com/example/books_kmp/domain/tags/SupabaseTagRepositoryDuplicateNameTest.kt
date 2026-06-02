@@ -37,10 +37,11 @@ class SupabaseTagRepositoryDuplicateNameTest {
     @Test
     fun `renameTag returns DuplicateName when new name conflicts with a different tag`() =
         runTest {
-            val result = repoWith(
-                Tag(id = "1", name = "Fiction", isDefault = false),
-                Tag(id = "2", name = "Read", isDefault = false),
-            ).renameTag("1", "read")
+            val result =
+                repoWith(
+                    Tag(id = "1", name = "Fiction", isDefault = false),
+                    Tag(id = "2", name = "Read", isDefault = false),
+                ).renameTag("1", "read")
             assertIs<Result.Failure<TagError>>(result)
             assertEquals(TagError.DuplicateName, result.error)
         }
@@ -48,12 +49,13 @@ class SupabaseTagRepositoryDuplicateNameTest {
     @Test
     fun `getTags returns default tags before custom tags, each group sorted alphabetically`() =
         runTest {
-            val result = repoWith(
-                Tag(id = "1", name = "Zzz", isDefault = false),
-                Tag(id = "2", name = "Fiction", isDefault = true),
-                Tag(id = "3", name = "Aaa", isDefault = false),
-                Tag(id = "4", name = "History", isDefault = true),
-            ).getTags()
+            val result =
+                repoWith(
+                    Tag(id = "1", name = "Zzz", isDefault = false),
+                    Tag(id = "2", name = "Fiction", isDefault = true),
+                    Tag(id = "3", name = "Aaa", isDefault = false),
+                    Tag(id = "4", name = "History", isDefault = true),
+                ).getTags()
             assertIs<Result.Success<List<Tag>>>(result)
             assertEquals(listOf("Fiction", "History", "Aaa", "Zzz"), result.data.map { it.name })
         }
