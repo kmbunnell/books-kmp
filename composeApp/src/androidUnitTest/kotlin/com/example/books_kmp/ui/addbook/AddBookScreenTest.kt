@@ -700,6 +700,127 @@ class AddBookScreenTest {
         composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.InlineErrorText).assertDoesNotExist()
     }
 
+    // Wide-screen layout tests
+
+    @Test
+    fun `wide screen empty state shows placeholder`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+                onNavigateToBookDetail = {},
+                isWideScreen = true,
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.WideScreenPlaceholder).assertIsDisplayed()
+    }
+
+    @Test
+    fun `wide screen loading state does not show placeholder`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(isLoading = true),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+                onNavigateToBookDetail = {},
+                isWideScreen = true,
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.WideScreenPlaceholder).assertDoesNotExist()
+    }
+
+    @Test
+    fun `wide screen title results are displayed in right pane`() {
+        val book = BookLookupData(null, "The Iliad", listOf("Homer"), null)
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(lookupMode = LookupMode.Title, titleResults = listOf(book)),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+                onNavigateToBookDetail = {},
+                isWideScreen = true,
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.titleResultItem(0)).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.WideScreenPlaceholder).assertDoesNotExist()
+    }
+
+    @Test
+    fun `wide screen foundBook hides title results and shows book card`() {
+        val results =
+            listOf(
+                BookLookupData(null, "The Iliad", listOf("Homer"), null),
+                BookLookupData(null, "The Odyssey", listOf("Homer"), null),
+            )
+        val selected = results[0]
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState =
+                    AddBookUiState(
+                        lookupMode = LookupMode.Title,
+                        titleResults = results,
+                        foundBook = selected,
+                    ),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+                onNavigateToBookDetail = {},
+                isWideScreen = true,
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.BookPreviewTitle).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.titleResultItem(0)).assertDoesNotExist()
+    }
+
+    @Test
+    fun `wide screen error state hides placeholder and shows error banner in right pane`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(error = AddBookScreenError.NetworkError),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+                onNavigateToBookDetail = {},
+                isWideScreen = true,
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.WideScreenPlaceholder).assertDoesNotExist()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
+    }
+
+    @Test
+    fun `wide screen search panel is always visible alongside results`() {
+        val book = BookLookupData(null, "The Iliad", listOf("Homer"), null)
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(lookupMode = LookupMode.Title, titleResults = listOf(book)),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+                onNavigateToBookDetail = {},
+                isWideScreen = true,
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.LookupModeToggle).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.titleResultItem(0)).assertIsDisplayed()
+    }
+
     @Test
     fun `isbn field is marked as error when isbnFormatError is true`() {
         composeTestRule.setContent {

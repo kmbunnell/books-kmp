@@ -77,6 +77,7 @@ object TestTags {
         const val IsbnModeButton = "add_book_isbn_mode_button"
         const val TitleModeButton = "add_book_title_mode_button"
         const val TitleField = "add_book_title_field"
+        const val WideScreenPlaceholder = "add_book_wide_screen_placeholder"
 
         fun titleResultItem(index: Int) = "add_book_title_result_$index"
     }

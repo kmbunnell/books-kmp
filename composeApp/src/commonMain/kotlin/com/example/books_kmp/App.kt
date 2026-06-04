@@ -126,6 +126,11 @@ fun App() {
                 }
             }
             composable<Route.AddBook> {
+                val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+                val isExpanded =
+                    windowSizeClass.isWidthAtLeastBreakpoint(
+                        WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND,
+                    )
                 AddBookScreen(
                     onNavigateUp = { navController.popBackStack() },
                     onNavigateToManualEntry = { navController.navigate(Route.ManualEntry) },
@@ -139,6 +144,7 @@ fun App() {
                             popUpTo<Route.AddBook> { inclusive = true }
                         }
                     },
+                    isWideScreen = isExpanded,
                 )
             }
             composable<Route.ManualEntry> {
