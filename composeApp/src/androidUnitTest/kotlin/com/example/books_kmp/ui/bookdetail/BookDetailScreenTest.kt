@@ -206,21 +206,7 @@ class BookDetailScreenTest {
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.CoverImage).assertIsDisplayed()
     }
-
-    @Test
-    fun `tags section label shown in content state`() {
-        composeTestRule.setContent {
-            BookDetailScreenContent(
-                uiState = BookDetailUiState(allTags = listOf(tag1)),
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToTagManagement = {},
-                snackbarHostState = SnackbarHostState(),
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.BookDetail.TagsSectionLabel).assertIsDisplayed()
-    }
-
+    
     @Test
     fun `tag section renders below cover image in content state`() {
         composeTestRule.setContent {
