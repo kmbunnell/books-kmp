@@ -4,7 +4,7 @@ A cross-platform mobile app for book collectors to build and manage a personal d
 
 Built with **Kotlin Multiplatform** and **Compose Multiplatform**, targeting both Android and iOS from a single shared codebase.
 
-> **Status:** Work in progress — core flows are functional end-to-end on Android. Shipped: email/password auth, library grid (tag filter, sort, search), barcode scanning (ML Kit / AVFoundation), Add Book by ISBN or title, Book Detail with tag toggling, Tag Management, and Manual Entry.
+> **Status:** Work in progress — core flows are functional end-to-end on Android and iOS. Shipped: email/password auth, library grid (tag filter, sort, search), barcode scanning (ML Kit / AVFoundation), Add Book by ISBN or title, Book Detail with tag toggling, Tag Management, Manual Entry, and tablet two-pane layout.
 
 ## Screenshots
 
@@ -48,7 +48,7 @@ Shelved follows a **clean architecture** pattern with clear separation between l
 - **Domain** (`shared/commonMain`) — Use cases, domain models, and repository interfaces. Pure Kotlin, no platform dependencies
 - **Data** (`shared/commonMain` + platform source sets) — Repository implementations, Supabase data sources, Google Books API client
 
-Platform-specific code (barcode scanning, native sign-in) uses KMP's `expect`/`actual` pattern to keep the shared API clean while leveraging native capabilities on each platform.
+Platform-specific code (barcode scanning) uses KMP's `expect`/`actual` pattern to keep the shared API clean while leveraging native capabilities on each platform.
 
 ## Development Workflow
 
