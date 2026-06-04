@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -182,18 +183,22 @@ internal fun BookDetailScreenContent(
                 }
                 else -> {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                        Card(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
                         ) {
-                            BookCoverImage(
-                                url = uiState.book?.coverImageUrl,
-                                contentDescription = stringResource(Res.string.cd_book_cover),
-                                modifier =
-                                    Modifier
-                                        .height(if (isAdaptiveDetail) 300.dp else 200.dp)
-                                        .testTag(TestTags.BookDetail.CoverImage),
-                            )
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            ) {
+                                BookCoverImage(
+                                    url = uiState.book?.coverImageUrl,
+                                    contentDescription = stringResource(Res.string.cd_book_cover),
+                                    modifier =
+                                        Modifier
+                                            .height(if (isAdaptiveDetail) 300.dp else 200.dp)
+                                            .testTag(TestTags.BookDetail.CoverImage),
+                                )
+                            }
                         }
                         Column(
                             modifier =
