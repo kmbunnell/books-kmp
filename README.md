@@ -8,14 +8,23 @@ Built with **Kotlin Multiplatform** and **Compose Multiplatform**, targeting bot
 
 ## Screenshots
 
-| Android                                 | iOS |
-|-----------------------------------------|-----|
-| ![Library](assets/andr_library.webp)    | ![Library](assets/ios_library.webp) |
-| ![Tag Filter](assets/andr_sort.webp)    | ![Tag filter](assets/ios_sort_Tag.webp) |
-| ![Tags](assets/andr_tag.webp)           | ![Tags](assets/ios_tag.webp) |
-| ![ISBN search](assets/andr_isbn_2.webp) | ![Title search](assets/ios_title_search.webp) |
-|                                         | ![Custom tag](assets/ios_custom_tag.webp) |
-| ![Add Book](assets/andr_addbook2.webp)  | ![Add Book](assets/ios_addbook2.webp) |
+### iOS (Light Mode)
+
+| Library | Tags | Manage Tags | Add Book |
+|---------|------|-------------|----------|
+| ![Library](assets/ios_lib.webp) | ![Tags](assets/ios_tag.webp) | ![Manage Tags](assets/ios_manage.webp) | ![Add Book](assets/ios_add_book.webp) |
+
+### Android (Dark Mode)
+
+| Library | Tags | Title Search | Add Book |
+|---------|------|--------------|----------|
+| ![Library](assets/andr_dark_lib.webp) | ![Tags](assets/andr_dark_tag.webp) | ![Title Search](assets/andr_dark_title_search.webp) | ![Add Book](assets/andr_dark_add.webp) |
+
+### Tablet (Two-Pane Layout)
+
+| Android Library | Android Add Book | iOS Library | iOS Add Book |
+|-----------------|------------------|-------------|--------------|
+| ![Tablet Library](assets/andr_tab_lib.webp) | ![Tablet Add Book](assets/Andr_tab_add.webp) | ![Tablet Library](assets/ios_tab_lib.webp) | ![Tablet Add Book](assets/ios_tab_add.webp) |
 
 ## Tech Stack
 
