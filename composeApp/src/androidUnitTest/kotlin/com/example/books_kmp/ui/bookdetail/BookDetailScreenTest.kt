@@ -206,7 +206,7 @@ class BookDetailScreenTest {
         }
         composeTestRule.onNodeWithTag(TestTags.BookDetail.CoverImage).assertIsDisplayed()
     }
-    
+
     @Test
     fun `tag section renders below cover image in content state`() {
         composeTestRule.setContent {
