@@ -340,7 +340,11 @@ private fun LookupSearchPanel(
                 label = { Text(if (mode == LookupMode.ISBN) isbnLabel else titleLabel) },
                 modifier =
                     Modifier.testTag(
-                        if (mode == LookupMode.ISBN) TestTags.AddBook.IsbnModeButton else TestTags.AddBook.TitleModeButton,
+                        if (mode == LookupMode.ISBN) {
+                            TestTags.AddBook.IsbnModeButton
+                        } else {
+                            TestTags.AddBook.TitleModeButton
+                        },
                     ),
             )
         }
