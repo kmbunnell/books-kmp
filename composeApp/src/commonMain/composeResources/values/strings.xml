@@ -112,5 +112,6 @@
     <string name="label_isbn_search">ISBN</string>
     <string name="label_title_search">Title</string>
     <string name="title_results_enter_manually">Add book another way:</string>
+    <string name="adaptive_detail_placeholder">Select a book to view details</string>
     <string name="error_unauthenticated">Your session has expired. Please sign in again.</string>
 </resources>

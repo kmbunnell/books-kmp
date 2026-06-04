@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -49,7 +50,6 @@ import bookskmp.composeapp.generated.resources.error_book_detail_load_failed
 import bookskmp.composeapp.generated.resources.error_delete_book_failed
 import bookskmp.composeapp.generated.resources.error_tag_operation_failed
 import bookskmp.composeapp.generated.resources.message_delete_book
-import bookskmp.composeapp.generated.resources.section_tags
 import bookskmp.composeapp.generated.resources.title_book_detail
 import bookskmp.composeapp.generated.resources.title_delete_book
 import com.example.books_kmp.ui.BookCoverImage
@@ -65,8 +65,9 @@ fun BookDetailScreen(
     bookId: String,
     onNavigateUp: () -> Unit,
     onNavigateToTagManagement: () -> Unit,
+    isAdaptiveDetail: Boolean = false,
 ) {
-    val viewModel: BookDetailViewModel = koinViewModel(parameters = { parametersOf(bookId) })
+    val viewModel: BookDetailViewModel = koinViewModel(key = bookId, parameters = { parametersOf(bookId) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val errorTagMessage = stringResource(Res.string.error_tag_operation_failed)
@@ -92,6 +93,7 @@ fun BookDetailScreen(
         onNavigateUp = onNavigateUp,
         onNavigateToTagManagement = onNavigateToTagManagement,
         snackbarHostState = snackbarHostState,
+        isAdaptiveDetail = isAdaptiveDetail,
     )
 }
 
@@ -103,6 +105,7 @@ internal fun BookDetailScreenContent(
     onNavigateUp: () -> Unit,
     onNavigateToTagManagement: () -> Unit,
     snackbarHostState: SnackbarHostState,
+    isAdaptiveDetail: Boolean = false,
 ) {
     val loadFailedMessage = stringResource(Res.string.error_book_detail_load_failed)
     val retryLabel = stringResource(Res.string.button_retry)
@@ -188,7 +191,7 @@ internal fun BookDetailScreenContent(
                                 contentDescription = stringResource(Res.string.cd_book_cover),
                                 modifier =
                                     Modifier
-                                        .height(200.dp)
+                                        .height(if (isAdaptiveDetail) 300.dp else 200.dp)
                                         .testTag(TestTags.BookDetail.CoverImage),
                             )
                         }
@@ -198,30 +201,32 @@ internal fun BookDetailScreenContent(
                                     .verticalScroll(rememberScrollState())
                                     .padding(horizontal = 16.dp),
                         ) {
-                            Text(
-                                text = stringResource(Res.string.section_tags),
-                                style = MaterialTheme.typography.titleSmall,
-                                modifier =
-                                    Modifier
-                                        .padding(top = 16.dp, bottom = 8.dp)
-                                        .testTag(TestTags.BookDetail.TagsSectionLabel),
-                            )
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                uiState.allTags.forEach { tag ->
-                                    FilterChip(
-                                        selected = tag.id in uiState.appliedTagIds,
-                                        enabled = tag.id !in uiState.inFlightTagIds,
-                                        onClick = { onIntent(BookDetailIntent.ToggleTag(tag.id)) },
-                                        label = { Text(tag.name) },
-                                        modifier = Modifier.testTag(TestTags.BookDetail.tagChip(tag.id)),
-                                    )
-                                }
-                            }
-                            TextButton(
-                                onClick = onNavigateToTagManagement,
-                                modifier = Modifier.testTag(TestTags.BookDetail.ManageTagsButton),
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center,
                             ) {
-                                Text(stringResource(Res.string.button_manage_tags))
+                                Column(modifier = Modifier.wrapContentWidth()) {
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        maxItemsInEachRow = 4,
+                                    ) {
+                                        uiState.allTags.forEach { tag ->
+                                            FilterChip(
+                                                selected = tag.id in uiState.appliedTagIds,
+                                                enabled = tag.id !in uiState.inFlightTagIds,
+                                                onClick = { onIntent(BookDetailIntent.ToggleTag(tag.id)) },
+                                                label = { Text(tag.name) },
+                                                modifier = Modifier.testTag(TestTags.BookDetail.tagChip(tag.id)),
+                                            )
+                                        }
+                                    }
+                                    TextButton(
+                                        onClick = onNavigateToTagManagement,
+                                        modifier = Modifier.testTag(TestTags.BookDetail.ManageTagsButton),
+                                    ) {
+                                        Text(stringResource(Res.string.button_manage_tags))
+                                    }
+                                }
                             }
                         }
                     }
