@@ -2,6 +2,8 @@ package com.example.books_kmp.di
 
 import com.example.books_kmp.auth.SupabaseAuthRepository
 import com.example.books_kmp.config.SupabaseConfig
+import com.example.books_kmp.data.entitlement.EntitlementStore
+import com.example.books_kmp.data.entitlement.SupabaseEntitlementRepository
 import com.example.books_kmp.data.library.SupabaseBookRepository
 import com.example.books_kmp.data.profile.SupabaseProfileRepository
 import com.example.books_kmp.data.remote.GoogleBooksApiClient
@@ -9,6 +11,8 @@ import com.example.books_kmp.data.tags.SupabaseTagRepository
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.SignInUseCase
 import com.example.books_kmp.domain.auth.SignUpUseCase
+import com.example.books_kmp.domain.entitlement.EntitlementRepository
+import com.example.books_kmp.domain.entitlement.EntitlementState
 import com.example.books_kmp.domain.library.AddBookUseCase
 import com.example.books_kmp.domain.library.BookLookupService
 import com.example.books_kmp.domain.library.BookRepository
@@ -48,10 +52,13 @@ fun appModule(config: SupabaseConfig): Module =
                 install(Postgrest)
             }
         }
+        single { AppScope() }
         single<AuthRepository> { SupabaseAuthRepository(get()) }
         single<BookRepository> { SupabaseBookRepository(get()) }
         single<TagRepository> { SupabaseTagRepository(get()) }
         single<ProfileRepository> { SupabaseProfileRepository(get()) }
+        single<EntitlementRepository> { SupabaseEntitlementRepository(get()) }
+        single<EntitlementState> { EntitlementStore(get(), get(), get<AppScope>().coroutineScope) }
         single { HttpClient() }
         single<BookLookupService> {
             val supabaseClient = get<SupabaseClient>()
