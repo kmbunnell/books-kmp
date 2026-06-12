@@ -3,6 +3,7 @@ package com.example.books_kmp.di
 import com.example.books_kmp.auth.SupabaseAuthRepository
 import com.example.books_kmp.config.SupabaseConfig
 import com.example.books_kmp.data.library.SupabaseBookRepository
+import com.example.books_kmp.data.profile.SupabaseProfileRepository
 import com.example.books_kmp.data.remote.GoogleBooksApiClient
 import com.example.books_kmp.data.tags.SupabaseTagRepository
 import com.example.books_kmp.domain.auth.AuthRepository
@@ -14,6 +15,7 @@ import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.library.LookupByTitleUseCase
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
+import com.example.books_kmp.domain.profile.ProfileRepository
 import com.example.books_kmp.domain.tags.DefaultToggleBookTagUseCase
 import com.example.books_kmp.domain.tags.TagRepository
 import com.example.books_kmp.domain.tags.ToggleBookTagUseCase
@@ -49,6 +51,7 @@ fun appModule(config: SupabaseConfig): Module =
         single<AuthRepository> { SupabaseAuthRepository(get()) }
         single<BookRepository> { SupabaseBookRepository(get()) }
         single<TagRepository> { SupabaseTagRepository(get()) }
+        single<ProfileRepository> { SupabaseProfileRepository(get()) }
         single { HttpClient() }
         single<BookLookupService> {
             val supabaseClient = get<SupabaseClient>()

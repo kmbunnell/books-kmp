@@ -2,6 +2,7 @@ package com.example.books_kmp.di
 
 import com.example.books_kmp.config.SupabaseConfig
 import com.example.books_kmp.data.library.SupabaseBookRepository
+import com.example.books_kmp.data.profile.SupabaseProfileRepository
 import com.example.books_kmp.data.remote.GoogleBooksApiClient
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.SignInUseCase
@@ -11,6 +12,7 @@ import com.example.books_kmp.domain.library.BookLookupService
 import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
+import com.example.books_kmp.domain.profile.ProfileRepository
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.minimalSettings
 import io.github.jan.supabase.createSupabaseClient
@@ -68,6 +70,13 @@ class AppModuleTest {
     }
 
     @Test
+    fun `appModule wires ProfileRepository to SupabaseProfileRepository`() {
+        val repo = koin.get<ProfileRepository>()
+        assertNotNull(repo)
+        assertTrue(repo is SupabaseProfileRepository)
+    }
+
+    @Test
     fun `appModule wires BookLookupService to GoogleBooksApiClient`() {
         val service = koin.get<BookLookupService>()
         assertNotNull(service)
@@ -80,6 +89,7 @@ class AppModuleTest {
         assertNotNull(koin.get<BookRepository>())
         assertNotNull(koin.get<HttpClient>())
         assertNotNull(koin.get<BookLookupService>())
+        assertNotNull(koin.get<ProfileRepository>())
     }
 
     @Test
