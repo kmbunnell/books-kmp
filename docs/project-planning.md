@@ -46,27 +46,30 @@ Kotlin 2.3.0 · Compose Multiplatform 1.10.0 · Supabase-kt 3.1.4 · Ktor 3.1.3 
 
 Ordered by execution. Dependencies noted — do not resequence without checking them.
 
-| # | Epic | Category | Depends On |
-|---|------|----------|------------|
-| 1 | ~~Data layer migration (Open Library → Google Books + cache)~~ ✓ Done | Infrastructure | — |
-| 2 | Social auth (Apple + Google Sign-In) | Feature | — |
-| 3 | Staging environment & dev infrastructure | Infrastructure | — |
-| 4 | Error handling audit & consistency | UX | Epic 2 |
-| 5 | Add book flow redesign | UX | Epic 4 |
-| 6 | UI polish & dark mode | UX | — |
-| 7 | Monetization infrastructure (RevenueCat, IAP, paywall) | Monetization | Epic 3 |
-| 8 | Onboarding carousel | UX | Epic 7 |
-| 9 | Observability (Firebase Crashlytics) | Infrastructure | — |
-| 10 | App store readiness | Store | All prior epics |
-| 11 | Bookshelf AI — bulk photo import | Post-launch / Premium | Epic 1 |
+| # | Epic | Category | Status | Depends On |
+|---|------|----------|--------|------------|
+| 1 | Data layer migration (Open Library → Google Books + cache) | Infrastructure | ✓ Done | — |
+| 2 | Social auth (Apple + Google Sign-In) | Feature | Deferred | — |
+| 3 | Staging environment & dev infrastructure | Infrastructure | ✓ Done | — |
+| 4 | Error handling audit & consistency | UX | ✓ Done | Epic 2 |
+| 5 | Add book flow redesign | UX | ✓ Done | Epic 4 |
+| 6 | UI polish & dark mode | UX | ✓ Done | — |
+| 7 | Monetization infrastructure (RevenueCat, IAP, paywall) | Monetization | Deferred | Epic 3 |
+| 8 | Onboarding carousel | UX | — | Epic 7 |
+| 9 | Observability (Firebase Crashlytics) | Infrastructure | Deferred | — |
+| 10 | App store readiness | Store | Deferred | All prior epics |
+| 11 | Bookshelf AI — bulk photo import | Post-launch / Premium | Deferred | Epic 1, Epic 12 |
+| 12 | Premium tier gate & stub store UI | Monetization | Active | — |
+| 13 | AI book recommendations | Feature / Premium | Active | Epic 1, Epic 12 |
+
+**Note:** App store release is no longer a goal. Epics tied to shipping — social auth (2), full RevenueCat monetization (7), observability (9), app store readiness (10), and bookshelf AI (11) — are deferred. The premium tier is still being built as a portfolio exercise, but via a stub store (Epic 12) rather than real billing.
 
 ### Key dependency rationale
 
-- Epics 1 and 2 can run in parallel — no shared dependency
-- Epic 3 must complete before Epic 7 (RevenueCat sandbox requires staging) and before Epic 10
-- Epic 4 must complete before Epic 5 — new screens must conform to established error patterns from day one
-- Epic 7 must complete before Epic 8 — onboarding paywall slide must reflect real feature gates
-- Epic 6 has no hard dependencies but should complete before Epic 10 (store screenshots)
+- Epic 12 carves the non-billing parts of Epic 7 (the `is_premium` flag, entitlement gate, and free-tier caps) into a standalone epic that stubs the purchase flow. Real RevenueCat/IAP work stays deferred in Epic 7.
+- Epic 12 must complete before Epics 11 and 13 — both AI features gate behind the premium entitlement and the 25-book cap.
+- Epic 13 also depends on Epic 1 — it reuses the Google Books cache layer to resolve and validate recommendations.
+- Epic 4 completed before Epic 5 — new screens conform to established error patterns from day one.
 
 ---
 
