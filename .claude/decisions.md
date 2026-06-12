@@ -6,6 +6,9 @@ Non-obvious decisions — rejected alternatives, surprising constraints, gotchas
 
 ---
 
+## 2026-06-12 — EntitlementRepository defaults to false when init fetch fails (SHELVD-159)
+On network error or a missing profile row at startup, `isPremium` stays `false` (deny premium) — a conservative paywall stance. Known limitation: an existing premium user sees the free tier until `setPremiumStatus` succeeds or the app restarts with a successful fetch.
+
 ## 2026-05-28 — `supportingText` kept for auth form validation; not replaced with `InlineErrorText` (SHELVD-137)
 `OutlinedTextField`'s `supportingText` slot reserves space and prevents layout shifts; standalone `InlineErrorText` below the field would cause content to jump. `InlineErrorText` is for error messages outside Material's text field component.
 
