@@ -25,6 +25,7 @@ import org.jetbrains.compose.resources.stringResource
 fun AdaptiveLibraryLayout(
     onNavigateToAddBook: () -> Unit,
     onNavigateToTagManagement: () -> Unit,
+    onNavigateToPaywall: () -> Unit = {},
 ) {
     val navigator = rememberListDetailPaneScaffoldNavigator<String>()
     val scope = rememberCoroutineScope()
@@ -37,6 +38,7 @@ fun AdaptiveLibraryLayout(
                 LibraryScreen(
                     onNavigateToAddBook = onNavigateToAddBook,
                     onNavigateToTagManagement = onNavigateToTagManagement,
+                    onNavigateToPaywall = onNavigateToPaywall,
                     onNavigateToBookDetail = { bookId ->
                         scope.launch {
                             navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, bookId)

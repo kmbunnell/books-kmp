@@ -19,6 +19,7 @@ import com.example.books_kmp.ui.bookdetail.BookDetailScreen
 import com.example.books_kmp.ui.library.AdaptiveLibraryLayout
 import com.example.books_kmp.ui.library.LibraryScreen
 import com.example.books_kmp.ui.manualentry.ManualEntryScreen
+import com.example.books_kmp.ui.paywall.PaywallScreen
 import com.example.books_kmp.ui.tags.TagManagementScreen
 import com.example.books_kmp.ui.theme.AppTheme
 import org.koin.compose.viewmodel.koinViewModel
@@ -116,12 +117,14 @@ fun App() {
                     AdaptiveLibraryLayout(
                         onNavigateToAddBook = { navController.navigate(Route.AddBook) },
                         onNavigateToTagManagement = { navController.navigate(Route.TagManagement) },
+                        onNavigateToPaywall = { navController.navigate(Route.Paywall) },
                     )
                 } else {
                     LibraryScreen(
                         onNavigateToAddBook = { navController.navigate(Route.AddBook) },
                         onNavigateToTagManagement = { navController.navigate(Route.TagManagement) },
                         onNavigateToBookDetail = { bookId -> navController.navigate(Route.BookDetail(bookId)) },
+                        onNavigateToPaywall = { navController.navigate(Route.Paywall) },
                     )
                 }
             }
@@ -159,6 +162,11 @@ fun App() {
             }
             composable<Route.TagManagement> {
                 TagManagementScreen(
+                    onNavigateUp = { navController.popBackStack() },
+                )
+            }
+            composable<Route.Paywall> {
+                PaywallScreen(
                     onNavigateUp = { navController.popBackStack() },
                 )
             }

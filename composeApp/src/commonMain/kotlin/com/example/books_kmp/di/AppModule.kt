@@ -30,6 +30,7 @@ import com.example.books_kmp.ui.auth.SignUpViewModel
 import com.example.books_kmp.ui.bookdetail.BookDetailViewModel
 import com.example.books_kmp.ui.library.LibraryViewModel
 import com.example.books_kmp.ui.manualentry.ManualEntryViewModel
+import com.example.books_kmp.ui.paywall.PaywallViewModel
 import com.example.books_kmp.ui.tags.TagManagementViewModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
@@ -82,5 +83,6 @@ fun appModule(config: SupabaseConfig): Module =
         viewModel { ManualEntryViewModel(get()) }
         viewModel { AddBookViewModel(get(), get(), get()) }
         viewModel { TagManagementViewModel(get()) }
+        viewModel { PaywallViewModel(get()) }
         viewModel { params -> BookDetailViewModel(params.get(), get(), get(), get()) }
     }
