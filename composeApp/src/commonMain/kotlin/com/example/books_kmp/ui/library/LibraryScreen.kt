@@ -15,12 +15,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocalOffer
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -60,10 +59,9 @@ import bookskmp.composeapp.generated.resources.action_retry
 import bookskmp.composeapp.generated.resources.cd_add_book
 import bookskmp.composeapp.generated.resources.cd_book_cover_in_grid
 import bookskmp.composeapp.generated.resources.cd_close
+import bookskmp.composeapp.generated.resources.cd_account
 import bookskmp.composeapp.generated.resources.cd_filter_books
 import bookskmp.composeapp.generated.resources.cd_manage_tags
-import bookskmp.composeapp.generated.resources.cd_paywall
-import bookskmp.composeapp.generated.resources.cd_sign_out
 import bookskmp.composeapp.generated.resources.cd_sort_books
 import bookskmp.composeapp.generated.resources.error_library_load_failed
 import bookskmp.composeapp.generated.resources.error_sign_out_failed
@@ -133,6 +131,7 @@ fun LibraryScreenContent(
 ) {
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
+    var showProfileSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
@@ -194,15 +193,6 @@ fun LibraryScreenContent(
                         }
                     }
                     IconButton(
-                        onClick = onNavigateToPaywall,
-                        modifier = Modifier.testTag(TestTags.Library.PaywallButton),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Star,
-                            contentDescription = stringResource(Res.string.cd_paywall),
-                        )
-                    }
-                    IconButton(
                         onClick = onNavigateToTagManagement,
                         modifier = Modifier.testTag(TestTags.Library.ManageTagsButton),
                     ) {
@@ -212,12 +202,12 @@ fun LibraryScreenContent(
                         )
                     }
                     IconButton(
-                        onClick = { onIntent(LibraryIntent.SignOut) },
-                        modifier = Modifier.testTag(TestTags.Library.SignOutButton),
+                        onClick = { showProfileSheet = true },
+                        modifier = Modifier.testTag(TestTags.Library.ProfileButton),
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = stringResource(Res.string.cd_sign_out),
+                            imageVector = Icons.Filled.AccountCircle,
+                            contentDescription = stringResource(Res.string.cd_account),
                         )
                     }
                 },
@@ -317,6 +307,14 @@ fun LibraryScreenContent(
                 onTagSelected = { onIntent(LibraryIntent.ToggleFilter(it)) },
                 onClearAll = { onIntent(LibraryIntent.ClearFilters) },
                 onDismiss = { showFilterSheet = false },
+            )
+        }
+
+        if (showProfileSheet) {
+            ProfileBottomSheet(
+                onNavigateToPaywall = onNavigateToPaywall,
+                onSignOut = { onIntent(LibraryIntent.SignOut) },
+                onDismiss = { showProfileSheet = false },
             )
         }
     }
