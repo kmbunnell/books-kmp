@@ -1,6 +1,7 @@
 package com.example.books_kmp.ui.tags
 
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.entitlement.FakeEntitlementState
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.FakeTagRepository
 import com.example.books_kmp.domain.tags.TagError
@@ -27,6 +28,7 @@ class TagManagementViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var repo: FakeTagRepository
     private lateinit var vm: TagManagementViewModel
+    private val entitlementState = FakeEntitlementState()
 
     private val defaultTag = Tag(id = "d1", name = "Read", isDefault = true)
     private val customTag1 = Tag(id = "c1", name = "Favorites", isDefault = false)
@@ -37,7 +39,7 @@ class TagManagementViewModelTest {
         Dispatchers.setMain(testDispatcher)
         repo = FakeTagRepository()
         repo.seedTags(defaultTag, customTag1, customTag2)
-        vm = TagManagementViewModel(repo)
+        vm = TagManagementViewModel(repo, entitlementState)
     }
 
     @AfterTest
@@ -58,7 +60,7 @@ class TagManagementViewModelTest {
     fun `init on network error sets error in UiState`() =
         runTest {
             val errorRepo = failingGetTagsRepo()
-            val errorVm = TagManagementViewModel(errorRepo)
+            val errorVm = TagManagementViewModel(errorRepo, FakeEntitlementState())
             val state = errorVm.uiState.value
             assertIs<TagManagementError.NetworkError>(state.error)
         }
@@ -184,7 +186,7 @@ class TagManagementViewModelTest {
                     override suspend fun createTag(name: String) =
                         Result.Failure<TagError>(TagError.NetworkError(networkError))
                 }
-            val errorVm = TagManagementViewModel(errorRepo)
+            val errorVm = TagManagementViewModel(errorRepo, FakeEntitlementState())
             errorVm.onIntent(TagManagementIntent.OpenCreateForm)
             errorVm.onIntent(TagManagementIntent.UpdateFormName("Unique"))
             errorVm.onIntent(TagManagementIntent.SubmitForm)
@@ -238,10 +240,72 @@ class TagManagementViewModelTest {
     fun `DismissError clears error`() =
         runTest {
             val errorRepo = failingGetTagsRepo()
-            val errorVm = TagManagementViewModel(errorRepo)
+            val errorVm = TagManagementViewModel(errorRepo, FakeEntitlementState())
             assertNotNull(errorVm.uiState.value.error)
             errorVm.onIntent(TagManagementIntent.DismissError)
             assertNull(errorVm.uiState.value.error)
+        }
+
+    @Test
+    fun `OpenCreateForm at free-tier cap blocks form open and sets TagLimitReached`() =
+        runTest {
+            val capRepo = FakeTagRepository()
+            capRepo.seedTags(
+                defaultTag,
+                *(1..10).map { Tag(id = "cap$it", name = "Cap $it", isDefault = false) }.toTypedArray(),
+            )
+            val capVm = TagManagementViewModel(capRepo, FakeEntitlementState())
+            capVm.onIntent(TagManagementIntent.OpenCreateForm)
+            val state = capVm.uiState.value
+            assertIs<TagManagementError.TagLimitReached>(state.error)
+            assertNull(state.tagFormState)
+        }
+
+    @Test
+    fun `SubmitForm Create under free-tier cap succeeds`() =
+        runTest {
+            val capRepo = FakeTagRepository()
+            capRepo.seedTags(
+                *(1..9).map { Tag(id = "cap$it", name = "Cap $it", isDefault = false) }.toTypedArray(),
+            )
+            val capVm = TagManagementViewModel(capRepo, FakeEntitlementState())
+            capVm.onIntent(TagManagementIntent.OpenCreateForm)
+            capVm.onIntent(TagManagementIntent.UpdateFormName("Tenth"))
+            capVm.onIntent(TagManagementIntent.SubmitForm)
+            val state = capVm.uiState.value
+            assertNull(state.tagFormState)
+            assertNull(state.error)
+        }
+
+    @Test
+    fun `OpenCreateForm at cap for premium user opens form`() =
+        runTest {
+            val capRepo = FakeTagRepository()
+            capRepo.seedTags(
+                *(1..10).map { Tag(id = "cap$it", name = "Cap $it", isDefault = false) }.toTypedArray(),
+            )
+            val premiumEntitlement = FakeEntitlementState().also { it.setIsPremium(true) }
+            val capVm = TagManagementViewModel(capRepo, premiumEntitlement)
+            capVm.onIntent(TagManagementIntent.OpenCreateForm)
+            val state = capVm.uiState.value
+            assertNotNull(state.tagFormState)
+            assertNull(state.error)
+        }
+
+    @Test
+    fun `SubmitForm Create with 10 default tags and no custom tags is not capped`() =
+        runTest {
+            val capRepo = FakeTagRepository()
+            capRepo.seedTags(
+                *(1..10).map { Tag(id = "def$it", name = "Default $it", isDefault = true) }.toTypedArray(),
+            )
+            val capVm = TagManagementViewModel(capRepo, FakeEntitlementState())
+            capVm.onIntent(TagManagementIntent.OpenCreateForm)
+            capVm.onIntent(TagManagementIntent.UpdateFormName("First Custom"))
+            capVm.onIntent(TagManagementIntent.SubmitForm)
+            val state = capVm.uiState.value
+            assertNull(state.tagFormState)
+            assertNull(state.error)
         }
 
     private fun failingGetTagsRepo(): TagRepository =

@@ -86,6 +86,7 @@
     <string name="cd_expand_section">Expand section</string>
     <string name="cd_collapse_section">Collapse section</string>
     <string name="error_tag_operation_failed">Something went wrong. Please try again.</string>
+    <string name="error_tag_limit_reached">Upgrade to Premium to create more than 10 tags.</string>
     <string name="button_manage_tags">Manage Tags</string>
     <string name="error_book_detail_load_failed">Couldn't load book details. Please try again.</string>
     <string name="hint_search_books">Search books…</string>
