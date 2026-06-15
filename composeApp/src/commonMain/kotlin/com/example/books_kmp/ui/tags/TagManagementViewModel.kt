@@ -8,10 +8,12 @@ import com.example.books_kmp.domain.entitlement.EntitlementState
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.TagError
 import com.example.books_kmp.domain.tags.TagRepository
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -31,7 +33,6 @@ data class TagManagementUiState(
     val defaultTags: List<Tag> = emptyList(),
     val customTags: List<Tag> = emptyList(),
     val isLoading: Boolean = false,
-    val error: TagManagementError? = null,
     val tagFormState: TagFormState? = null,
     val pendingDeleteTag: Tag? = null,
     val pendingDeleteBookCount: Int? = null,
@@ -45,6 +46,10 @@ sealed interface TagManagementError {
     data object NetworkError : TagManagementError
 
     data object TagLimitReached : TagManagementError
+}
+
+sealed interface TagManagementEffect {
+    data class ShowError(val error: TagManagementError) : TagManagementEffect
 }
 
 sealed interface TagManagementIntent {
@@ -63,8 +68,6 @@ sealed interface TagManagementIntent {
     data object ConfirmDeleteTag : TagManagementIntent
 
     data object CancelDelete : TagManagementIntent
-
-    data object DismissError : TagManagementIntent
 }
 
 class TagManagementViewModel(
@@ -73,6 +76,9 @@ class TagManagementViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TagManagementUiState())
     val uiState: StateFlow<TagManagementUiState> = _uiState.asStateFlow()
+
+    private val _effects = Channel<TagManagementEffect>(Channel.BUFFERED)
+    val effects = _effects.receiveAsFlow()
 
     init {
         viewModelScope.launch {
@@ -89,8 +95,10 @@ class TagManagementViewModel(
             _uiState.update { it.copy(isLoading = true) }
             when (tagRepository.getTags()) {
                 is Result.Success -> _uiState.update { it.copy(isLoading = false) }
-                is Result.Failure ->
-                    _uiState.update { it.copy(isLoading = false, error = TagManagementError.NetworkError) }
+                is Result.Failure -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.send(TagManagementEffect.ShowError(TagManagementError.NetworkError))
+                }
             }
         }
     }
@@ -101,7 +109,7 @@ class TagManagementViewModel(
                 if (!entitlementState.isPremium.value &&
                     _uiState.value.customTags.size >= FREE_TIER_CUSTOM_TAG_LIMIT
                 ) {
-                    _uiState.update { it.copy(error = TagManagementError.TagLimitReached) }
+                    _effects.trySend(TagManagementEffect.ShowError(TagManagementError.TagLimitReached))
                 } else {
                     _uiState.update { it.copy(tagFormState = TagFormState(mode = TagFormMode.Create)) }
                 }
@@ -137,9 +145,6 @@ class TagManagementViewModel(
             TagManagementIntent.CancelDelete ->
                 _uiState.update { it.copy(pendingDeleteTag = null, pendingDeleteBookCount = null) }
 
-            TagManagementIntent.DismissError ->
-                _uiState.update { it.copy(error = null) }
-
             TagManagementIntent.SubmitForm -> viewModelScope.launch { handleSubmitForm() }
 
             is TagManagementIntent.RequestDeleteTag -> viewModelScope.launch { handleRequestDelete(intent.tag) }
@@ -172,7 +177,7 @@ class TagManagementViewModel(
                                 tagFormState = state.tagFormState?.copy(nameError = TagManagementError.DuplicateName)
                             )
                         }
-                    else -> _uiState.update { it.copy(error = TagManagementError.NetworkError) }
+                    else -> _effects.send(TagManagementEffect.ShowError(TagManagementError.NetworkError))
                 }
             }
         }
@@ -186,8 +191,10 @@ class TagManagementViewModel(
                 _uiState.update {
                     it.copy(isLoading = false, pendingDeleteTag = tag, pendingDeleteBookCount = result.data)
                 }
-            is Result.Failure ->
-                _uiState.update { it.copy(isLoading = false, error = TagManagementError.NetworkError) }
+            is Result.Failure -> {
+                _uiState.update { it.copy(isLoading = false) }
+                _effects.send(TagManagementEffect.ShowError(TagManagementError.NetworkError))
+            }
         }
     }
 
@@ -200,8 +207,10 @@ class TagManagementViewModel(
                 _uiState.update {
                     it.copy(pendingDeleteTag = null, pendingDeleteBookCount = null, isLoading = false)
                 }
-            is Result.Failure ->
-                _uiState.update { it.copy(isLoading = false, error = TagManagementError.NetworkError) }
+            is Result.Failure -> {
+                _uiState.update { it.copy(isLoading = false) }
+                _effects.send(TagManagementEffect.ShowError(TagManagementError.NetworkError))
+            }
         }
     }
 }
