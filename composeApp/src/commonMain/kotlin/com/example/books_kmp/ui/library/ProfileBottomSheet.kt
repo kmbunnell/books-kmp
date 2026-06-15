@@ -37,7 +37,10 @@ fun ProfileBottomSheet(
             leadingContent = { Icon(Icons.Filled.Star, contentDescription = null) },
             modifier =
                 Modifier
-                    .clickable { onDismiss(); onNavigateToPaywall() }
+                    .clickable {
+                        onDismiss()
+                        onNavigateToPaywall()
+                    }
                     .testTag(TestTags.Library.ProfileSheetManageSubscription),
         )
         ListItem(
@@ -45,7 +48,10 @@ fun ProfileBottomSheet(
             leadingContent = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null) },
             modifier =
                 Modifier
-                    .clickable { onSignOut(); onDismiss() }
+                    .clickable {
+                        onSignOut()
+                        onDismiss()
+                    }
                     .testTag(TestTags.Library.ProfileSheetSignOut),
         )
     }
