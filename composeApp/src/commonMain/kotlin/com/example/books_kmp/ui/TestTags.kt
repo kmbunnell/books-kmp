@@ -27,10 +27,12 @@ object TestTags {
 
     object Library {
         const val LoadingIndicator = "library_loading"
-        const val SignOutButton = "library_sign_out_button"
+        const val ProfileButton = "library_profile_button"
+        const val ProfileSheet = "library_profile_sheet"
+        const val ProfileSheetManageSubscription = "library_profile_sheet_manage_subscription"
+        const val ProfileSheetSignOut = "library_profile_sheet_sign_out"
         const val AddBookFab = "library_add_book_fab"
         const val ManageTagsButton = "library_manage_tags_button"
-        const val PaywallButton = "library_paywall_button"
         const val SearchBar = "library_search_bar"
         const val SortButton = "library_sort_button"
         const val SortMenuTitleAsc = "library_sort_title_asc"

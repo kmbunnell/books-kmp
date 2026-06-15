@@ -33,20 +33,30 @@ class LibraryScreenTest {
         Book(id = "b2", isbn = null, title = "Foundation", authors = listOf("Isaac Asimov"), coverImageUrl = null)
 
     @Test
-    fun `sign out button is displayed`() {
+    fun `profile button is displayed`() {
         composeTestRule.setContent {
             LibraryScreenContent(uiState = LibraryUiState(), onIntent = {})
         }
-        composeTestRule.onNodeWithTag(TestTags.Library.SignOutButton).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.Library.ProfileButton).assertIsDisplayed()
     }
 
     @Test
-    fun `clicking sign out button dispatches SignOut intent`() {
+    fun `tapping profile button opens profile sheet`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = LibraryUiState(), onIntent = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.ProfileButton).performClick()
+        composeTestRule.onNodeWithTag(TestTags.Library.ProfileSheet).assertIsDisplayed()
+    }
+
+    @Test
+    fun `clicking sign out in profile sheet dispatches SignOut intent`() {
         var capturedIntent: LibraryIntent? = null
         composeTestRule.setContent {
             LibraryScreenContent(uiState = LibraryUiState(), onIntent = { capturedIntent = it })
         }
-        composeTestRule.onNodeWithTag(TestTags.Library.SignOutButton).performClick()
+        composeTestRule.onNodeWithTag(TestTags.Library.ProfileButton).performClick()
+        composeTestRule.onNodeWithTag(TestTags.Library.ProfileSheetSignOut).performClick()
         assertEquals(LibraryIntent.SignOut, capturedIntent)
     }
 
