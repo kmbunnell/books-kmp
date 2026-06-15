@@ -20,6 +20,8 @@ interface BookRepository {
 
     suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError>
 
+    suspend fun getBookCount(): Result<Int, BookRepositoryError>
+
     suspend fun deleteBook(bookId: String): Result<Unit, BookRepositoryError>
 
     fun applyTagDelta(

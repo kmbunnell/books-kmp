@@ -70,6 +70,7 @@ import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.cd_scan_barcode
 import bookskmp.composeapp.generated.resources.error_book_not_found
 import bookskmp.composeapp.generated.resources.error_isbn_format
+import bookskmp.composeapp.generated.resources.error_library_limit_reached
 import bookskmp.composeapp.generated.resources.error_network_generic
 import bookskmp.composeapp.generated.resources.error_rate_limited
 import bookskmp.composeapp.generated.resources.error_scan_failed
@@ -523,6 +524,7 @@ private fun ErrorSection(
                 AddBookScreenError.Unauthenticated -> Res.string.error_unauthenticated
                 AddBookScreenError.NetworkError -> Res.string.error_network_generic
                 AddBookScreenError.RateLimited -> Res.string.error_rate_limited
+                AddBookScreenError.LibraryLimitReached -> Res.string.error_library_limit_reached
                 AddBookScreenError.ScanCameraPermissionDenied -> Res.string.camera_permission_permanently_denied
                 AddBookScreenError.ScanHardwareUnavailable -> Res.string.error_unavailable_hardware
                 AddBookScreenError.ScanUnknownError -> Res.string.error_scan_failed
@@ -568,6 +570,7 @@ private fun ErrorSection(
             ) {
                 Text(stringResource(Res.string.button_retry))
             }
+        AddBookScreenError.LibraryLimitReached,
         AddBookScreenError.ScanCameraPermissionDenied,
         AddBookScreenError.ScanHardwareUnavailable -> Unit
         AddBookScreenError.ScanUnknownError ->

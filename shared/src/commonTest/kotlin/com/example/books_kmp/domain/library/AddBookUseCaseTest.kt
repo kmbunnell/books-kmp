@@ -1,6 +1,7 @@
 package com.example.books_kmp.domain.library
 
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.entitlement.FakeEntitlementState
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.BookLookupData
 import kotlin.test.Test
@@ -11,7 +12,22 @@ import kotlinx.coroutines.test.runTest
 
 class AddBookUseCaseTest {
     private val repo = FakeBookRepository()
-    private val useCase = AddBookUseCase(repo)
+    private val entitlementState = FakeEntitlementState()
+    private val useCase = AddBookUseCase(repo, entitlementState)
+
+    private fun seedBooks(count: Int) {
+        repeat(count) { index ->
+            repo.seedBooks(
+                Book(
+                    id = "seed-$index",
+                    isbn = "isbn-$index",
+                    title = "Seed $index",
+                    authors = listOf("Author"),
+                    coverImageUrl = null,
+                ),
+            )
+        }
+    }
 
     private val lookupData =
         BookLookupData(
@@ -128,5 +144,40 @@ class AddBookUseCaseTest {
             )
             val result = useCase(lookupData)
             assertIs<Result.Success<*>>(result)
+        }
+
+    @Test
+    fun `free user at cap (25 books) — returns LibraryLimitReached`() =
+        runTest {
+            seedBooks(25)
+            val result = useCase(lookupData)
+            assertIs<Result.Failure<AddBookError>>(result)
+            assertEquals(AddBookError.LibraryLimitReached, result.error)
+        }
+
+    @Test
+    fun `free user under cap (24 books) — proceeds normally`() =
+        runTest {
+            seedBooks(24)
+            val result = useCase(lookupData)
+            assertIs<Result.Success<*>>(result)
+        }
+
+    @Test
+    fun `premium user at or over cap — proceeds normally`() =
+        runTest {
+            seedBooks(25)
+            entitlementState.setIsPremium(true)
+            val result = useCase(lookupData)
+            assertIs<Result.Success<*>>(result)
+        }
+
+    @Test
+    fun `getBookCount fails — returns NetworkError`() =
+        runTest {
+            repo.getBookCountShouldFail = true
+            val result = useCase(lookupData)
+            assertIs<Result.Failure<AddBookError>>(result)
+            assertEquals(AddBookError.NetworkError, result.error)
         }
 }

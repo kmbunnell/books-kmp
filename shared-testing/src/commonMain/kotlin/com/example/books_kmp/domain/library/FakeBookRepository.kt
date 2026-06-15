@@ -15,6 +15,7 @@ class FakeBookRepository(
     var isbnExistsShouldFail: Boolean = false,
     var getBooksShouldFail: Boolean = false,
     var getBookByIdShouldFail: Boolean = false,
+    var getBookCountShouldFail: Boolean = false,
 ) : BookRepository {
     private val books = mutableListOf<Book>()
     private val _booksFlow = MutableStateFlow<List<Book>?>(null)
@@ -106,6 +107,11 @@ class FakeBookRepository(
     override suspend fun findDuplicateTitle(normalisedTitle: String): Result<Book?, BookRepositoryError> {
         if (findDuplicateTitleShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
         return Result.Success(books.find { normalise(it.title).lowercase() == normalisedTitle })
+    }
+
+    override suspend fun getBookCount(): Result<Int, BookRepositoryError> {
+        if (getBookCountShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
+        return Result.Success(books.size)
     }
 
     override suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError> {

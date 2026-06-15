@@ -2,8 +2,10 @@ package com.example.books_kmp.ui.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.books_kmp.domain.FREE_TIER_BOOK_LIMIT
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.auth.AuthRepository
+import com.example.books_kmp.domain.entitlement.EntitlementState
 import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
@@ -45,16 +47,22 @@ sealed interface LibraryIntent {
     data object DismissError : LibraryIntent
 
     data object SignOut : LibraryIntent
+
+    data object NavigateToAddBook : LibraryIntent
 }
 
 sealed interface LibraryError {
     data object LoadFailed : LibraryError
 
     data object SignOutFailed : LibraryError
+
+    data object LibraryLimitReached : LibraryError
 }
 
 sealed interface LibraryEffect {
     data class ShowError(val error: LibraryError) : LibraryEffect
+
+    data object NavigateToAddBook : LibraryEffect
 }
 
 enum class SortOrder { TITLE_ASC, AUTHOR_ASC }
@@ -63,6 +71,7 @@ class LibraryViewModel(
     private val bookRepository: BookRepository,
     private val tagRepository: TagRepository,
     private val authRepository: AuthRepository,
+    private val entitlementState: EntitlementState,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
@@ -168,6 +177,15 @@ class LibraryViewModel(
                         _effects.send(LibraryEffect.ShowError(LibraryError.SignOutFailed))
                     }
                 }
+            LibraryIntent.NavigateToAddBook -> {
+                val effect =
+                    if (!entitlementState.isPremium.value && _uiState.value.books.size >= FREE_TIER_BOOK_LIMIT) {
+                        LibraryEffect.ShowError(LibraryError.LibraryLimitReached)
+                    } else {
+                        LibraryEffect.NavigateToAddBook
+                    }
+                viewModelScope.launch { _effects.send(effect) }
+            }
         }
     }
 

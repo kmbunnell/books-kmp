@@ -63,6 +63,7 @@ import bookskmp.composeapp.generated.resources.cd_close
 import bookskmp.composeapp.generated.resources.cd_filter_books
 import bookskmp.composeapp.generated.resources.cd_manage_tags
 import bookskmp.composeapp.generated.resources.cd_sort_books
+import bookskmp.composeapp.generated.resources.error_library_limit_reached
 import bookskmp.composeapp.generated.resources.error_library_load_failed
 import bookskmp.composeapp.generated.resources.error_sign_out_failed
 import bookskmp.composeapp.generated.resources.hint_search_books
@@ -93,6 +94,7 @@ fun LibraryScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val loadFailedMessage = stringResource(Res.string.error_library_load_failed)
     val signOutFailedMessage = stringResource(Res.string.error_sign_out_failed)
+    val limitReachedMessage = stringResource(Res.string.error_library_limit_reached)
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
             when (effect) {
@@ -101,16 +103,17 @@ fun LibraryScreen(
                         when (effect.error) {
                             LibraryError.LoadFailed -> loadFailedMessage
                             LibraryError.SignOutFailed -> signOutFailedMessage
+                            LibraryError.LibraryLimitReached -> limitReachedMessage
                         }
                     snackbarHostState.showSnackbar(message)
                 }
+                LibraryEffect.NavigateToAddBook -> onNavigateToAddBook()
             }
         }
     }
     LibraryScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
-        onNavigateToAddBook = onNavigateToAddBook,
         onNavigateToTagManagement = onNavigateToTagManagement,
         onNavigateToBookDetail = onNavigateToBookDetail,
         onNavigateToPaywall = onNavigateToPaywall,
@@ -123,7 +126,6 @@ fun LibraryScreen(
 fun LibraryScreenContent(
     uiState: LibraryUiState,
     onIntent: (LibraryIntent) -> Unit,
-    onNavigateToAddBook: () -> Unit = {},
     onNavigateToTagManagement: () -> Unit = {},
     onNavigateToBookDetail: (String) -> Unit = {},
     onNavigateToPaywall: () -> Unit = {},
@@ -215,7 +217,7 @@ fun LibraryScreenContent(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onNavigateToAddBook,
+                onClick = { onIntent(LibraryIntent.NavigateToAddBook) },
                 modifier = Modifier.testTag(TestTags.Library.AddBookFab),
             ) {
                 Icon(
@@ -246,7 +248,7 @@ fun LibraryScreenContent(
 
             uiState.books.isEmpty() -> {
                 EmptyLibraryContent(
-                    onAddFirstBook = onNavigateToAddBook,
+                    onAddFirstBook = { onIntent(LibraryIntent.NavigateToAddBook) },
                     modifier = Modifier.padding(innerPadding),
                 )
             }

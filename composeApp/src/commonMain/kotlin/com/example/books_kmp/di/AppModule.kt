@@ -73,11 +73,11 @@ fun appModule(config: SupabaseConfig): Module =
         factory { SignUpUseCase(get()) }
         factory { LookupBookUseCase(get(), get()) }
         factory { LookupByTitleUseCase(get()) }
-        factory { AddBookUseCase(get()) }
+        factory { AddBookUseCase(get(), get()) }
         factory { SaveManualBookUseCase(get()) }
         factory<ToggleBookTagUseCase> { DefaultToggleBookTagUseCase(get(), get()) }
         viewModel { AuthViewModel(get()) }
-        viewModel { LibraryViewModel(get(), get(), get()) }
+        viewModel { LibraryViewModel(get(), get(), get(), get()) }
         viewModel { SignInViewModel(get()) }
         viewModel { SignUpViewModel(get()) }
         viewModel { ManualEntryViewModel(get()) }

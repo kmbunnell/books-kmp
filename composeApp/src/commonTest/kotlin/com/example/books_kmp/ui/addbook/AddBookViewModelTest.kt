@@ -2,6 +2,7 @@ package com.example.books_kmp.ui.addbook
 
 import app.cash.turbine.test
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.entitlement.FakeEntitlementState
 import com.example.books_kmp.domain.library.AddBookUseCase
 import com.example.books_kmp.domain.library.BarcodeScanError
 import com.example.books_kmp.domain.library.FakeBookLookupService
@@ -51,7 +52,7 @@ class AddBookViewModelTest {
         fakeRepo = FakeBookRepository()
         fakeService = FakeBookLookupService()
         lookupUseCase = LookupBookUseCase(fakeRepo, fakeService)
-        addBookUseCase = AddBookUseCase(fakeRepo)
+        addBookUseCase = AddBookUseCase(fakeRepo, FakeEntitlementState())
         lookupByTitleUseCase = LookupByTitleUseCase(fakeService)
         viewModel = AddBookViewModel(lookupUseCase, addBookUseCase, lookupByTitleUseCase)
     }
