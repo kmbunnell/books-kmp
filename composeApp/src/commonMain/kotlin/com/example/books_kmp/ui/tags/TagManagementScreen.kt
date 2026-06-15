@@ -116,10 +116,30 @@ fun TagManagementScreen(
     viewModel: TagManagementViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val tagLimitMessage = stringResource(Res.string.error_tag_limit_reached)
+    val tagOperationFailedMessage = stringResource(Res.string.error_tag_operation_failed)
+
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is TagManagementEffect.ShowError -> {
+                    val message =
+                        when (effect.error) {
+                            TagManagementError.TagLimitReached -> tagLimitMessage
+                            else -> tagOperationFailedMessage
+                        }
+                    snackbarHostState.showSnackbar(message)
+                }
+            }
+        }
+    }
+
     TagManagementScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
         onNavigateUp = onNavigateUp,
+        snackbarHostState = snackbarHostState,
     )
 }
 
@@ -129,11 +149,8 @@ fun TagManagementScreenContent(
     uiState: TagManagementUiState,
     onIntent: (TagManagementIntent) -> Unit,
     onNavigateUp: () -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val tagLimitMessage = stringResource(Res.string.error_tag_limit_reached)
-    val tagOperationFailedMessage = stringResource(Res.string.error_tag_operation_failed)
-
     val nameErrorText =
         when (uiState.tagFormState?.nameError) {
             TagManagementError.EmptyName -> stringResource(Res.string.error_tag_name_empty)
@@ -142,18 +159,6 @@ fun TagManagementScreenContent(
             TagManagementError.TagLimitReached -> null
             null -> null
         }
-
-    LaunchedEffect(uiState.error) {
-        if (uiState.error != null) {
-            val message =
-                when (uiState.error) {
-                    TagManagementError.TagLimitReached -> tagLimitMessage
-                    else -> tagOperationFailedMessage
-                }
-            snackbarHostState.showSnackbar(message)
-            onIntent(TagManagementIntent.DismissError)
-        }
-    }
 
     Scaffold(
         topBar = {
