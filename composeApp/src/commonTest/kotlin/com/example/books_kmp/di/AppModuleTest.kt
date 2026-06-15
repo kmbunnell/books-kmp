@@ -1,11 +1,11 @@
 package com.example.books_kmp.di
 
 import com.example.books_kmp.config.SupabaseConfig
-import com.example.books_kmp.data.entitlement.EntitlementStore
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.SignInUseCase
 import com.example.books_kmp.domain.auth.SignUpUseCase
 import com.example.books_kmp.domain.entitlement.EntitlementRepository
+import com.example.books_kmp.domain.entitlement.EntitlementState
 import com.example.books_kmp.domain.library.AddBookUseCase
 import com.example.books_kmp.domain.library.BookLookupService
 import com.example.books_kmp.domain.library.BookRepository
@@ -69,7 +69,7 @@ class AppModuleTest {
         assertNotNull(koin.get<BookLookupService>())
         assertNotNull(koin.get<ProfileRepository>())
         assertNotNull(koin.get<EntitlementRepository>())
-        assertNotNull(koin.get<EntitlementStore>())
+        assertNotNull(koin.get<EntitlementState>())
     }
 
     @Test
