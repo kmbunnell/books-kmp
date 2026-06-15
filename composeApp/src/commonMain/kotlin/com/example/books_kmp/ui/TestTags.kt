@@ -30,6 +30,7 @@ object TestTags {
         const val SignOutButton = "library_sign_out_button"
         const val AddBookFab = "library_add_book_fab"
         const val ManageTagsButton = "library_manage_tags_button"
+        const val PaywallButton = "library_paywall_button"
         const val SearchBar = "library_search_bar"
         const val SortButton = "library_sort_button"
         const val SortMenuTitleAsc = "library_sort_title_asc"
@@ -135,5 +136,12 @@ object TestTags {
 
         const val FormNameField = "tag_form_name_field"
         const val FormSaveButton = "tag_form_save_button"
+    }
+
+    object Paywall {
+        const val TierLabel = "paywall_tier_label"
+        const val GoPremiumButton = "paywall_go_premium_button"
+        const val DowngradeButton = "paywall_downgrade_button"
+        const val LoadingIndicator = "paywall_loading"
     }
 }

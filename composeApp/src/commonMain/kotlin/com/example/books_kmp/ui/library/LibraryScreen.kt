@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocalOffer
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -61,6 +62,7 @@ import bookskmp.composeapp.generated.resources.cd_book_cover_in_grid
 import bookskmp.composeapp.generated.resources.cd_close
 import bookskmp.composeapp.generated.resources.cd_filter_books
 import bookskmp.composeapp.generated.resources.cd_manage_tags
+import bookskmp.composeapp.generated.resources.cd_paywall
 import bookskmp.composeapp.generated.resources.cd_sign_out
 import bookskmp.composeapp.generated.resources.cd_sort_books
 import bookskmp.composeapp.generated.resources.error_library_load_failed
@@ -86,6 +88,7 @@ fun LibraryScreen(
     onNavigateToAddBook: () -> Unit = {},
     onNavigateToTagManagement: () -> Unit = {},
     onNavigateToBookDetail: (String) -> Unit = {},
+    onNavigateToPaywall: () -> Unit = {},
 ) {
     val viewModel: LibraryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -112,6 +115,7 @@ fun LibraryScreen(
         onNavigateToAddBook = onNavigateToAddBook,
         onNavigateToTagManagement = onNavigateToTagManagement,
         onNavigateToBookDetail = onNavigateToBookDetail,
+        onNavigateToPaywall = onNavigateToPaywall,
         snackbarHostState = snackbarHostState,
     )
 }
@@ -124,6 +128,7 @@ fun LibraryScreenContent(
     onNavigateToAddBook: () -> Unit = {},
     onNavigateToTagManagement: () -> Unit = {},
     onNavigateToBookDetail: (String) -> Unit = {},
+    onNavigateToPaywall: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var sortMenuExpanded by remember { mutableStateOf(false) }
@@ -187,6 +192,15 @@ fun LibraryScreenContent(
                                 modifier = Modifier.testTag(TestTags.Library.SortMenuAuthorAsc),
                             )
                         }
+                    }
+                    IconButton(
+                        onClick = onNavigateToPaywall,
+                        modifier = Modifier.testTag(TestTags.Library.PaywallButton),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = stringResource(Res.string.cd_paywall),
+                        )
                     }
                     IconButton(
                         onClick = onNavigateToTagManagement,

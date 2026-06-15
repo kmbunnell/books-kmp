@@ -18,4 +18,6 @@ sealed interface Route {
     @Serializable data object TagManagement : Route
 
     @Serializable data class BookDetail(val bookId: String) : Route
+
+    @Serializable data object Paywall : Route
 }

@@ -115,4 +115,13 @@
     <string name="adaptive_detail_placeholder">Select a book to view details</string>
     <string name="adaptive_add_book_placeholder">Search by ISBN or title to find a book</string>
     <string name="error_unauthenticated">Your session has expired. Please sign in again.</string>
+    <string name="cd_paywall">Premium</string>
+    <string name="paywall_title">Premium</string>
+    <string name="paywall_tier_free">Current tier: Free</string>
+    <string name="paywall_tier_premium">Current tier: Premium</string>
+    <string name="paywall_button_go_premium">Go Premium</string>
+    <string name="paywall_button_downgrade">Downgrade</string>
+    <string name="paywall_confirmation_upgraded">Upgraded to Premium!</string>
+    <string name="paywall_confirmation_downgraded">Downgraded to Free</string>
+    <string name="paywall_error_update_failed">Couldn't update your subscription. Please try again.</string>
 </resources>
