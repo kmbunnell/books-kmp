@@ -82,7 +82,7 @@ fun appModule(config: SupabaseConfig): Module =
         viewModel { SignUpViewModel(get()) }
         viewModel { ManualEntryViewModel(get()) }
         viewModel { AddBookViewModel(get(), get(), get()) }
-        viewModel { TagManagementViewModel(get()) }
+        viewModel { TagManagementViewModel(get(), get()) }
         viewModel { PaywallViewModel(get()) }
         viewModel { params -> BookDetailViewModel(params.get(), get(), get(), get()) }
     }

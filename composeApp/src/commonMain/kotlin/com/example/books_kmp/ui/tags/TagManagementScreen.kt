@@ -54,6 +54,7 @@ import bookskmp.composeapp.generated.resources.cd_collapse_section
 import bookskmp.composeapp.generated.resources.cd_expand_section
 import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.cd_tag_options
+import bookskmp.composeapp.generated.resources.error_tag_limit_reached
 import bookskmp.composeapp.generated.resources.error_tag_name_duplicate
 import bookskmp.composeapp.generated.resources.error_tag_name_empty
 import bookskmp.composeapp.generated.resources.error_tag_operation_failed
@@ -130,19 +131,26 @@ fun TagManagementScreenContent(
     onNavigateUp: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val errorMessage = stringResource(Res.string.error_tag_operation_failed)
+    val tagLimitMessage = stringResource(Res.string.error_tag_limit_reached)
+    val tagOperationFailedMessage = stringResource(Res.string.error_tag_operation_failed)
 
     val nameErrorText =
         when (uiState.tagFormState?.nameError) {
             TagManagementError.EmptyName -> stringResource(Res.string.error_tag_name_empty)
             TagManagementError.DuplicateName -> stringResource(Res.string.error_tag_name_duplicate)
             TagManagementError.NetworkError -> null
+            TagManagementError.TagLimitReached -> null
             null -> null
         }
 
     LaunchedEffect(uiState.error) {
         if (uiState.error != null) {
-            snackbarHostState.showSnackbar(errorMessage)
+            val message =
+                when (uiState.error) {
+                    TagManagementError.TagLimitReached -> tagLimitMessage
+                    else -> tagOperationFailedMessage
+                }
+            snackbarHostState.showSnackbar(message)
             onIntent(TagManagementIntent.DismissError)
         }
     }

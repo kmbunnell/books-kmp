@@ -2,7 +2,9 @@ package com.example.books_kmp.ui.tags
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.books_kmp.domain.FREE_TIER_CUSTOM_TAG_LIMIT
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.entitlement.EntitlementState
 import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.TagError
 import com.example.books_kmp.domain.tags.TagRepository
@@ -41,6 +43,8 @@ sealed interface TagManagementError {
     data object DuplicateName : TagManagementError
 
     data object NetworkError : TagManagementError
+
+    data object TagLimitReached : TagManagementError
 }
 
 sealed interface TagManagementIntent {
@@ -65,6 +69,7 @@ sealed interface TagManagementIntent {
 
 class TagManagementViewModel(
     private val tagRepository: TagRepository,
+    private val entitlementState: EntitlementState,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TagManagementUiState())
     val uiState: StateFlow<TagManagementUiState> = _uiState.asStateFlow()
@@ -92,8 +97,15 @@ class TagManagementViewModel(
 
     fun onIntent(intent: TagManagementIntent) {
         when (intent) {
-            TagManagementIntent.OpenCreateForm ->
-                _uiState.update { it.copy(tagFormState = TagFormState(mode = TagFormMode.Create)) }
+            TagManagementIntent.OpenCreateForm -> {
+                if (!entitlementState.isPremium.value &&
+                    _uiState.value.customTags.size >= FREE_TIER_CUSTOM_TAG_LIMIT
+                ) {
+                    _uiState.update { it.copy(error = TagManagementError.TagLimitReached) }
+                } else {
+                    _uiState.update { it.copy(tagFormState = TagFormState(mode = TagFormMode.Create)) }
+                }
+            }
 
             is TagManagementIntent.OpenEditForm -> {
                 if (intent.tag.isDefault) return
