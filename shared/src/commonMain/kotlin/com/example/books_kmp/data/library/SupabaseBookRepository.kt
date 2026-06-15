@@ -116,6 +116,22 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
         }
     }
 
+    override suspend fun getBookCount(): Result<Int, BookRepositoryError> =
+        try {
+            val count =
+                supabase
+                    .from("books")
+                    .select {
+                        head = true
+                        count(Count.EXACT)
+                    }.countOrNull() ?: 0
+            Result.Success(count.toInt())
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.Failure(BookRepositoryError.NetworkError)
+        }
+
     override suspend fun deleteBook(bookId: String): Result<Unit, BookRepositoryError> =
         try {
             supabase.from("books").delete { filter { eq("id", bookId) } }

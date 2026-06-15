@@ -3,6 +3,7 @@ package com.example.books_kmp.ui.library
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.auth.AuthRepositoryError
 import com.example.books_kmp.domain.auth.FakeAuthRepository
+import com.example.books_kmp.domain.entitlement.FakeEntitlementState
 import com.example.books_kmp.domain.library.FakeBookRepository
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
@@ -32,6 +33,7 @@ class LibraryViewModelTest {
     private lateinit var bookRepo: FakeBookRepository
     private lateinit var repo: FakeTagRepository
     private lateinit var authRepo: FakeAuthRepository
+    private lateinit var entitlementState: FakeEntitlementState
     private lateinit var vm: LibraryViewModel
 
     private val tag1 = Tag(id = "t1", name = "Read", isDefault = true)
@@ -49,7 +51,8 @@ class LibraryViewModelTest {
         repo = FakeTagRepository()
         repo.seedTags(tag1, tag2)
         authRepo = FakeAuthRepository()
-        vm = LibraryViewModel(bookRepo, repo, authRepo)
+        entitlementState = FakeEntitlementState()
+        vm = LibraryViewModel(bookRepo, repo, authRepo, entitlementState)
     }
 
     @AfterTest
@@ -89,7 +92,8 @@ class LibraryViewModelTest {
             val concurrentTagRepo = FakeTagRepository()
             concurrentTagRepo.seedTags(tag1)
 
-            val concurrentVm = LibraryViewModel(concurrentBookRepo, concurrentTagRepo, FakeAuthRepository())
+            val concurrentVm =
+                LibraryViewModel(concurrentBookRepo, concurrentTagRepo, FakeAuthRepository(), FakeEntitlementState())
 
             // books fetch is gated — tags fetch should have completed before we release the gate
             assertEquals(1, concurrentTagRepo.getTagsCalled)
@@ -117,7 +121,7 @@ class LibraryViewModelTest {
     fun `loadLibrary book failure sets error and isLoading false, leaves books empty`() =
         runTest {
             bookRepo = FakeBookRepository(getBooksShouldFail = true)
-            val failVm = LibraryViewModel(bookRepo, repo, FakeAuthRepository())
+            val failVm = LibraryViewModel(bookRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             val state = failVm.uiState.value
             assertTrue(state.error != null)
             assertFalse(state.isLoading)
@@ -129,7 +133,8 @@ class LibraryViewModelTest {
         runTest {
             val freshBookRepo = FakeBookRepository()
             freshBookRepo.seedBooks(book1, book2)
-            val failVm = LibraryViewModel(freshBookRepo, failingGetTagsRepo(), FakeAuthRepository())
+            val failVm =
+                LibraryViewModel(freshBookRepo, failingGetTagsRepo(), FakeAuthRepository(), FakeEntitlementState())
             val state = failVm.uiState.value
             assertTrue(state.error != null)
             assertFalse(state.isLoading)
@@ -140,7 +145,7 @@ class LibraryViewModelTest {
     @Test
     fun `init network error sets error flag`() =
         runTest {
-            val errorVm = LibraryViewModel(bookRepo, failingGetTagsRepo(), FakeAuthRepository())
+            val errorVm = LibraryViewModel(bookRepo, failingGetTagsRepo(), FakeAuthRepository(), FakeEntitlementState())
             assertEquals(LibraryError.LoadFailed, errorVm.uiState.value.error)
             assertFalse(errorVm.uiState.value.isLoading)
         }
@@ -149,7 +154,7 @@ class LibraryViewModelTest {
     fun `Refresh after failure resets error to null and re-fetches both`() =
         runTest {
             bookRepo = FakeBookRepository(getBooksShouldFail = true)
-            val retryVm = LibraryViewModel(bookRepo, repo, FakeAuthRepository())
+            val retryVm = LibraryViewModel(bookRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             assertEquals(LibraryError.LoadFailed, retryVm.uiState.value.error)
 
             bookRepo.getBooksShouldFail = false
@@ -171,7 +176,7 @@ class LibraryViewModelTest {
             val gatedTagRepo = FakeTagRepository()
             gatedTagRepo.seedTags(tag1)
 
-            val gatedVm = LibraryViewModel(gatedBookRepo, gatedTagRepo, FakeAuthRepository())
+            val gatedVm = LibraryViewModel(gatedBookRepo, gatedTagRepo, FakeAuthRepository(), FakeEntitlementState())
             // Load is in-flight (gated). Send Refresh — should be ignored.
             gatedVm.onIntent(LibraryIntent.Refresh)
 
@@ -238,7 +243,7 @@ class LibraryViewModelTest {
             val taggedBook2 = book2.copy(tags = listOf("t2"))
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(taggedBook1, taggedBook2)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             assertEquals(listOf(taggedBook1, taggedBook2), localVm.uiState.value.filteredBooks)
         }
 
@@ -249,7 +254,7 @@ class LibraryViewModelTest {
             val taggedBook2 = book2.copy(tags = listOf("t2"))
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(taggedBook1, taggedBook2)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
             assertEquals(listOf(taggedBook1), localVm.uiState.value.filteredBooks)
         }
@@ -261,7 +266,7 @@ class LibraryViewModelTest {
             val taggedBook2 = book2.copy(tags = listOf("t2"))
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(taggedBook1, taggedBook2)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
             localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
             assertEquals(listOf(taggedBook1, taggedBook2), localVm.uiState.value.filteredBooks)
@@ -276,7 +281,7 @@ class LibraryViewModelTest {
             val onlyT1 = book2.copy(tags = listOf("t1"))
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(bothTags, onlyT1)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
             localVm.onIntent(LibraryIntent.ToggleFilter("t2"))
             assertEquals(listOf(bothTags), localVm.uiState.value.filteredBooks)
@@ -289,7 +294,7 @@ class LibraryViewModelTest {
             val taggedBook2 = book2.copy(tags = listOf("t2"))
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(taggedBook1, taggedBook2)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
             assertEquals(listOf(taggedBook1), localVm.uiState.value.filteredBooks)
         }
@@ -301,7 +306,7 @@ class LibraryViewModelTest {
             val taggedBook2 = book2.copy(tags = listOf("t2"))
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(taggedBook1, taggedBook2)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             assertEquals(listOf(taggedBook1, taggedBook2), localVm.uiState.value.filteredBooks)
         }
 
@@ -312,7 +317,7 @@ class LibraryViewModelTest {
             val onlyT1 = book2.copy(tags = listOf("t1"))
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(bothTags, onlyT1)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
             localVm.onIntent(LibraryIntent.ToggleFilter("t2"))
             assertEquals(listOf(bothTags), localVm.uiState.value.filteredBooks)
@@ -329,7 +334,7 @@ class LibraryViewModelTest {
             val other = book2.copy(title = "Other Book")
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(harryPotter, other)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ChangeSearchQuery("harry"))
             assertEquals(listOf(harryPotter), localVm.uiState.value.filteredBooks)
         }
@@ -341,7 +346,7 @@ class LibraryViewModelTest {
             val other = book2.copy(title = "Other")
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(bronte, other)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ChangeSearchQuery("Bronte"))
             assertEquals(listOf(bronte), localVm.uiState.value.filteredBooks)
         }
@@ -353,7 +358,7 @@ class LibraryViewModelTest {
             val other = book2.copy(title = "Other Book")
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(harryPotter, other)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ChangeSearchQuery("Har"))
             assertEquals(listOf(harryPotter), localVm.uiState.value.filteredBooks)
         }
@@ -363,7 +368,7 @@ class LibraryViewModelTest {
         runTest {
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(book1, book2)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ChangeSearchQuery(""))
             assertEquals(listOf(book1, book2), localVm.uiState.value.filteredBooks)
         }
@@ -386,7 +391,7 @@ class LibraryViewModelTest {
                 )
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(taggedHarry, taggedOther, untaggedHarry)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
             localVm.onIntent(LibraryIntent.ChangeSearchQuery("harry"))
             assertEquals(listOf(taggedHarry), localVm.uiState.value.filteredBooks)
@@ -401,7 +406,7 @@ class LibraryViewModelTest {
             val bookB = book2.copy(title = "Apple")
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(bookA, bookB)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ChangeSortOrder(SortOrder.TITLE_ASC))
             assertEquals(listOf(bookB, bookA), localVm.uiState.value.filteredBooks)
         }
@@ -413,7 +418,7 @@ class LibraryViewModelTest {
             val bookAdams = book2.copy(title = "Second", authors = listOf("John Adams"))
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(bookZimmerman, bookAdams)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ChangeSortOrder(SortOrder.AUTHOR_ASC))
             assertEquals(listOf(bookAdams, bookZimmerman), localVm.uiState.value.filteredBooks)
         }
@@ -427,7 +432,7 @@ class LibraryViewModelTest {
             val taggedBook2 = book2.copy(tags = listOf("t2"))
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(taggedBook1, taggedBook2)
-            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository())
+            val localVm = LibraryViewModel(localRepo, repo, FakeAuthRepository(), FakeEntitlementState())
             localVm.onIntent(LibraryIntent.ToggleFilter("t1"))
             localVm.onIntent(LibraryIntent.ChangeSearchQuery("Book One"))
             localVm.onIntent(LibraryIntent.ClearFilters)
@@ -540,6 +545,63 @@ class LibraryViewModelTest {
             advanceUntilIdle()
 
             assertTrue(emittedEffects.any { it is LibraryEffect.ShowError && it.error == LibraryError.SignOutFailed })
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `NavigateToAddBook — free user at cap — emits ShowError LibraryLimitReached`() =
+        runTest {
+            val capRepo = FakeBookRepository()
+            capRepo.seedBooks(*Array(25) { index -> book1.copy(id = "cap-$index", title = "Cap $index") })
+            val capVm = LibraryViewModel(capRepo, repo, FakeAuthRepository(), FakeEntitlementState())
+            advanceUntilIdle()
+            val emittedEffects = mutableListOf<LibraryEffect>()
+            val collectJob = launch { capVm.effects.collect { emittedEffects.add(it) } }
+
+            capVm.onIntent(LibraryIntent.NavigateToAddBook)
+            advanceUntilIdle()
+
+            assertTrue(
+                emittedEffects.any {
+                    it is LibraryEffect.ShowError && it.error == LibraryError.LibraryLimitReached
+                },
+            )
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `NavigateToAddBook — free user under cap — emits NavigateToAddBook effect`() =
+        runTest {
+            val underRepo = FakeBookRepository()
+            underRepo.seedBooks(*Array(24) { index -> book1.copy(id = "u-$index", title = "U $index") })
+            val underVm = LibraryViewModel(underRepo, repo, FakeAuthRepository(), FakeEntitlementState())
+            advanceUntilIdle()
+            val emittedEffects = mutableListOf<LibraryEffect>()
+            val collectJob = launch { underVm.effects.collect { emittedEffects.add(it) } }
+
+            underVm.onIntent(LibraryIntent.NavigateToAddBook)
+            advanceUntilIdle()
+
+            assertTrue(emittedEffects.any { it is LibraryEffect.NavigateToAddBook })
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `NavigateToAddBook — premium user at cap — emits NavigateToAddBook effect`() =
+        runTest {
+            val capRepo = FakeBookRepository()
+            capRepo.seedBooks(*Array(25) { index -> book1.copy(id = "p-$index", title = "P $index") })
+            val premiumState = FakeEntitlementState()
+            premiumState.setIsPremium(true)
+            val premiumVm = LibraryViewModel(capRepo, repo, FakeAuthRepository(), premiumState)
+            advanceUntilIdle()
+            val emittedEffects = mutableListOf<LibraryEffect>()
+            val collectJob = launch { premiumVm.effects.collect { emittedEffects.add(it) } }
+
+            premiumVm.onIntent(LibraryIntent.NavigateToAddBook)
+            advanceUntilIdle()
+
+            assertTrue(emittedEffects.any { it is LibraryEffect.NavigateToAddBook })
             collectJob.cancel()
         }
 

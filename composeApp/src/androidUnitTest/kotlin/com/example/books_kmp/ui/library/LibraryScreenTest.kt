@@ -69,17 +69,16 @@ class LibraryScreenTest {
     }
 
     @Test
-    fun `clicking Add Book FAB triggers onNavigateToAddBook callback`() {
-        var navigateCalled = false
+    fun `clicking Add Book FAB dispatches NavigateToAddBook intent`() {
+        var dispatchedIntent: LibraryIntent? = null
         composeTestRule.setContent {
             LibraryScreenContent(
                 uiState = LibraryUiState(),
-                onIntent = {},
-                onNavigateToAddBook = { navigateCalled = true },
+                onIntent = { dispatchedIntent = it },
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.AddBookFab).performClick()
-        assertTrue(navigateCalled)
+        assertEquals(LibraryIntent.NavigateToAddBook, dispatchedIntent)
     }
 
     @Test
@@ -342,17 +341,16 @@ class LibraryScreenTest {
     }
 
     @Test
-    fun `tapping Add First Book calls onNavigateToAddBook`() {
-        var navigateCalled = false
+    fun `tapping Add First Book dispatches NavigateToAddBook intent`() {
+        var dispatchedIntent: LibraryIntent? = null
         composeTestRule.setContent {
             LibraryScreenContent(
                 uiState = LibraryUiState(books = emptyList(), isLoading = false),
-                onIntent = {},
-                onNavigateToAddBook = { navigateCalled = true },
+                onIntent = { dispatchedIntent = it },
             )
         }
         composeTestRule.onNodeWithTag(TestTags.Library.AddFirstBookButton).performClick()
-        assertTrue(navigateCalled)
+        assertEquals(LibraryIntent.NavigateToAddBook, dispatchedIntent)
     }
 
     // --- Empty-filter state tests ---

@@ -44,6 +44,8 @@ sealed interface AddBookScreenError {
 
     data object NotFound : AddBookScreenError
 
+    data object LibraryLimitReached : AddBookScreenError
+
     data object ScanCameraPermissionDenied : AddBookScreenError
 
     data object ScanHardwareUnavailable : AddBookScreenError
@@ -180,6 +182,7 @@ class AddBookViewModel(
             is AddBookError.Duplicate -> AddBookScreenError.NetworkError
             AddBookError.NotFound -> AddBookScreenError.NetworkError
             AddBookError.NetworkError -> AddBookScreenError.NetworkError
+            AddBookError.LibraryLimitReached -> AddBookScreenError.LibraryLimitReached
             AddBookError.MalformedResponse -> AddBookScreenError.NetworkError
             AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
             AddBookError.RateLimited -> AddBookScreenError.RateLimited
@@ -217,6 +220,7 @@ class AddBookViewModel(
                                 -> null
                                 AddBookError.NotFound -> AddBookScreenError.NotFound
                                 AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
+                                AddBookError.LibraryLimitReached -> AddBookScreenError.LibraryLimitReached
                                 AddBookError.NetworkError,
                                 AddBookError.MalformedResponse,
                                 -> AddBookScreenError.NetworkError
@@ -319,6 +323,7 @@ class AddBookViewModel(
                             when (result.error) {
                                 is AddBookError.DuplicateTitle,
                                 is AddBookError.Duplicate,
+                                AddBookError.LibraryLimitReached -> AddBookScreenError.LibraryLimitReached
                                 AddBookError.NotFound,
                                 AddBookError.NetworkError,
                                 AddBookError.MalformedResponse -> AddBookScreenError.NetworkError

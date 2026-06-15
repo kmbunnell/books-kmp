@@ -16,4 +16,6 @@ sealed interface AddBookError {
     data object RateLimited : AddBookError
 
     data object MalformedResponse : AddBookError
+
+    data object LibraryLimitReached : AddBookError
 }
