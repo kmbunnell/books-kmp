@@ -56,10 +56,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bookskmp.composeapp.generated.resources.Res
 import bookskmp.composeapp.generated.resources.action_retry
+import bookskmp.composeapp.generated.resources.cd_account
 import bookskmp.composeapp.generated.resources.cd_add_book
 import bookskmp.composeapp.generated.resources.cd_book_cover_in_grid
 import bookskmp.composeapp.generated.resources.cd_close
-import bookskmp.composeapp.generated.resources.cd_account
 import bookskmp.composeapp.generated.resources.cd_filter_books
 import bookskmp.composeapp.generated.resources.cd_manage_tags
 import bookskmp.composeapp.generated.resources.cd_sort_books
@@ -232,6 +232,7 @@ fun LibraryScreenContent(
                     modifier = Modifier.padding(innerPadding),
                 )
             }
+
             uiState.isLoading && uiState.books.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize().padding(innerPadding),
@@ -242,12 +243,14 @@ fun LibraryScreenContent(
                     )
                 }
             }
+
             uiState.books.isEmpty() -> {
                 EmptyLibraryContent(
                     onAddFirstBook = onNavigateToAddBook,
                     modifier = Modifier.padding(innerPadding),
                 )
             }
+
             uiState.filteredBooks.isEmpty() -> {
                 Column(modifier = Modifier.padding(innerPadding)) {
                     if (uiState.error != null) {
@@ -262,6 +265,7 @@ fun LibraryScreenContent(
                     )
                 }
             }
+
             else -> {
                 Column(modifier = Modifier.padding(innerPadding)) {
                     if (uiState.error != null) {
