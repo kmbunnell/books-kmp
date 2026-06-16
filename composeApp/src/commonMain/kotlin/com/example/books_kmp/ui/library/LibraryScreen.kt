@@ -221,7 +221,12 @@ fun LibraryScreenContent(
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = stringResource(Res.string.cd_account),
-                            tint = if (uiState.isPremium) MaterialTheme.colorScheme.tertiary else LocalContentColor.current,
+                            tint =
+                                if (uiState.isPremium) {
+                                    MaterialTheme.colorScheme.tertiary
+                                } else {
+                                    LocalContentColor.current
+                                },
                         )
                     }
                 },
