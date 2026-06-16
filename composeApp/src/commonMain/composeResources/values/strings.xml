@@ -96,6 +96,8 @@
     <string name="cd_book_cover_in_grid">Book cover</string>
     <string name="error_library_load_failed">Couldn't load your library. Please try again.</string>
     <string name="error_library_limit_reached">Upgrade to Premium to add more than 25 books.</string>
+    <string name="label_tier_free">Free Plan</string>
+    <string name="label_tier_premium">Premium Plan</string>
     <string name="action_retry">Retry</string>
     <string name="library_empty_title">No books yet</string>
     <string name="library_empty_add_first">Add your first book</string>

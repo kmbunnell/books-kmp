@@ -147,6 +147,7 @@ fun App() {
                             popUpTo<Route.AddBook> { inclusive = true }
                         }
                     },
+                    onNavigateToPaywall = { navController.navigate(Route.Paywall) },
                     isWideScreen = isExpanded,
                 )
             }
@@ -163,6 +164,7 @@ fun App() {
             composable<Route.TagManagement> {
                 TagManagementScreen(
                     onNavigateUp = { navController.popBackStack() },
+                    onNavigateToPaywall = { navController.navigate(Route.Paywall) },
                 )
             }
             composable<Route.Paywall> {

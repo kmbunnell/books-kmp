@@ -48,6 +48,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.NavigateUpButton).performClick()
@@ -65,6 +66,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField).assertIsDisplayed()
@@ -81,6 +83,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.TitleField).assertIsDisplayed()
@@ -97,6 +100,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField).assertDoesNotExist()
@@ -114,6 +118,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.TitleModeButton).performClick()
@@ -132,6 +137,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.titleResultItem(0)).assertIsDisplayed()
@@ -150,6 +156,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.titleResultItem(0)).performClick()
@@ -167,6 +174,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsNotEnabled()
@@ -183,6 +191,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsEnabled()
@@ -199,6 +208,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsNotEnabled()
@@ -215,6 +225,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsEnabled()
@@ -232,6 +243,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField).performClick()
@@ -252,6 +264,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField).performTextInput("X")
@@ -270,6 +283,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).performClick()
@@ -288,6 +302,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).performClick()
@@ -305,6 +320,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LoadingIndicator).assertIsDisplayed()
@@ -321,6 +337,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookUpButton).assertIsNotEnabled()
@@ -337,6 +354,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.BookPreviewTitle).assertDoesNotExist()
@@ -354,44 +372,11 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.BookPreviewTitle).performScrollTo().assertIsDisplayed()
         composeTestRule.onNodeWithTag(TestTags.AddBook.BookPreviewAuthors).performScrollTo().assertIsDisplayed()
-    }
-
-    @Test
-    fun `Add button is displayed when foundBook is set`() {
-        val book = BookLookupData("isbn", "The Iliad", listOf("Homer"), null)
-        composeTestRule.setContent {
-            AddBookScreenContent(
-                uiState = AddBookUiState(foundBook = book),
-                effects = emptyEffects,
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToManualEntry = {},
-                onNavigateToSignIn = {},
-                onNavigateToBookDetail = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.AddBook.AddButton).performScrollTo().assertIsDisplayed()
-    }
-
-    @Test
-    fun `Cancel button is displayed when foundBook is set`() {
-        val book = BookLookupData("isbn", "The Iliad", listOf("Homer"), null)
-        composeTestRule.setContent {
-            AddBookScreenContent(
-                uiState = AddBookUiState(foundBook = book),
-                effects = emptyEffects,
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToManualEntry = {},
-                onNavigateToSignIn = {},
-                onNavigateToBookDetail = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.AddBook.CancelButton).assertIsDisplayed()
     }
 
     @Test
@@ -407,6 +392,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.AddButton).performScrollTo().performClick()
@@ -426,6 +412,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.CancelButton).performClick()
@@ -443,6 +430,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.DuplicateDialog).assertIsDisplayed()
@@ -460,26 +448,11 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.DuplicateDialogCancelButton).performClick()
         assertEquals(AddBookIntent.DismissDuplicateDialog, capturedIntent)
-    }
-
-    @Test
-    fun `duplicate dialog shows Add Anyway button`() {
-        composeTestRule.setContent {
-            AddBookScreenContent(
-                uiState = AddBookUiState(showDuplicateDialog = true),
-                effects = emptyEffects,
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToManualEntry = {},
-                onNavigateToSignIn = {},
-                onNavigateToBookDetail = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.AddBook.DuplicateDialogAddAnywayButton).assertIsDisplayed()
     }
 
     @Test
@@ -494,6 +467,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.DuplicateDialogAddAnywayButton).performClick()
@@ -511,6 +485,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
@@ -528,6 +503,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.RetryButton).performClick()
@@ -545,25 +521,10 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
-    }
-
-    @Test
-    fun `enter manually button is displayed for NotFound error state`() {
-        composeTestRule.setContent {
-            AddBookScreenContent(
-                uiState = AddBookUiState(error = AddBookScreenError.NotFound),
-                effects = emptyEffects,
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToManualEntry = {},
-                onNavigateToSignIn = {},
-                onNavigateToBookDetail = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.AddBook.EnterManuallyButton).assertIsDisplayed()
     }
 
     @Test
@@ -578,6 +539,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.EnterManuallyButton).performClick()
@@ -595,6 +557,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithText("Too many requests. Please try again later.").assertIsDisplayed()
@@ -611,6 +574,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
@@ -628,6 +592,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
@@ -645,6 +610,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
@@ -662,6 +628,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.ErrorBanner).assertIsDisplayed()
@@ -669,7 +636,7 @@ class AddBookScreenTest {
     }
 
     @Test
-    fun `isbn field shows inline error when isbnFormatError is true`() {
+    fun `isbn field shows inline error and error semantics when isbnFormatError is true`() {
         composeTestRule.setContent {
             AddBookScreenContent(
                 uiState = AddBookUiState(isbn = "123", isbnFormatError = true),
@@ -679,9 +646,12 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.InlineErrorText).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField)
+            .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Error))
     }
 
     @Test
@@ -695,6 +665,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.InlineErrorText).assertDoesNotExist()
@@ -713,6 +684,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
                 isWideScreen = true,
             )
         }
@@ -730,6 +702,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
                 isWideScreen = true,
             )
         }
@@ -748,6 +721,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
                 isWideScreen = true,
             )
         }
@@ -777,6 +751,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
                 isWideScreen = true,
             )
         }
@@ -795,6 +770,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
                 isWideScreen = true,
             )
         }
@@ -814,28 +790,12 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
                 isWideScreen = true,
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookupModeToggle).assertIsDisplayed()
         composeTestRule.onNodeWithTag(TestTags.AddBook.titleResultItem(0)).assertIsDisplayed()
-    }
-
-    @Test
-    fun `isbn field is marked as error when isbnFormatError is true`() {
-        composeTestRule.setContent {
-            AddBookScreenContent(
-                uiState = AddBookUiState(isbn = "123", isbnFormatError = true),
-                effects = emptyEffects,
-                onIntent = {},
-                onNavigateUp = {},
-                onNavigateToManualEntry = {},
-                onNavigateToSignIn = {},
-                onNavigateToBookDetail = {},
-            )
-        }
-        composeTestRule.onNodeWithTag(TestTags.AddBook.IsbnField)
-            .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Error))
     }
 
     @Test
@@ -850,6 +810,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.waitForIdle()
@@ -872,6 +833,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = { navigatedToSignIn = true },
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.SignInButton).performClick()
@@ -890,6 +852,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookupModeToggle).assertDoesNotExist()
@@ -910,6 +873,7 @@ class AddBookScreenTest {
                 onNavigateToManualEntry = {},
                 onNavigateToSignIn = {},
                 onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
             )
         }
         composeTestRule.onNodeWithTag(TestTags.AddBook.LookupModeToggle).assertDoesNotExist()

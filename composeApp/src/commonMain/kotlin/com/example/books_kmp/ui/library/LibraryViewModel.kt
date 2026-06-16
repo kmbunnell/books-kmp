@@ -31,6 +31,7 @@ data class LibraryUiState(
     val searchQuery: String = "",
     val isLoading: Boolean = false,
     val error: LibraryError? = null,
+    val isPremium: Boolean = false,
 )
 
 sealed interface LibraryIntent {
@@ -117,6 +118,11 @@ class LibraryViewModel(
                 }
             }
         }
+        viewModelScope.launch {
+            entitlementState.isPremium.collect { premium ->
+                _uiState.update { it.copy(isPremium = premium) }
+            }
+        }
         loadLibrary()
     }
 
@@ -184,7 +190,8 @@ class LibraryViewModel(
                     } else {
                         LibraryEffect.NavigateToAddBook
                     }
-                viewModelScope.launch { _effects.send(effect) }
+                // Channel.BUFFERED — trySend won't drop unless the buffer is full, which can't happen here
+                _effects.trySend(effect)
             }
         }
     }

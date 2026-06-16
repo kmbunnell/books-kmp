@@ -44,8 +44,6 @@ sealed interface AddBookScreenError {
 
     data object NotFound : AddBookScreenError
 
-    data object LibraryLimitReached : AddBookScreenError
-
     data object ScanCameraPermissionDenied : AddBookScreenError
 
     data object ScanHardwareUnavailable : AddBookScreenError
@@ -95,6 +93,8 @@ sealed interface AddBookEffect {
     data object NavigateToManualEntry : AddBookEffect
 
     data class NavigateToBookDetail(val bookId: String) : AddBookEffect
+
+    data object ShowLibraryLimitReached : AddBookEffect
 }
 
 class AddBookViewModel(
@@ -176,14 +176,17 @@ class AddBookViewModel(
         }
     }
 
+    // Null = handled through another presentation path: Duplicate/DuplicateTitle → showDuplicateDialog; LibraryLimitReached → ShowLibraryLimitReached effect
     private fun AddBookError.toScreenError(): AddBookScreenError? =
         when (this) {
-            is AddBookError.DuplicateTitle -> null
-            is AddBookError.Duplicate -> AddBookScreenError.NetworkError
-            AddBookError.NotFound -> AddBookScreenError.NetworkError
-            AddBookError.NetworkError -> AddBookScreenError.NetworkError
-            AddBookError.LibraryLimitReached -> AddBookScreenError.LibraryLimitReached
-            AddBookError.MalformedResponse -> AddBookScreenError.NetworkError
+            is AddBookError.DuplicateTitle,
+            is AddBookError.Duplicate,
+            AddBookError.LibraryLimitReached,
+            -> null
+            AddBookError.NotFound -> AddBookScreenError.NotFound
+            AddBookError.NetworkError,
+            AddBookError.MalformedResponse,
+            -> AddBookScreenError.NetworkError
             AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
             AddBookError.RateLimited -> AddBookScreenError.RateLimited
         }
@@ -213,21 +216,10 @@ class AddBookViewModel(
                             if (error is AddBookError.Duplicate) error.lookupData else null,
                         showDuplicateDialog =
                             error is AddBookError.Duplicate || error is AddBookError.DuplicateTitle,
-                        error =
-                            when (error) {
-                                is AddBookError.Duplicate,
-                                is AddBookError.DuplicateTitle,
-                                -> null
-                                AddBookError.NotFound -> AddBookScreenError.NotFound
-                                AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
-                                AddBookError.LibraryLimitReached -> AddBookScreenError.LibraryLimitReached
-                                AddBookError.NetworkError,
-                                AddBookError.MalformedResponse,
-                                -> AddBookScreenError.NetworkError
-                                AddBookError.RateLimited -> AddBookScreenError.RateLimited
-                            },
+                        error = error.toScreenError(),
                     )
                 }
+                if (error == AddBookError.LibraryLimitReached) _effects.emit(AddBookEffect.ShowLibraryLimitReached)
             }
         }
     }
@@ -273,6 +265,7 @@ class AddBookViewModel(
                         error = error.toScreenError(),
                     )
                 }
+                if (error == AddBookError.LibraryLimitReached) _effects.emit(AddBookEffect.ShowLibraryLimitReached)
             }
         }
     }
@@ -296,6 +289,7 @@ class AddBookViewModel(
                         error = error.toScreenError(),
                     )
                 }
+                if (error == AddBookError.LibraryLimitReached) _effects.emit(AddBookEffect.ShowLibraryLimitReached)
             }
         }
     }
@@ -315,23 +309,15 @@ class AddBookViewModel(
                 }
             }
             is Result.Failure -> {
+                val error = result.error
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         pendingAddAndTag = false,
-                        error =
-                            when (result.error) {
-                                is AddBookError.DuplicateTitle,
-                                is AddBookError.Duplicate,
-                                AddBookError.LibraryLimitReached -> AddBookScreenError.LibraryLimitReached
-                                AddBookError.NotFound,
-                                AddBookError.NetworkError,
-                                AddBookError.MalformedResponse -> AddBookScreenError.NetworkError
-                                AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
-                                AddBookError.RateLimited -> AddBookScreenError.RateLimited
-                            },
+                        error = error.toScreenError(),
                     )
                 }
+                if (error == AddBookError.LibraryLimitReached) _effects.emit(AddBookEffect.ShowLibraryLimitReached)
             }
         }
     }

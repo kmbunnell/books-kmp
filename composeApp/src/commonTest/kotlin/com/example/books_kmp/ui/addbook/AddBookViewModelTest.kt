@@ -684,6 +684,69 @@ class AddBookViewModelTest {
             }
         }
 
+    // --- Library limit reached effect tests ---
+    // AddBookUseCase returns AddBookError.LibraryLimitReached for a free-tier user at the cap.
+
+    private fun cappedFreeViewModel(): AddBookViewModel {
+        val cappedRepo = FakeBookRepository()
+        cappedRepo.seedBooks(
+            *Array(25) { index ->
+                Book(
+                    id = "cap-$index",
+                    isbn = "isbn-$index",
+                    title = "Cap $index",
+                    authors = listOf("Author"),
+                    coverImageUrl = null,
+                )
+            },
+        )
+        val lookup = LookupBookUseCase(cappedRepo, fakeService)
+        val add = AddBookUseCase(cappedRepo, FakeEntitlementState())
+        return AddBookViewModel(lookup, add, lookupByTitleUseCase)
+    }
+
+    @Test
+    fun `LibraryLimitReached on ConfirmBook emits ShowLibraryLimitReached and leaves error null`() =
+        runTest {
+            val vm = cappedFreeViewModel()
+            vm.onIntent(AddBookIntent.SelectTitleResult(validLookupData))
+            assertNotNull(vm.uiState.value.foundBook)
+
+            vm.effects.test {
+                vm.onIntent(AddBookIntent.ConfirmBook)
+                assertIs<AddBookEffect.ShowLibraryLimitReached>(awaitItem())
+            }
+            assertNull(vm.uiState.value.error)
+        }
+
+    @Test
+    fun `LibraryLimitReached on AddAndTag emits ShowLibraryLimitReached and leaves error null`() =
+        runTest {
+            val vm = cappedFreeViewModel()
+            vm.onIntent(AddBookIntent.SelectTitleResult(validLookupData))
+            assertNotNull(vm.uiState.value.foundBook)
+
+            vm.effects.test {
+                vm.onIntent(AddBookIntent.AddAndTag)
+                assertIs<AddBookEffect.ShowLibraryLimitReached>(awaitItem())
+            }
+            assertNull(vm.uiState.value.error)
+        }
+
+    @Test
+    fun `LibraryLimitReached on AddAnyway emits ShowLibraryLimitReached and leaves error null`() =
+        runTest {
+            val vm = cappedFreeViewModel()
+            vm.onIntent(AddBookIntent.SelectTitleResult(validLookupData))
+            assertNotNull(vm.uiState.value.foundBook)
+
+            vm.effects.test {
+                vm.onIntent(AddBookIntent.AddAnyway)
+                assertIs<AddBookEffect.ShowLibraryLimitReached>(awaitItem())
+            }
+            assertNull(vm.uiState.value.error)
+        }
+
     @Test
     fun `Retry in title mode re-invokes LookupByTitle with current titleQuery`() =
         runTest {

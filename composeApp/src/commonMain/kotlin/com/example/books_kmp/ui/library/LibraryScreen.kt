@@ -34,8 +34,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -47,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -67,9 +70,12 @@ import bookskmp.composeapp.generated.resources.error_library_limit_reached
 import bookskmp.composeapp.generated.resources.error_library_load_failed
 import bookskmp.composeapp.generated.resources.error_sign_out_failed
 import bookskmp.composeapp.generated.resources.hint_search_books
+import bookskmp.composeapp.generated.resources.label_tier_free
+import bookskmp.composeapp.generated.resources.label_tier_premium
 import bookskmp.composeapp.generated.resources.library_empty_add_first
 import bookskmp.composeapp.generated.resources.library_empty_filter
 import bookskmp.composeapp.generated.resources.library_empty_title
+import bookskmp.composeapp.generated.resources.paywall_button_go_premium
 import bookskmp.composeapp.generated.resources.placeholder
 import bookskmp.composeapp.generated.resources.sort_author_asc
 import bookskmp.composeapp.generated.resources.sort_title_asc
@@ -95,17 +101,23 @@ fun LibraryScreen(
     val loadFailedMessage = stringResource(Res.string.error_library_load_failed)
     val signOutFailedMessage = stringResource(Res.string.error_sign_out_failed)
     val limitReachedMessage = stringResource(Res.string.error_library_limit_reached)
+    val goPremiumLabel = stringResource(Res.string.paywall_button_go_premium)
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 is LibraryEffect.ShowError -> {
-                    val message =
-                        when (effect.error) {
-                            LibraryError.LoadFailed -> loadFailedMessage
-                            LibraryError.SignOutFailed -> signOutFailedMessage
-                            LibraryError.LibraryLimitReached -> limitReachedMessage
+                    when (effect.error) {
+                        LibraryError.LibraryLimitReached -> {
+                            val result =
+                                snackbarHostState.showSnackbar(
+                                    message = limitReachedMessage,
+                                    actionLabel = goPremiumLabel,
+                                )
+                            if (result == SnackbarResult.ActionPerformed) onNavigateToPaywall()
                         }
-                    snackbarHostState.showSnackbar(message)
+                        LibraryError.LoadFailed -> snackbarHostState.showSnackbar(loadFailedMessage)
+                        LibraryError.SignOutFailed -> snackbarHostState.showSnackbar(signOutFailedMessage)
+                    }
                 }
                 LibraryEffect.NavigateToAddBook -> onNavigateToAddBook()
             }
@@ -139,7 +151,9 @@ fun LibraryScreenContent(
         snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.title_library)) },
+                title = {
+                    Text(stringResource(Res.string.title_library))
+                },
                 actions = {
                     if (uiState.error == null) {
                         BadgedBox(
@@ -210,6 +224,7 @@ fun LibraryScreenContent(
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = stringResource(Res.string.cd_account),
+                            tint = if (uiState.isPremium) Color(0xFFFFB300) else LocalContentColor.current,
                         )
                     }
                 },
@@ -318,6 +333,7 @@ fun LibraryScreenContent(
 
         if (showProfileSheet) {
             ProfileBottomSheet(
+                isPremium = uiState.isPremium,
                 onNavigateToPaywall = onNavigateToPaywall,
                 onSignOut = { onIntent(LibraryIntent.SignOut) },
                 onDismiss = { showProfileSheet = false },
