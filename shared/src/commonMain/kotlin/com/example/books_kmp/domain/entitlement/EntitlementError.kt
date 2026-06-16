@@ -4,4 +4,6 @@ sealed interface EntitlementError {
     data object NotAuthenticated : EntitlementError
 
     data object NetworkError : EntitlementError
+
+    data object UpdateFailed : EntitlementError
 }

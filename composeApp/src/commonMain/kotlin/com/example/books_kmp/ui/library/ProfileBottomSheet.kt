@@ -40,12 +40,20 @@ fun ProfileBottomSheet(
         modifier = Modifier.testTag(TestTags.Library.ProfileSheet),
     ) {
         Text(
-            text = if (isPremium) stringResource(Res.string.label_tier_premium) else stringResource(Res.string.label_tier_free),
+            text =
+                if (isPremium) {
+                    stringResource(
+                        Res.string.label_tier_premium
+                    )
+                } else {
+                    stringResource(Res.string.label_tier_free)
+                },
             style = MaterialTheme.typography.titleMedium,
             color = if (isPremium) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .testTag(TestTags.Library.TierLabel),
+            modifier =
+                Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .testTag(TestTags.Library.TierLabel),
         )
         HorizontalDivider()
         ListItem(
