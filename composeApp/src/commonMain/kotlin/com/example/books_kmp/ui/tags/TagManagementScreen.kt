@@ -28,6 +28,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -62,6 +63,7 @@ import bookskmp.composeapp.generated.resources.label_tag_name
 import bookskmp.composeapp.generated.resources.menu_delete_tag
 import bookskmp.composeapp.generated.resources.menu_rename_tag
 import bookskmp.composeapp.generated.resources.message_delete_tag
+import bookskmp.composeapp.generated.resources.paywall_button_go_premium
 import bookskmp.composeapp.generated.resources.section_custom_tags
 import bookskmp.composeapp.generated.resources.section_default_tags
 import bookskmp.composeapp.generated.resources.title_delete_tag
@@ -113,23 +115,30 @@ private fun CollapsibleSectionHeader(
 @Composable
 fun TagManagementScreen(
     onNavigateUp: () -> Unit,
+    onNavigateToPaywall: () -> Unit,
     viewModel: TagManagementViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val tagLimitMessage = stringResource(Res.string.error_tag_limit_reached)
     val tagOperationFailedMessage = stringResource(Res.string.error_tag_operation_failed)
+    val goPremiumLabel = stringResource(Res.string.paywall_button_go_premium)
 
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 is TagManagementEffect.ShowError -> {
-                    val message =
-                        when (effect.error) {
-                            TagManagementError.TagLimitReached -> tagLimitMessage
-                            else -> tagOperationFailedMessage
+                    when (effect.error) {
+                        TagManagementError.TagLimitReached -> {
+                            val result =
+                                snackbarHostState.showSnackbar(
+                                    message = tagLimitMessage,
+                                    actionLabel = goPremiumLabel,
+                                )
+                            if (result == SnackbarResult.ActionPerformed) onNavigateToPaywall()
                         }
-                    snackbarHostState.showSnackbar(message)
+                        else -> snackbarHostState.showSnackbar(tagOperationFailedMessage)
+                    }
                 }
             }
         }

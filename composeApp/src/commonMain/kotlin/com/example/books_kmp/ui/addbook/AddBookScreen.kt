@@ -33,6 +33,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -80,6 +81,7 @@ import bookskmp.composeapp.generated.resources.info_not_found_catalog
 import bookskmp.composeapp.generated.resources.label_isbn
 import bookskmp.composeapp.generated.resources.label_isbn_search
 import bookskmp.composeapp.generated.resources.label_title_search
+import bookskmp.composeapp.generated.resources.paywall_button_go_premium
 import bookskmp.composeapp.generated.resources.snackbar_book_added
 import bookskmp.composeapp.generated.resources.title_add_book
 import bookskmp.composeapp.generated.resources.title_results_enter_manually
@@ -102,6 +104,7 @@ fun AddBookScreen(
     onNavigateToManualEntry: () -> Unit,
     onNavigateToSignIn: () -> Unit,
     onNavigateToBookDetail: (String) -> Unit,
+    onNavigateToPaywall: () -> Unit,
     isWideScreen: Boolean = false,
 ) {
     val viewModel: AddBookViewModel = koinViewModel()
@@ -114,6 +117,7 @@ fun AddBookScreen(
         onNavigateToManualEntry = onNavigateToManualEntry,
         onNavigateToSignIn = onNavigateToSignIn,
         onNavigateToBookDetail = onNavigateToBookDetail,
+        onNavigateToPaywall = onNavigateToPaywall,
         isWideScreen = isWideScreen,
     )
 }
@@ -128,11 +132,14 @@ fun AddBookScreenContent(
     onNavigateToManualEntry: () -> Unit,
     onNavigateToSignIn: () -> Unit,
     onNavigateToBookDetail: (String) -> Unit,
+    onNavigateToPaywall: () -> Unit,
     isWideScreen: Boolean = false,
 ) {
     val focusRequester = remember { FocusRequester() }
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarBookAdded = stringResource(Res.string.snackbar_book_added)
+    val limitReachedMessage = stringResource(Res.string.error_library_limit_reached)
+    val goPremiumLabel = stringResource(Res.string.paywall_button_go_premium)
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -141,6 +148,14 @@ fun AddBookScreenContent(
                 AddBookEffect.BookAdded -> snackbarHostState.showSnackbar(snackbarBookAdded)
                 AddBookEffect.NavigateToManualEntry -> onNavigateToManualEntry()
                 is AddBookEffect.NavigateToBookDetail -> onNavigateToBookDetail(effect.bookId)
+                AddBookEffect.ShowLibraryLimitReached -> {
+                    val result =
+                        snackbarHostState.showSnackbar(
+                            message = limitReachedMessage,
+                            actionLabel = goPremiumLabel,
+                        )
+                    if (result == SnackbarResult.ActionPerformed) onNavigateToPaywall()
+                }
             }
         }
     }
@@ -524,7 +539,6 @@ private fun ErrorSection(
                 AddBookScreenError.Unauthenticated -> Res.string.error_unauthenticated
                 AddBookScreenError.NetworkError -> Res.string.error_network_generic
                 AddBookScreenError.RateLimited -> Res.string.error_rate_limited
-                AddBookScreenError.LibraryLimitReached -> Res.string.error_library_limit_reached
                 AddBookScreenError.ScanCameraPermissionDenied -> Res.string.camera_permission_permanently_denied
                 AddBookScreenError.ScanHardwareUnavailable -> Res.string.error_unavailable_hardware
                 AddBookScreenError.ScanUnknownError -> Res.string.error_scan_failed
@@ -570,7 +584,6 @@ private fun ErrorSection(
             ) {
                 Text(stringResource(Res.string.button_retry))
             }
-        AddBookScreenError.LibraryLimitReached,
         AddBookScreenError.ScanCameraPermissionDenied,
         AddBookScreenError.ScanHardwareUnavailable -> Unit
         AddBookScreenError.ScanUnknownError ->
@@ -674,6 +687,7 @@ private fun AddBookScreenPreview_Empty() {
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
         onNavigateToBookDetail = {},
+        onNavigateToPaywall = {},
     )
 }
 
@@ -688,6 +702,7 @@ private fun AddBookScreenPreview_TitleMode() {
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
         onNavigateToBookDetail = {},
+        onNavigateToPaywall = {},
     )
 }
 
@@ -702,6 +717,7 @@ private fun AddBookScreenPreview_Loading() {
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
         onNavigateToBookDetail = {},
+        onNavigateToPaywall = {},
     )
 }
 
@@ -716,6 +732,7 @@ private fun AddBookScreenPreview_Error() {
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
         onNavigateToBookDetail = {},
+        onNavigateToPaywall = {},
     )
 }
 
@@ -740,6 +757,7 @@ private fun AddBookScreenPreview_FoundBook() {
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
         onNavigateToBookDetail = {},
+        onNavigateToPaywall = {},
     )
 }
 
@@ -754,6 +772,7 @@ private fun AddBookScreenPreview_WideEmpty() {
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
         onNavigateToBookDetail = {},
+        onNavigateToPaywall = {},
         isWideScreen = true,
     )
 }
@@ -779,6 +798,7 @@ private fun AddBookScreenPreview_WideFoundBook() {
         onNavigateToManualEntry = {},
         onNavigateToSignIn = {},
         onNavigateToBookDetail = {},
+        onNavigateToPaywall = {},
         isWideScreen = true,
     )
 }

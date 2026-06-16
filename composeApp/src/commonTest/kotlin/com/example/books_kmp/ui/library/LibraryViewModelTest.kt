@@ -605,6 +605,16 @@ class LibraryViewModelTest {
             collectJob.cancel()
         }
 
+    @Test
+    fun `isPremium in LibraryUiState reflects entitlementState isPremium`() =
+        runTest {
+            assertFalse(vm.uiState.value.isPremium)
+
+            entitlementState.setIsPremium(true)
+            advanceUntilIdle()
+            assertTrue(vm.uiState.value.isPremium)
+        }
+
     private fun failingGetTagsRepo(): TagRepository =
         object : TagRepository {
             override val tagsFlow = MutableStateFlow<List<Tag>?>(null)
