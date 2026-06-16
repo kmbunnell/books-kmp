@@ -49,7 +49,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -222,7 +221,7 @@ fun LibraryScreenContent(
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = stringResource(Res.string.cd_account),
-                            tint = if (uiState.isPremium) Color(0xFFFFB300) else LocalContentColor.current,
+                            tint = if (uiState.isPremium) MaterialTheme.colorScheme.tertiary else LocalContentColor.current,
                         )
                     }
                 },
