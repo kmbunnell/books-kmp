@@ -30,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -37,7 +38,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -70,8 +70,6 @@ import bookskmp.composeapp.generated.resources.error_library_limit_reached
 import bookskmp.composeapp.generated.resources.error_library_load_failed
 import bookskmp.composeapp.generated.resources.error_sign_out_failed
 import bookskmp.composeapp.generated.resources.hint_search_books
-import bookskmp.composeapp.generated.resources.label_tier_free
-import bookskmp.composeapp.generated.resources.label_tier_premium
 import bookskmp.composeapp.generated.resources.library_empty_add_first
 import bookskmp.composeapp.generated.resources.library_empty_filter
 import bookskmp.composeapp.generated.resources.library_empty_title

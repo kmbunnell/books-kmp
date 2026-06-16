@@ -30,8 +30,17 @@ class SupabaseEntitlementRepository(
         premium: Boolean
     ): Result<Unit, EntitlementError> =
         try {
-            supabase.from("profiles").update({ set("is_premium", premium) }) { filter { eq("id", userId) } }
-            Result.Success(Unit)
+            val upserted =
+                supabase
+                    .from("profiles")
+                    .upsert(ProfileDto(id = userId, isPremium = premium)) {
+                        select()
+                    }.decodeSingleOrNull<ProfileDto>()
+            if (upserted == null) {
+                Result.Failure(EntitlementError.UpdateFailed)
+            } else {
+                Result.Success(Unit)
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
