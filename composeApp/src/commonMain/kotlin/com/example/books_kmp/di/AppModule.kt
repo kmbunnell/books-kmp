@@ -9,6 +9,7 @@ import com.example.books_kmp.data.library.SupabaseBookRepository
 import com.example.books_kmp.data.profile.SupabaseProfileRepository
 import com.example.books_kmp.data.recommendation.GeminiRecommendationDataSource
 import com.example.books_kmp.data.recommendation.RecommendationDataSource
+import com.example.books_kmp.data.recommendation.RecommendationRepositoryImpl
 import com.example.books_kmp.data.remote.GoogleBooksApiClient
 import com.example.books_kmp.data.tags.SupabaseTagRepository
 import com.example.books_kmp.domain.auth.AuthRepository
@@ -23,6 +24,7 @@ import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.library.LookupByTitleUseCase
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
 import com.example.books_kmp.domain.profile.ProfileRepository
+import com.example.books_kmp.domain.recommendation.RecommendationRepository
 import com.example.books_kmp.domain.tags.DefaultToggleBookTagUseCase
 import com.example.books_kmp.domain.tags.TagRepository
 import com.example.books_kmp.domain.tags.ToggleBookTagUseCase
@@ -73,6 +75,7 @@ fun appModule(
                 config = geminiConfig,
             )
         }
+        single<RecommendationRepository> { RecommendationRepositoryImpl(get()) }
         single<BookLookupService> {
             val supabaseClient = get<SupabaseClient>()
             GoogleBooksApiClient(

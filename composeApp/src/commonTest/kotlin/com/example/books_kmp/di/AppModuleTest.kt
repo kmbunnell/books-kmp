@@ -14,6 +14,7 @@ import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
 import com.example.books_kmp.domain.profile.ProfileRepository
+import com.example.books_kmp.domain.recommendation.RecommendationRepository
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.minimalSettings
 import io.github.jan.supabase.createSupabaseClient
@@ -75,6 +76,7 @@ class AppModuleTest {
         assertNotNull(koin.get<EntitlementRepository>())
         assertNotNull(koin.get<EntitlementState>())
         assertNotNull(koin.get<RecommendationDataSource>())
+        assertNotNull(koin.get<RecommendationRepository>())
     }
 
     @Test
