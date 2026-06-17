@@ -6,6 +6,9 @@ Non-obvious decisions — rejected alternatives, surprising constraints, gotchas
 
 ---
 
+## 2026-06-17 — BookRecommendation is in-memory only, no genres field (SHELVD-165)
+Gemini recommendation responses are never persisted; adding a recommended book to the library goes through the existing `AddBookUseCase` ISBN-lookup flow. The model carries `reason` and `description` but no `genres` field — other epic tickets assuming genre/description DB columns will need updating.
+
 ## 2026-06-12 — EntitlementRepository defaults to false when init fetch fails (SHELVD-159)
 On network error or a missing profile row at startup, `isPremium` stays `false` (deny premium) — a conservative paywall stance. Known limitation: an existing premium user sees the free tier until `setPremiumStatus` succeeds or the app restarts with a successful fetch.
 
