@@ -1,11 +1,14 @@
 package com.example.books_kmp.di
 
 import com.example.books_kmp.auth.SupabaseAuthRepository
+import com.example.books_kmp.config.GeminiConfig
 import com.example.books_kmp.config.SupabaseConfig
 import com.example.books_kmp.data.entitlement.EntitlementStore
 import com.example.books_kmp.data.entitlement.SupabaseEntitlementRepository
 import com.example.books_kmp.data.library.SupabaseBookRepository
 import com.example.books_kmp.data.profile.SupabaseProfileRepository
+import com.example.books_kmp.data.recommendation.GeminiRecommendationDataSource
+import com.example.books_kmp.data.recommendation.RecommendationDataSource
 import com.example.books_kmp.data.remote.GoogleBooksApiClient
 import com.example.books_kmp.data.tags.SupabaseTagRepository
 import com.example.books_kmp.domain.auth.AuthRepository
@@ -42,7 +45,10 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-fun appModule(config: SupabaseConfig): Module =
+fun appModule(
+    config: SupabaseConfig,
+    geminiConfig: GeminiConfig,
+): Module =
     module {
         single {
             createSupabaseClient(
@@ -61,6 +67,12 @@ fun appModule(config: SupabaseConfig): Module =
         single<EntitlementRepository> { SupabaseEntitlementRepository(get()) }
         single<EntitlementState> { EntitlementStore(get(), get(), get<AppScope>().coroutineScope) }
         single { HttpClient() }
+        single<RecommendationDataSource> {
+            GeminiRecommendationDataSource(
+                httpClient = get(),
+                config = geminiConfig,
+            )
+        }
         single<BookLookupService> {
             val supabaseClient = get<SupabaseClient>()
             GoogleBooksApiClient(
