@@ -1,6 +1,8 @@
 package com.example.books_kmp.di
 
+import com.example.books_kmp.config.GeminiConfig
 import com.example.books_kmp.config.SupabaseConfig
+import com.example.books_kmp.data.recommendation.RecommendationDataSource
 import com.example.books_kmp.domain.auth.AuthRepository
 import com.example.books_kmp.domain.auth.SignInUseCase
 import com.example.books_kmp.domain.auth.SignUpUseCase
@@ -45,10 +47,12 @@ class AppModuleTest {
                 allowOverride(true)
                 modules(
                     appModule(
-                        SupabaseConfig(
-                            supabaseUrl = "https://placeholder.supabase.co",
-                            supabaseAnonKey = "placeholder-key",
-                        ),
+                        config =
+                            SupabaseConfig(
+                                supabaseUrl = "https://placeholder.supabase.co",
+                                supabaseAnonKey = "placeholder-key",
+                            ),
+                        geminiConfig = GeminiConfig(""),
                     ),
                     module { single { testClient } },
                 )
@@ -70,6 +74,7 @@ class AppModuleTest {
         assertNotNull(koin.get<ProfileRepository>())
         assertNotNull(koin.get<EntitlementRepository>())
         assertNotNull(koin.get<EntitlementState>())
+        assertNotNull(koin.get<RecommendationDataSource>())
     }
 
     @Test

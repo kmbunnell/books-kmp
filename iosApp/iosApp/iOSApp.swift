@@ -13,7 +13,8 @@ struct iOSApp: App {
         else {
             fatalError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in Secrets.xcconfig")
         }
-        MainViewControllerKt.doInitKoin(supabaseUrl: supabaseUrl, supabaseKey: supabaseKey)
+        let geminiApiKey = (info["GEMINI_API_KEY"] as? String) ?? ""
+        MainViewControllerKt.doInitKoin(supabaseUrl: supabaseUrl, supabaseKey: supabaseKey, geminiApiKey: geminiApiKey)
     }
 
     var body: some Scene {

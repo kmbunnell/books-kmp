@@ -21,10 +21,12 @@ fun envOrLocalPropOrEmpty(key: String): String = System.getenv(key) ?: localProp
 val generateSecretsXcconfig by tasks.registering {
     description = "Generate iosApp/Configuration/Secrets.xcconfig from local.properties"
     val outputFile = rootProject.file("iosApp/Configuration/Secrets.xcconfig")
-    val url = localProp("SUPABASE_URL")
-    val key = localProp("SUPABASE_ANON_KEY")
+    val url = envOrLocalProp("SUPABASE_URL")
+    val key = envOrLocalProp("SUPABASE_ANON_KEY")
+    val geminiKey = envOrLocalPropOrEmpty("GEMINI_API_KEY")
     inputs.property("supabaseUrl", url)
     inputs.property("supabaseKey", key)
+    inputs.property("geminiApiKey", geminiKey)
     outputs.file(outputFile)
     doLast {
         // xcconfig treats // as a comment — escape with /$()/
@@ -34,6 +36,7 @@ val generateSecretsXcconfig by tasks.registering {
             |// Auto-generated from local.properties — do not edit manually.
             |SUPABASE_URL = $escapedUrl
             |SUPABASE_ANON_KEY = $key
+            |GEMINI_API_KEY = $geminiKey
             """.trimMargin() + "\n",
         )
     }
@@ -44,8 +47,10 @@ val generateStagingSecretsXcconfig by tasks.registering {
     val outputFile = rootProject.file("iosApp/Configuration/StagingSecrets.xcconfig")
     val url = envOrLocalPropOrEmpty("STAGING_SUPABASE_URL")
     val key = envOrLocalPropOrEmpty("STAGING_SUPABASE_ANON_KEY")
+    val geminiKey = envOrLocalPropOrEmpty("GEMINI_API_KEY")
     inputs.property("stagingSupabaseUrl", url)
     inputs.property("stagingSupabaseKey", key)
+    inputs.property("geminiApiKey", geminiKey)
     outputs.file(outputFile)
     doLast {
         // xcconfig treats // as a comment — escape with /$()/
@@ -55,6 +60,7 @@ val generateStagingSecretsXcconfig by tasks.registering {
             |// Auto-generated from local.properties — do not edit manually.
             |SUPABASE_URL = $escapedUrl
             |SUPABASE_ANON_KEY = $key
+            |GEMINI_API_KEY = $geminiKey
             """.trimMargin() + "\n",
         )
     }
@@ -165,6 +171,7 @@ android {
         versionName = "1.0"
         buildConfigField("String", "SUPABASE_URL", "\"${envOrLocalProp("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${envOrLocalProp("SUPABASE_ANON_KEY")}\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"${envOrLocalPropOrEmpty("GEMINI_API_KEY")}\"")
     }
     packaging {
         resources {
