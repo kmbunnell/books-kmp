@@ -1,4 +1,4 @@
-Putpackage com.example.books_kmp.domain.recommendation
+package com.example.books_kmp.domain.recommendation
 
 data class BookRecommendation(
     val title: String,
