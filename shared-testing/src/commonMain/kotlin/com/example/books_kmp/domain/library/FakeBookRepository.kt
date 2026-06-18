@@ -39,6 +39,10 @@ class FakeBookRepository(
         books.addAll(booksToSeed)
     }
 
+    fun setBooksFlow(booksToSet: List<Book>) {
+        _booksFlow.value = booksToSet
+    }
+
     override suspend fun getBooksByUser(): Result<List<Book>, BookRepositoryError> {
         getBooksByUserCalled++
         getBooksByUserGate?.await()

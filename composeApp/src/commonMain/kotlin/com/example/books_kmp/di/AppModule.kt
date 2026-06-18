@@ -24,6 +24,7 @@ import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.library.LookupByTitleUseCase
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
 import com.example.books_kmp.domain.profile.ProfileRepository
+import com.example.books_kmp.domain.recommendation.GetRecommendationsUseCase
 import com.example.books_kmp.domain.recommendation.RecommendationRepository
 import com.example.books_kmp.domain.tags.DefaultToggleBookTagUseCase
 import com.example.books_kmp.domain.tags.TagRepository
@@ -91,6 +92,7 @@ fun appModule(
         factory { AddBookUseCase(get(), get()) }
         factory { SaveManualBookUseCase(get()) }
         factory<ToggleBookTagUseCase> { DefaultToggleBookTagUseCase(get(), get()) }
+        factory { GetRecommendationsUseCase(get(), get(), get(), get()) }
         viewModel { AuthViewModel(get()) }
         viewModel { LibraryViewModel(get(), get(), get(), get()) }
         viewModel { SignInViewModel(get()) }
