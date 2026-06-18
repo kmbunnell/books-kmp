@@ -1,6 +1,7 @@
 package com.example.books_kmp.data.recommendation
 
 import com.example.books_kmp.config.GeminiConfig
+import com.example.books_kmp.domain.MAX_RECOMMENDED_BOOKS
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.recommendation.RecommendationError
 import io.ktor.client.HttpClient
@@ -22,10 +23,10 @@ private const val RECOMMENDATION_PROMPT_TEMPLATE =
     "You are a book recommendation engine. Analyze this reading list and infer the reader's " +
         "preferred genres, themes, and writing styles:\n" +
         "{BOOK_LIST}\n\n" +
-        "Recommend exactly 5 books that align with the reader's demonstrated tastes. Requirements:\n" +
+        "Recommend exactly {COUNT} books that align with the reader's demonstrated tastes. Requirements:\n" +
         "- Do not recommend books already in the list\n" +
         "- If a book is part of a series, only recommend the first book in that series\n" +
-        "- Vary the 5 recommendations across the inferred genres and themes where possible\n" +
+        "- Vary the {COUNT} recommendations across the inferred genres and themes where possible\n" +
         "- In the \"reason\" field, reference at least one specific book from the reading list " +
         "to explain why this recommendation fits\n\n" +
         "Return a JSON array with objects:\n" +
@@ -113,6 +114,8 @@ class GeminiRecommendationDataSource(
             collection.joinToString("\n") { entry ->
                 "${entry.title} by ${entry.authors.joinToString(", ")}"
             }
-        return RECOMMENDATION_PROMPT_TEMPLATE.replace("{BOOK_LIST}", bookList)
+        return RECOMMENDATION_PROMPT_TEMPLATE
+            .replace("{BOOK_LIST}", bookList)
+            .replace("{COUNT}", MAX_RECOMMENDED_BOOKS.toString())
     }
 }

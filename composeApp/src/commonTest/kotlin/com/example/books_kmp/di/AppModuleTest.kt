@@ -14,6 +14,7 @@ import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
 import com.example.books_kmp.domain.profile.ProfileRepository
+import com.example.books_kmp.domain.recommendation.GetRecommendationsUseCase
 import com.example.books_kmp.domain.recommendation.RecommendationRepository
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.minimalSettings
@@ -86,5 +87,6 @@ class AppModuleTest {
         assertNotNull(koin.get<LookupBookUseCase>())
         assertNotNull(koin.get<AddBookUseCase>())
         assertNotNull(koin.get<SaveManualBookUseCase>())
+        assertNotNull(koin.get<GetRecommendationsUseCase>())
     }
 }
