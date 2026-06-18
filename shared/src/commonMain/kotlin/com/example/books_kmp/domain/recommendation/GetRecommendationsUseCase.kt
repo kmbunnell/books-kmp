@@ -39,5 +39,4 @@ class GetRecommendationsUseCase(
 
         return recommendationRepository.getRecommendations(seedBooks)
     }
-
 }
