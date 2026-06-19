@@ -9,6 +9,7 @@
 
 import { assertEquals } from "jsr:@std/assert@1";
 import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import { extractIsbn, parseRequest } from "./_lib.ts";
 
 const FUNCTION_URL = "http://localhost:54321/functions/v1/lookup-book";
 const SUPABASE_URL = "http://localhost:54321";
@@ -78,6 +79,113 @@ async function post(
     body: JSON.stringify(body),
   });
 }
+
+// --- Unit: extractIsbn -------------------------------------------------------
+
+Deno.test("extractIsbn: returns ISBN_13 when present", () => {
+  const identifiers = [{ type: "ISBN_13", identifier: "9781234567890" }];
+  assertEquals(extractIsbn(identifiers), "9781234567890");
+});
+
+Deno.test("extractIsbn: falls back to ISBN_10 when no ISBN_13", () => {
+  const identifiers = [{ type: "ISBN_10", identifier: "1234567890" }];
+  assertEquals(extractIsbn(identifiers), "1234567890");
+});
+
+Deno.test("extractIsbn: returns null when no identifiers", () => {
+  assertEquals(extractIsbn(undefined), null);
+});
+
+Deno.test("extractIsbn: prefers ISBN_13 over ISBN_10 when both present", () => {
+  const identifiers = [
+    { type: "ISBN_10", identifier: "1234567890" },
+    { type: "ISBN_13", identifier: "9781234567890" },
+  ];
+  assertEquals(extractIsbn(identifiers), "9781234567890");
+});
+
+// --- Unit: parseRequest ------------------------------------------------------
+
+Deno.test("parseRequest: invalid JSON → error", () => {
+  const result = parseRequest("not json");
+  assertEquals(result.ok, false);
+  if (!result.ok) assertEquals(result.error, "Invalid JSON body");
+});
+
+Deno.test("parseRequest: non-object body → error", () => {
+  const result = parseRequest('"just a string"');
+  assertEquals(result.ok, false);
+  if (!result.ok) assertEquals(result.error, "Body must be a JSON object");
+});
+
+Deno.test("parseRequest: missing type field → error", () => {
+  const result = parseRequest(JSON.stringify({}));
+  assertEquals(result.ok, false);
+  if (!result.ok) assertEquals(result.error, "Missing or invalid 'type' (expected 'isbn' or 'title')");
+});
+
+Deno.test("parseRequest: isbn type without isbn field → error", () => {
+  const result = parseRequest(JSON.stringify({ type: "isbn" }));
+  assertEquals(result.ok, false);
+  if (!result.ok) assertEquals(result.error, "Missing or invalid 'isbn'");
+});
+
+Deno.test("parseRequest: isbn type with empty isbn → error", () => {
+  const result = parseRequest(JSON.stringify({ type: "isbn", isbn: "   " }));
+  assertEquals(result.ok, false);
+  if (!result.ok) assertEquals(result.error, "Missing or invalid 'isbn'");
+});
+
+Deno.test("parseRequest: isbn type with invalid format → error", () => {
+  const result = parseRequest(JSON.stringify({ type: "isbn", isbn: "12345" }));
+  assertEquals(result.ok, false);
+  if (!result.ok) assertEquals(result.error, "Invalid ISBN format — expected 10 or 13 digits");
+});
+
+Deno.test("parseRequest: valid ISBN-13 → success", () => {
+  const result = parseRequest(JSON.stringify({ type: "isbn", isbn: "9780743273565" }));
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.value.type, "isbn");
+    if (result.value.type === "isbn") assertEquals(result.value.isbn, "9780743273565");
+  }
+});
+
+Deno.test("parseRequest: valid ISBN-10 ending in X → success", () => {
+  const result = parseRequest(JSON.stringify({ type: "isbn", isbn: "047301450X" }));
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.value.type, "isbn");
+    if (result.value.type === "isbn") assertEquals(result.value.isbn, "047301450X");
+  }
+});
+
+Deno.test("parseRequest: isbn with surrounding whitespace → trimmed", () => {
+  const result = parseRequest(JSON.stringify({ type: "isbn", isbn: "  9780743273565  " }));
+  assertEquals(result.ok, true);
+  if (result.ok && result.value.type === "isbn") assertEquals(result.value.isbn, "9780743273565");
+});
+
+Deno.test("parseRequest: title type without query → error", () => {
+  const result = parseRequest(JSON.stringify({ type: "title" }));
+  assertEquals(result.ok, false);
+  if (!result.ok) assertEquals(result.error, "Missing or invalid 'query'");
+});
+
+Deno.test("parseRequest: valid title query → success", () => {
+  const result = parseRequest(JSON.stringify({ type: "title", query: "the great gatsby" }));
+  assertEquals(result.ok, true);
+  if (result.ok) {
+    assertEquals(result.value.type, "title");
+    if (result.value.type === "title") assertEquals(result.value.query, "the great gatsby");
+  }
+});
+
+Deno.test("parseRequest: title query with surrounding whitespace → trimmed", () => {
+  const result = parseRequest(JSON.stringify({ type: "title", query: "  dune  " }));
+  assertEquals(result.ok, true);
+  if (result.ok && result.value.type === "title") assertEquals(result.value.query, "dune");
+});
 
 // --- Step 1: request parsing -------------------------------------------------
 
