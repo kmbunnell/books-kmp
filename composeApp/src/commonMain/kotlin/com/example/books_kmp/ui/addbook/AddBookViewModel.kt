@@ -158,7 +158,10 @@ class AddBookViewModel(
                     )
                 }
             is AddBookIntent.LookupIsbn -> launchIfIdle({ _uiState.value.isLoading }) { handleLookupIsbn(intent.isbn) }
-            is AddBookIntent.LookupByTitle -> launchIfIdle({ _uiState.value.isLoading }) { handleLookupByTitle(intent.title) }
+            is AddBookIntent.LookupByTitle ->
+                launchIfIdle(
+                    { _uiState.value.isLoading }
+                ) { handleLookupByTitle(intent.title) }
             AddBookIntent.ConfirmBook -> launchIfIdle({ _uiState.value.isLoading }) { handleConfirmBook() }
             AddBookIntent.AddAndTag -> launchIfIdle({ _uiState.value.isLoading }) { handleAddAndTag() }
             AddBookIntent.AddAnyway -> launchIfIdle({ _uiState.value.isLoading }) { handleAddAnyway() }

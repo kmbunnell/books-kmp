@@ -66,7 +66,10 @@ class ManualEntryViewModel(
 
     fun onIntent(intent: ManualEntryIntent) {
         when (intent) {
-            is ManualEntryIntent.SaveBook -> launchIfIdle({ _uiState.value.isLoading }) { handleSaveBook(intent.title, intent.author, intent.isbn) }
+            is ManualEntryIntent.SaveBook ->
+                launchIfIdle({
+                    _uiState.value.isLoading
+                }) { handleSaveBook(intent.title, intent.author, intent.isbn) }
             ManualEntryIntent.Cancel -> viewModelScope.launch { _effects.emit(ManualEntryEffect.NavigateBack) }
             ManualEntryIntent.AddAnyway -> launchIfIdle({ _uiState.value.isLoading }) { handleAddAnyway() }
             ManualEntryIntent.DismissDuplicateDialog -> {
