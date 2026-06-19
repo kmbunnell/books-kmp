@@ -4,4 +4,6 @@ sealed interface SaveManualBookError {
     data object SaveFailed : SaveManualBookError
 
     data object DuplicateTitle : SaveManualBookError
+
+    data object InvalidIsbn : SaveManualBookError
 }

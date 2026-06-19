@@ -67,7 +67,54 @@ class ManualEntryScreenTest {
         composeTestRule.onNodeWithTag(TestTags.ManualEntry.TitleField).performTextInput("The Odyssey")
         composeTestRule.onNodeWithTag(TestTags.ManualEntry.AuthorField).performTextInput("Homer")
         composeTestRule.onNodeWithTag(TestTags.ManualEntry.SaveButton).performClick()
-        assertEquals(ManualEntryIntent.SaveBook("The Odyssey", "Homer"), capturedIntent)
+        assertEquals(ManualEntryIntent.SaveBook("The Odyssey", "Homer", null), capturedIntent)
+    }
+
+    @Test
+    fun `isbn field is displayed`() {
+        composeTestRule.setContent {
+            ManualEntryScreenContent(
+                uiState = ManualEntryUiState(),
+                effects = MutableSharedFlow<ManualEntryEffect>(),
+                onIntent = {},
+                onNavigateToLibrary = {},
+                onNavigateBack = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.ManualEntry.IsbnField).assertIsDisplayed()
+    }
+
+    @Test
+    fun `isbn value flows into SaveBook intent`() {
+        var capturedIntent: ManualEntryIntent? = null
+        composeTestRule.setContent {
+            ManualEntryScreenContent(
+                uiState = ManualEntryUiState(),
+                effects = MutableSharedFlow<ManualEntryEffect>(),
+                onIntent = { capturedIntent = it },
+                onNavigateToLibrary = {},
+                onNavigateBack = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.ManualEntry.TitleField).performTextInput("The Odyssey")
+        composeTestRule.onNodeWithTag(TestTags.ManualEntry.AuthorField).performTextInput("Homer")
+        composeTestRule.onNodeWithTag(TestTags.ManualEntry.IsbnField).performTextInput("9781234567890")
+        composeTestRule.onNodeWithTag(TestTags.ManualEntry.SaveButton).performClick()
+        assertEquals(ManualEntryIntent.SaveBook("The Odyssey", "Homer", "9781234567890"), capturedIntent)
+    }
+
+    @Test
+    fun `isbnError state shows inline error text`() {
+        composeTestRule.setContent {
+            ManualEntryScreenContent(
+                uiState = ManualEntryUiState(isbnError = ManualEntryError.IsbnInvalid),
+                effects = MutableSharedFlow<ManualEntryEffect>(),
+                onIntent = {},
+                onNavigateToLibrary = {},
+                onNavigateBack = {},
+            )
+        }
+        composeTestRule.onNodeWithText("Enter a valid 10 or 13 digit ISBN.").assertIsDisplayed()
     }
 
     @Test

@@ -17,10 +17,65 @@ class SaveManualBookUseCaseTest {
     @Test
     fun `invoke creates book with null isbn and null coverImageUrl`() =
         runTest {
-            useCase("The Odyssey", "Homer")
+            useCase("The Odyssey", "Homer", isbn = null)
             val book = assertNotNull(repo.lastAddedBook)
             assertNull(book.isbn)
             assertNull(book.coverImageUrl)
+        }
+
+    @Test
+    fun `invoke stores provided 13-digit isbn in NewBook`() =
+        runTest {
+            useCase("Title", "Author", isbn = "9781234567890")
+            assertEquals("9781234567890", repo.lastAddedBook?.isbn)
+        }
+
+    @Test
+    fun `invoke stores provided 10-digit isbn in NewBook`() =
+        runTest {
+            useCase("Title", "Author", isbn = "1234567890")
+            assertEquals("1234567890", repo.lastAddedBook?.isbn)
+        }
+
+    @Test
+    fun `invoke stores null isbn when blank string passed`() =
+        runTest {
+            useCase("Title", "Author", isbn = "")
+            assertNull(repo.lastAddedBook?.isbn)
+        }
+
+    @Test
+    fun `invoke returns InvalidIsbn for 9-digit isbn`() =
+        runTest {
+            val result = useCase("Title", "Author", isbn = "123456789")
+            assertIs<Result.Failure<SaveManualBookError>>(result)
+            assertEquals(SaveManualBookError.InvalidIsbn, result.error)
+            assertFalse(repo.addBookCalled)
+        }
+
+    @Test
+    fun `invoke returns InvalidIsbn for 14-digit isbn`() =
+        runTest {
+            val result = useCase("Title", "Author", isbn = "12345678901234")
+            assertIs<Result.Failure<SaveManualBookError>>(result)
+            assertEquals(SaveManualBookError.InvalidIsbn, result.error)
+            assertFalse(repo.addBookCalled)
+        }
+
+    @Test
+    fun `invoke returns InvalidIsbn for 11-char isbn with hyphens`() =
+        runTest {
+            val result = useCase("Title", "Author", isbn = "978-1234-567")
+            assertIs<Result.Failure<SaveManualBookError>>(result)
+            assertEquals(SaveManualBookError.InvalidIsbn, result.error)
+            assertFalse(repo.addBookCalled)
+        }
+
+    @Test
+    fun `invoke stores 10-char isbn ending in X`() =
+        runTest {
+            useCase("Title", "Author", isbn = "030640615X")
+            assertEquals("030640615X", repo.lastAddedBook?.isbn)
         }
 
     @Test

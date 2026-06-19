@@ -1,10 +1,10 @@
 package com.example.books_kmp.ui.auth
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.auth.SignUpError
 import com.example.books_kmp.domain.auth.SignUpUseCase
+import com.example.books_kmp.ui.util.launchIfIdle
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 data class SignUpUiState(
     val isLoading: Boolean = false,
@@ -45,7 +44,7 @@ class SignUpViewModel(
     fun onIntent(intent: SignUpIntent) {
         when (intent) {
             is SignUpIntent.SignUp ->
-                launchIfIdle {
+                launchIfIdle({ _uiState.value.isLoading }) {
                     handleSignUp(
                         intent.email,
                         intent.password,
@@ -53,11 +52,6 @@ class SignUpViewModel(
                     )
                 }
         }
-    }
-
-    private fun launchIfIdle(block: suspend () -> Unit) {
-        if (_uiState.value.isLoading) return
-        viewModelScope.launch { block() }
     }
 
     private suspend fun handleSignUp(

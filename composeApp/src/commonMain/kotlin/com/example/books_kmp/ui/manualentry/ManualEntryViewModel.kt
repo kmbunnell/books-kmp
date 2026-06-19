@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.library.SaveManualBookError
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
+import com.example.books_kmp.ui.util.launchIfIdle
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -18,11 +19,12 @@ data class ManualEntryUiState(
     val isLoading: Boolean = false,
     val titleError: ManualEntryError? = null,
     val authorError: ManualEntryError? = null,
+    val isbnError: ManualEntryError? = null,
     val showDuplicateDialog: Boolean = false,
 )
 
 sealed interface ManualEntryIntent {
-    data class SaveBook(val title: String, val author: String) : ManualEntryIntent
+    data class SaveBook(val title: String, val author: String, val isbn: String?) : ManualEntryIntent
 
     data object Cancel : ManualEntryIntent
 
@@ -45,6 +47,8 @@ sealed interface ManualEntryError {
     data object AuthorRequired : ManualEntryError
 
     data object SaveFailed : ManualEntryError
+
+    data object IsbnInvalid : ManualEntryError
 }
 
 class ManualEntryViewModel(
@@ -56,15 +60,15 @@ class ManualEntryViewModel(
     private val _effects = MutableSharedFlow<ManualEntryEffect>()
     val effects: SharedFlow<ManualEntryEffect> = _effects.asSharedFlow()
 
-    private data class PendingEntry(val title: String, val author: String)
+    private data class PendingEntry(val title: String, val author: String, val isbn: String?)
 
     private var pendingEntry: PendingEntry? = null
 
     fun onIntent(intent: ManualEntryIntent) {
         when (intent) {
-            is ManualEntryIntent.SaveBook -> launchIfIdle { handleSaveBook(intent.title, intent.author) }
+            is ManualEntryIntent.SaveBook -> launchIfIdle({ _uiState.value.isLoading }) { handleSaveBook(intent.title, intent.author, intent.isbn) }
             ManualEntryIntent.Cancel -> viewModelScope.launch { _effects.emit(ManualEntryEffect.NavigateBack) }
-            ManualEntryIntent.AddAnyway -> launchIfIdle { handleAddAnyway() }
+            ManualEntryIntent.AddAnyway -> launchIfIdle({ _uiState.value.isLoading }) { handleAddAnyway() }
             ManualEntryIntent.DismissDuplicateDialog -> {
                 pendingEntry = null
                 _uiState.update { it.copy(showDuplicateDialog = false) }
@@ -72,41 +76,38 @@ class ManualEntryViewModel(
         }
     }
 
-    private fun launchIfIdle(block: suspend () -> Unit) {
-        if (_uiState.value.isLoading) return
-        viewModelScope.launch { block() }
-    }
-
     private suspend fun handleSaveBook(
         title: String,
         author: String,
+        isbn: String?,
     ) {
         val titleError = if (title.isBlank()) ManualEntryError.TitleRequired else null
         val authorError = if (author.isBlank()) ManualEntryError.AuthorRequired else null
+        val isbnError = if (isbn != null && isbn.length !in setOf(10, 13)) ManualEntryError.IsbnInvalid else null
 
-        if (titleError != null || authorError != null) {
-            _uiState.update { it.copy(titleError = titleError, authorError = authorError) }
+        if (titleError != null || authorError != null || isbnError != null) {
+            _uiState.update { it.copy(titleError = titleError, authorError = authorError, isbnError = isbnError) }
             return
         }
 
-        pendingEntry = PendingEntry(title, author)
-        _uiState.update { it.copy(isLoading = true, titleError = null, authorError = null) }
+        pendingEntry = PendingEntry(title, author, isbn)
+        _uiState.update { it.copy(isLoading = true, titleError = null, authorError = null, isbnError = null) }
 
-        when (val result = saveManualBookUseCase(title, author)) {
+        when (val result = saveManualBookUseCase(title, author, isbn)) {
             is Result.Success -> {
                 _uiState.update { it.copy(isLoading = false) }
                 _effects.emit(ManualEntryEffect.NavigateToLibrary)
             }
             is Result.Failure -> {
-                val error = result.error
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        showDuplicateDialog = error is SaveManualBookError.DuplicateTitle,
-                    )
-                }
-                if (error !is SaveManualBookError.DuplicateTitle) {
-                    _effects.emit(ManualEntryEffect.ShowError(ManualEntryError.SaveFailed))
+                when (result.error) {
+                    SaveManualBookError.DuplicateTitle ->
+                        _uiState.update { it.copy(isLoading = false, showDuplicateDialog = true) }
+                    SaveManualBookError.InvalidIsbn ->
+                        _uiState.update { it.copy(isLoading = false, isbnError = ManualEntryError.IsbnInvalid) }
+                    SaveManualBookError.SaveFailed -> {
+                        _uiState.update { it.copy(isLoading = false) }
+                        _effects.emit(ManualEntryEffect.ShowError(ManualEntryError.SaveFailed))
+                    }
                 }
             }
         }
@@ -115,14 +116,21 @@ class ManualEntryViewModel(
     private suspend fun handleAddAnyway() {
         val entry = pendingEntry ?: return
         _uiState.update { it.copy(isLoading = true, showDuplicateDialog = false) }
-        when (val result = saveManualBookUseCase(entry.title, entry.author, forceAdd = true)) {
+        when (val result = saveManualBookUseCase(entry.title, entry.author, entry.isbn, forceAdd = true)) {
             is Result.Success -> {
                 _uiState.update { it.copy(isLoading = false) }
                 _effects.emit(ManualEntryEffect.NavigateToLibrary)
             }
             is Result.Failure -> {
-                _uiState.update { it.copy(isLoading = false) }
-                _effects.emit(ManualEntryEffect.ShowError(ManualEntryError.SaveFailed))
+                when (result.error) {
+                    SaveManualBookError.InvalidIsbn ->
+                        _uiState.update { it.copy(isLoading = false, isbnError = ManualEntryError.IsbnInvalid) }
+                    SaveManualBookError.SaveFailed,
+                    SaveManualBookError.DuplicateTitle -> {
+                        _uiState.update { it.copy(isLoading = false) }
+                        _effects.emit(ManualEntryEffect.ShowError(ManualEntryError.SaveFailed))
+                    }
+                }
             }
         }
     }
