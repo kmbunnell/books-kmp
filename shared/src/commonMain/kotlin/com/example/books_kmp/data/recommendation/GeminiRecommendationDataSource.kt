@@ -30,7 +30,7 @@ private const val RECOMMENDATION_PROMPT_TEMPLATE =
         "- In the \"reason\" field, reference at least one specific book from the reading list " +
         "to explain why this recommendation fits\n\n" +
         "Return a JSON array with objects:\n" +
-        "{\"title\":\"...\",\"authors\":[...],\"reason\":\"...\",\"description\":\"...\"}"
+        "{\"title\":\"...\",\"authors\":[...],\"isbn\":\"...\",\"reason\":\"...\",\"description\":\"...\"}"
 
 private const val GEMINI_BASE_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
