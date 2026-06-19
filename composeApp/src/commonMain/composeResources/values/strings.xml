@@ -132,4 +132,14 @@
     <string name="paywall_confirmation_upgraded">Upgraded to Premium!</string>
     <string name="paywall_confirmation_downgraded">Downgraded to Free</string>
     <string name="paywall_error_update_failed">Couldn't update your subscription. Please try again.</string>
+    <string name="cd_speed_dial_toggle">More actions</string>
+    <string name="cd_speed_dial_add_book">Add book</string>
+    <string name="cd_speed_dial_get_recommendations">Get recommendations</string>
+    <string name="label_speed_dial_add_book">Add Book</string>
+    <string name="label_speed_dial_get_recommendations">Get Recommendations</string>
+    <string name="error_no_filtered_books_for_recommendations">No books match your current filters.</string>
+    <string name="dialog_recommendations_quality_title">Limited Selection</string>
+    <string name="dialog_recommendations_quality_message">Recommendations draw from your current filters. Broaden your search for better results, or continue anyway?</string>
+    <string name="dialog_recommendations_quality_confirm">Continue</string>
+    <string name="dialog_recommendations_quality_dismiss">Cancel</string>
 </resources>

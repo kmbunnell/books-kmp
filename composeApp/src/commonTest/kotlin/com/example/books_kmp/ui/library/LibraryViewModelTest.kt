@@ -615,6 +615,98 @@ class LibraryViewModelTest {
             assertTrue(vm.uiState.value.isPremium)
         }
 
+    @Test
+    fun `RequestRecommendations with 0 filtered books emits ShowError NoFilteredBooksForRecommendations`() =
+        runTest {
+            val emptyRepo = FakeBookRepository()
+            val emptyVm = LibraryViewModel(emptyRepo, repo, FakeAuthRepository(), FakeEntitlementState())
+            advanceUntilIdle()
+            val emittedEffects = mutableListOf<LibraryEffect>()
+            val collectJob = launch { emptyVm.effects.collect { emittedEffects.add(it) } }
+
+            emptyVm.onIntent(LibraryIntent.RequestRecommendations)
+            advanceUntilIdle()
+
+            assertTrue(
+                emittedEffects.any {
+                    it is LibraryEffect.ShowError &&
+                        it.error == LibraryError.NoFilteredBooksForRecommendations
+                },
+            )
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `RequestRecommendations with 1 filtered book sets showQualityWarning in state`() =
+        runTest {
+            val oneRepo = FakeBookRepository()
+            oneRepo.seedBooks(book1)
+            val oneVm = LibraryViewModel(oneRepo, repo, FakeAuthRepository(), FakeEntitlementState())
+            advanceUntilIdle()
+
+            oneVm.onIntent(LibraryIntent.RequestRecommendations)
+            advanceUntilIdle()
+
+            assertTrue(oneVm.uiState.value.showQualityWarning)
+        }
+
+    @Test
+    fun `RequestRecommendations with 5 filtered books sets showQualityWarning in state`() =
+        runTest {
+            val fiveRepo = FakeBookRepository()
+            fiveRepo.seedBooks(*Array(5) { index -> book1.copy(id = "f-$index", title = "F $index") })
+            val fiveVm = LibraryViewModel(fiveRepo, repo, FakeAuthRepository(), FakeEntitlementState())
+            advanceUntilIdle()
+
+            fiveVm.onIntent(LibraryIntent.RequestRecommendations)
+            advanceUntilIdle()
+
+            assertTrue(fiveVm.uiState.value.showQualityWarning)
+        }
+
+    @Test
+    fun `RequestRecommendations with 6 or more filtered books emits NavigateToRecommendations`() =
+        runTest {
+            val sixRepo = FakeBookRepository()
+            sixRepo.seedBooks(*Array(6) { index -> book1.copy(id = "s-$index", title = "S $index") })
+            val sixVm = LibraryViewModel(sixRepo, repo, FakeAuthRepository(), FakeEntitlementState())
+            advanceUntilIdle()
+            val emittedEffects = mutableListOf<LibraryEffect>()
+            val collectJob = launch { sixVm.effects.collect { emittedEffects.add(it) } }
+
+            sixVm.onIntent(LibraryIntent.RequestRecommendations)
+            advanceUntilIdle()
+
+            assertTrue(
+                emittedEffects.any {
+                    it is LibraryEffect.NavigateToRecommendations &&
+                        it.tagIds == emptyList<String>()
+                },
+            )
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `ConfirmRecommendations emits NavigateToRecommendations with active filter tag ids`() =
+        runTest {
+            advanceUntilIdle()
+            vm.onIntent(LibraryIntent.ToggleFilter("t1"))
+            advanceUntilIdle()
+
+            val emittedEffects = mutableListOf<LibraryEffect>()
+            val collectJob = launch { vm.effects.collect { emittedEffects.add(it) } }
+
+            vm.onIntent(LibraryIntent.ConfirmRecommendations)
+            advanceUntilIdle()
+
+            assertTrue(
+                emittedEffects.any {
+                    it is LibraryEffect.NavigateToRecommendations && it.tagIds == listOf("t1")
+                },
+            )
+            collectJob.cancel()
+        }
+
     private fun failingGetTagsRepo(): TagRepository =
         object : TagRepository {
             override val tagsFlow = MutableStateFlow<List<Tag>?>(null)
