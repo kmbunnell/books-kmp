@@ -32,6 +32,7 @@ data class LibraryUiState(
     val isLoading: Boolean = false,
     val error: LibraryError? = null,
     val isPremium: Boolean = false,
+    val showQualityWarning: Boolean = false,
 )
 
 sealed interface LibraryIntent {
@@ -50,6 +51,12 @@ sealed interface LibraryIntent {
     data object SignOut : LibraryIntent
 
     data object NavigateToAddBook : LibraryIntent
+
+    data object RequestRecommendations : LibraryIntent
+
+    data object ConfirmRecommendations : LibraryIntent
+
+    data object DismissQualityWarning : LibraryIntent
 }
 
 sealed interface LibraryError {
@@ -58,15 +65,21 @@ sealed interface LibraryError {
     data object SignOutFailed : LibraryError
 
     data object LibraryLimitReached : LibraryError
+
+    data object NoFilteredBooksForRecommendations : LibraryError
 }
 
 sealed interface LibraryEffect {
     data class ShowError(val error: LibraryError) : LibraryEffect
 
     data object NavigateToAddBook : LibraryEffect
+
+    data class NavigateToRecommendations(val tagIds: List<String>) : LibraryEffect
 }
 
 enum class SortOrder { TITLE_ASC, AUTHOR_ASC }
+
+private const val RECOMMENDATIONS_QUALITY_THRESHOLD = 5
 
 class LibraryViewModel(
     private val bookRepository: BookRepository,
@@ -193,6 +206,23 @@ class LibraryViewModel(
                 // Channel.BUFFERED — trySend won't drop unless the buffer is full, which can't happen here
                 _effects.trySend(effect)
             }
+            LibraryIntent.RequestRecommendations -> {
+                val state = _uiState.value
+                val count = state.filteredBooks.size
+                when {
+                    count == 0 ->
+                        _effects.trySend(LibraryEffect.ShowError(LibraryError.NoFilteredBooksForRecommendations))
+                    count <= RECOMMENDATIONS_QUALITY_THRESHOLD ->
+                        _uiState.update { it.copy(showQualityWarning = true) }
+                    else -> _effects.trySend(LibraryEffect.NavigateToRecommendations(state.activeFilterTagIds.toList()))
+                }
+            }
+            LibraryIntent.ConfirmRecommendations -> {
+                val tagIds = _uiState.value.activeFilterTagIds.toList()
+                _uiState.update { it.copy(showQualityWarning = false) }
+                _effects.trySend(LibraryEffect.NavigateToRecommendations(tagIds))
+            }
+            LibraryIntent.DismissQualityWarning -> _uiState.update { it.copy(showQualityWarning = false) }
         }
     }
 

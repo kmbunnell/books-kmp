@@ -26,6 +26,7 @@ fun AdaptiveLibraryLayout(
     onNavigateToAddBook: () -> Unit,
     onNavigateToTagManagement: () -> Unit,
     onNavigateToPaywall: () -> Unit = {},
+    onNavigateToRecommendations: (List<String>) -> Unit = {},
 ) {
     val navigator = rememberListDetailPaneScaffoldNavigator<String>()
     val scope = rememberCoroutineScope()
@@ -39,6 +40,7 @@ fun AdaptiveLibraryLayout(
                     onNavigateToAddBook = onNavigateToAddBook,
                     onNavigateToTagManagement = onNavigateToTagManagement,
                     onNavigateToPaywall = onNavigateToPaywall,
+                    onNavigateToRecommendations = onNavigateToRecommendations,
                     onNavigateToBookDetail = { bookId ->
                         scope.launch {
                             navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, bookId)

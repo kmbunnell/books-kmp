@@ -20,4 +20,6 @@ sealed interface Route {
     @Serializable data class BookDetail(val bookId: String) : Route
 
     @Serializable data object Paywall : Route
+
+    @Serializable data class Recommendations(val tagIds: List<String>) : Route
 }

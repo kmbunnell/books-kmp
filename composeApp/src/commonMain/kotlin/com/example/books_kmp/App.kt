@@ -118,6 +118,9 @@ fun App() {
                         onNavigateToAddBook = { navController.navigate(Route.AddBook) },
                         onNavigateToTagManagement = { navController.navigate(Route.TagManagement) },
                         onNavigateToPaywall = { navController.navigate(Route.Paywall) },
+                        onNavigateToRecommendations = { tagIds ->
+                            navController.navigate(Route.Recommendations(tagIds))
+                        },
                     )
                 } else {
                     LibraryScreen(
@@ -125,6 +128,9 @@ fun App() {
                         onNavigateToTagManagement = { navController.navigate(Route.TagManagement) },
                         onNavigateToBookDetail = { bookId -> navController.navigate(Route.BookDetail(bookId)) },
                         onNavigateToPaywall = { navController.navigate(Route.Paywall) },
+                        onNavigateToRecommendations = { tagIds ->
+                            navController.navigate(Route.Recommendations(tagIds))
+                        },
                     )
                 }
             }
@@ -171,6 +177,9 @@ fun App() {
                 PaywallScreen(
                     onNavigateUp = { navController.popBackStack() },
                 )
+            }
+            composable<Route.Recommendations> {
+                // T6b registers the actual Recommendations screen here.
             }
             composable<Route.BookDetail> { backStackEntry ->
                 val route = backStackEntry.toRoute<Route.BookDetail>()

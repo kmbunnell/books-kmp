@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocalOffer
@@ -27,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,10 +67,20 @@ import bookskmp.composeapp.generated.resources.cd_close
 import bookskmp.composeapp.generated.resources.cd_filter_books
 import bookskmp.composeapp.generated.resources.cd_manage_tags
 import bookskmp.composeapp.generated.resources.cd_sort_books
+import bookskmp.composeapp.generated.resources.cd_speed_dial_add_book
+import bookskmp.composeapp.generated.resources.cd_speed_dial_get_recommendations
+import bookskmp.composeapp.generated.resources.cd_speed_dial_toggle
+import bookskmp.composeapp.generated.resources.dialog_recommendations_quality_confirm
+import bookskmp.composeapp.generated.resources.dialog_recommendations_quality_dismiss
+import bookskmp.composeapp.generated.resources.dialog_recommendations_quality_message
+import bookskmp.composeapp.generated.resources.dialog_recommendations_quality_title
 import bookskmp.composeapp.generated.resources.error_library_limit_reached
 import bookskmp.composeapp.generated.resources.error_library_load_failed
+import bookskmp.composeapp.generated.resources.error_no_filtered_books_for_recommendations
 import bookskmp.composeapp.generated.resources.error_sign_out_failed
 import bookskmp.composeapp.generated.resources.hint_search_books
+import bookskmp.composeapp.generated.resources.label_speed_dial_add_book
+import bookskmp.composeapp.generated.resources.label_speed_dial_get_recommendations
 import bookskmp.composeapp.generated.resources.library_empty_add_first
 import bookskmp.composeapp.generated.resources.library_empty_filter
 import bookskmp.composeapp.generated.resources.library_empty_title
@@ -81,6 +93,7 @@ import coil3.compose.AsyncImage
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.ui.TestTags
 import com.example.books_kmp.ui.components.AppSnackbarHost
+import com.example.books_kmp.ui.components.ConfirmationDialog
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -91,6 +104,7 @@ fun LibraryScreen(
     onNavigateToTagManagement: () -> Unit = {},
     onNavigateToBookDetail: (String) -> Unit = {},
     onNavigateToPaywall: () -> Unit = {},
+    onNavigateToRecommendations: (List<String>) -> Unit = {},
 ) {
     val viewModel: LibraryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -98,6 +112,7 @@ fun LibraryScreen(
     val loadFailedMessage = stringResource(Res.string.error_library_load_failed)
     val signOutFailedMessage = stringResource(Res.string.error_sign_out_failed)
     val limitReachedMessage = stringResource(Res.string.error_library_limit_reached)
+    val noFilteredBooksMessage = stringResource(Res.string.error_no_filtered_books_for_recommendations)
     val goPremiumLabel = stringResource(Res.string.paywall_button_go_premium)
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
@@ -114,12 +129,16 @@ fun LibraryScreen(
                         }
                         LibraryError.LoadFailed -> snackbarHostState.showSnackbar(loadFailedMessage)
                         LibraryError.SignOutFailed -> snackbarHostState.showSnackbar(signOutFailedMessage)
+                        LibraryError.NoFilteredBooksForRecommendations ->
+                            snackbarHostState.showSnackbar(noFilteredBooksMessage)
                     }
                 }
                 LibraryEffect.NavigateToAddBook -> onNavigateToAddBook()
+                is LibraryEffect.NavigateToRecommendations -> onNavigateToRecommendations(effect.tagIds)
             }
         }
     }
+
     LibraryScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
@@ -143,6 +162,7 @@ fun LibraryScreenContent(
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
     var showProfileSheet by remember { mutableStateOf(false) }
+    var speedDialExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
@@ -233,14 +253,29 @@ fun LibraryScreenContent(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onIntent(LibraryIntent.NavigateToAddBook) },
-                modifier = Modifier.testTag(TestTags.Library.AddBookFab),
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(Res.string.cd_add_book),
+            if (uiState.isPremium) {
+                LibrarySpeedDial(
+                    expanded = speedDialExpanded,
+                    onToggle = { speedDialExpanded = !speedDialExpanded },
+                    onAddBook = {
+                        speedDialExpanded = false
+                        onIntent(LibraryIntent.NavigateToAddBook)
+                    },
+                    onGetRecommendations = {
+                        speedDialExpanded = false
+                        onIntent(LibraryIntent.RequestRecommendations)
+                    },
                 )
+            } else {
+                FloatingActionButton(
+                    onClick = { onIntent(LibraryIntent.NavigateToAddBook) },
+                    modifier = Modifier.testTag(TestTags.Library.AddBookFab),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(Res.string.cd_add_book),
+                    )
+                }
             }
         },
     ) { innerPadding ->
@@ -339,6 +374,67 @@ fun LibraryScreenContent(
                 onNavigateToPaywall = onNavigateToPaywall,
                 onSignOut = { onIntent(LibraryIntent.SignOut) },
                 onDismiss = { showProfileSheet = false },
+            )
+        }
+
+        if (uiState.showQualityWarning) {
+            ConfirmationDialog(
+                title = stringResource(Res.string.dialog_recommendations_quality_title),
+                message = stringResource(Res.string.dialog_recommendations_quality_message),
+                confirmLabel = stringResource(Res.string.dialog_recommendations_quality_confirm),
+                dismissLabel = stringResource(Res.string.dialog_recommendations_quality_dismiss),
+                onConfirm = { onIntent(LibraryIntent.ConfirmRecommendations) },
+                onDismiss = { onIntent(LibraryIntent.DismissQualityWarning) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun LibrarySpeedDial(
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    onAddBook: () -> Unit,
+    onGetRecommendations: () -> Unit,
+) {
+    Column(horizontalAlignment = Alignment.End) {
+        if (expanded) {
+            ExtendedFloatingActionButton(
+                onClick = onAddBook,
+                modifier = Modifier.testTag(TestTags.Library.SpeedDialAddBook),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(Res.string.cd_speed_dial_add_book),
+                    )
+                },
+                text = { Text(stringResource(Res.string.label_speed_dial_add_book)) },
+            )
+            ExtendedFloatingActionButton(
+                onClick = onGetRecommendations,
+                modifier =
+                    Modifier
+                        .padding(top = 8.dp)
+                        .testTag(TestTags.Library.SpeedDialGetRecommendations),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.AutoAwesome,
+                        contentDescription = stringResource(Res.string.cd_speed_dial_get_recommendations),
+                    )
+                },
+                text = { Text(stringResource(Res.string.label_speed_dial_get_recommendations)) },
+            )
+        }
+        FloatingActionButton(
+            onClick = onToggle,
+            modifier =
+                Modifier
+                    .padding(top = 8.dp)
+                    .testTag(TestTags.Library.SpeedDialFab),
+        ) {
+            Icon(
+                imageVector = if (expanded) Icons.Filled.Close else Icons.Filled.Add,
+                contentDescription = stringResource(Res.string.cd_speed_dial_toggle),
             )
         }
     }

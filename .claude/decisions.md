@@ -6,6 +6,9 @@ Non-obvious decisions — rejected alternatives, surprising constraints, gotchas
 
 ---
 
+## 2026-06-19 — ConfirmationDialog used for advisory pre-flight gate, not destructive action (SHELVD-170)
+`ConfirmationDialog` is intentionally used to warn the user when fewer than 6 books match their filters before requesting recommendations. The alternative (inline advisory on the recommendations screen) forces a round-trip: navigate → see poor results → navigate back → re-filter → retry. Pre-flight is the right UX; the component is structurally correct even though the tier docs describe it as "destructive only."
+
 ## 2026-06-17 — BookRecommendation is in-memory only, no genres field (SHELVD-165)
 Gemini recommendation responses are never persisted; adding a recommended book to the library goes through the existing `AddBookUseCase` ISBN-lookup flow. The model carries `reason` and `description` but no `genres` field — other epic tickets assuming genre/description DB columns will need updating.
 

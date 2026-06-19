@@ -555,6 +555,101 @@ class LibraryScreenTest {
         composeTestRule.onNodeWithTag(TestTags.Library.LoadingIndicator).assertDoesNotExist()
     }
 
+    // --- Speed dial / recommendations tests ---
+
+    @Test
+    fun `when isPremium false only single Add Book FAB is shown`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = LibraryUiState(isPremium = false), onIntent = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.AddBookFab).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.Library.SpeedDialFab).assertDoesNotExist()
+    }
+
+    @Test
+    fun `when isPremium true speed dial toggle FAB is shown`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = LibraryUiState(isPremium = true), onIntent = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.SpeedDialFab).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.Library.AddBookFab).assertDoesNotExist()
+    }
+
+    @Test
+    fun `tapping speed dial toggle when collapsed expands speed dial options`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(uiState = LibraryUiState(isPremium = true), onIntent = {})
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.SpeedDialFab).performClick()
+        composeTestRule.onNodeWithTag(TestTags.Library.SpeedDialAddBook).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(TestTags.Library.SpeedDialGetRecommendations).assertIsDisplayed()
+    }
+
+    @Test
+    fun `tapping Add Book in speed dial dispatches NavigateToAddBook intent`() {
+        var dispatchedIntent: LibraryIntent? = null
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(isPremium = true),
+                onIntent = { dispatchedIntent = it },
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.SpeedDialFab).performClick()
+        composeTestRule.onNodeWithTag(TestTags.Library.SpeedDialAddBook).performClick()
+        assertEquals(LibraryIntent.NavigateToAddBook, dispatchedIntent)
+    }
+
+    @Test
+    fun `tapping Get Recommendations in speed dial dispatches RequestRecommendations`() {
+        var dispatchedIntent: LibraryIntent? = null
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(isPremium = true),
+                onIntent = { dispatchedIntent = it },
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.Library.SpeedDialFab).performClick()
+        composeTestRule.onNodeWithTag(TestTags.Library.SpeedDialGetRecommendations).performClick()
+        assertEquals(LibraryIntent.RequestRecommendations, dispatchedIntent)
+    }
+
+    @Test
+    fun `quality warning dialog shown when showQualityWarning is true in state`() {
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(showQualityWarning = true),
+                onIntent = {},
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.ConfirmationDialog).assertIsDisplayed()
+    }
+
+    @Test
+    fun `confirming quality warning dialog dispatches ConfirmRecommendations`() {
+        var dispatchedIntent: LibraryIntent? = null
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(showQualityWarning = true),
+                onIntent = { dispatchedIntent = it },
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.ConfirmationDialogConfirmButton).performClick()
+        assertEquals(LibraryIntent.ConfirmRecommendations, dispatchedIntent)
+    }
+
+    @Test
+    fun `dismissing quality warning dialog dispatches DismissQualityWarning intent`() {
+        var dispatchedIntent: LibraryIntent? = null
+        composeTestRule.setContent {
+            LibraryScreenContent(
+                uiState = LibraryUiState(showQualityWarning = true),
+                onIntent = { dispatchedIntent = it },
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.ErrorPresentation.ConfirmationDialogDismissButton).performClick()
+        assertEquals(LibraryIntent.DismissQualityWarning, dispatchedIntent)
+    }
+
     @Test
     fun `book grid not shown when filteredBooks is empty but books non-empty`() {
         composeTestRule.setContent {
