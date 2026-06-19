@@ -12,7 +12,7 @@ import kotlinx.coroutines.test.runTest
 class LookupBookUseCaseTest {
     private val repo = FakeBookRepository()
     private val lookup = FakeBookLookupService()
-    private val useCase = LookupBookUseCase( lookup)
+    private val useCase = LookupBookUseCase(lookup)
 
     private val iliadLookupData =
         BookLookupData(

@@ -3,9 +3,9 @@ package com.example.books_kmp.data.library
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.BookRepositoryError
+import com.example.books_kmp.domain.library.matchesDuplicate
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.NewBook
-import com.example.books_kmp.domain.library.matchesDuplicate
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
@@ -82,7 +82,7 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
                 is Result.Failure -> return Result.Failure(loaded.error)
                 is Result.Success -> loaded.data
             }
-               val match = cache.find { matchesDuplicate(it, isbn, normalisedTitle, normalisedAuthors) }
+        val match = cache.find { matchesDuplicate(it, isbn, normalisedTitle, normalisedAuthors) }
         return Result.Success(match)
     }
 
