@@ -207,16 +207,13 @@ class AddBookViewModel(
                 _uiState.update { it.copy(isLoading = false, foundBook = result.data) }
             }
             is Result.Failure -> {
-                val error = result.error
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         foundBook = null,
-                        showDuplicateDialog = error is AddBookError.DuplicateBook,
-                        error = error.toScreenError(),
+                        error = result.error.toScreenError(),
                     )
                 }
-                if (error == AddBookError.LibraryLimitReached) _effects.emit(AddBookEffect.ShowLibraryLimitReached)
             }
         }
     }
