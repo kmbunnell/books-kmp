@@ -87,7 +87,7 @@ fun appModule(
         }
         factory { SignInUseCase(get()) }
         factory { SignUpUseCase(get()) }
-        factory { LookupBookUseCase(get(), get()) }
+        factory { LookupBookUseCase(get()) }
         factory { LookupByTitleUseCase(get()) }
         factory { AddBookUseCase(get(), get()) }
         factory { SaveManualBookUseCase(get()) }
