@@ -110,6 +110,18 @@ class AddBookViewModelTest {
         )
 
     @Test
+    fun `LookupIsbn with duplicate isbn in repo shows book preview with no dialog`() =
+        runTest {
+            fakeRepo.seedBooks(matchingBook)
+            fakeService.lookupResult = Result.Success(validLookupData)
+            viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
+            viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            val state = viewModel.uiState.value
+            assertFalse(state.showDuplicateDialog)
+            assertEquals(validLookupData, state.foundBook)
+        }
+
+    @Test
     fun `ConfirmBook with DuplicateBook sets showDuplicateDialog and clears isLoading`() =
         runTest {
             fakeRepo.seedBooks(matchingBook)

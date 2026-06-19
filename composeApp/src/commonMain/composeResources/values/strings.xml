@@ -41,7 +41,7 @@
     <string name="button_add">Add</string>
     <string name="button_add_and_tag">Add and Tag</string>
     <string name="error_duplicate_title">Duplicate Book</string>
-    <string name="error_duplicate_message">This book is already in your library.</string>
+    <string name="error_duplicate_message">This book is already in your library. Add another copy?</string>
     <string name="button_ok">OK</string>
     <string name="button_add_anyway">Add Anyway</string>
     <string name="error_network_generic">Network error. Please try again.</string>

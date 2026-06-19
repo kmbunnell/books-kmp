@@ -437,6 +437,24 @@ class AddBookScreenTest {
     }
 
     @Test
+    fun `duplicate dialog shows add another copy message`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(showDuplicateDialog = true),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+                onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
+            )
+        }
+        composeTestRule.onNodeWithText("This book is already in your library. Add another copy?")
+            .assertIsDisplayed()
+    }
+
+    @Test
     fun `Cancel button in duplicate dialog dispatches DismissDuplicateDialog intent`() {
         var capturedIntent: AddBookIntent? = null
         composeTestRule.setContent {
