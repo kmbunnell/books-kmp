@@ -51,7 +51,7 @@ class AddBookViewModelTest {
         Dispatchers.setMain(testDispatcher)
         fakeRepo = FakeBookRepository()
         fakeService = FakeBookLookupService()
-        lookupUseCase = LookupBookUseCase(fakeRepo, fakeService)
+        lookupUseCase = LookupBookUseCase(fakeService)
         addBookUseCase = AddBookUseCase(fakeRepo, FakeEntitlementState())
         lookupByTitleUseCase = LookupByTitleUseCase(fakeService)
         viewModel = AddBookViewModel(lookupUseCase, addBookUseCase, lookupByTitleUseCase)
@@ -717,7 +717,7 @@ class AddBookViewModelTest {
                 )
             },
         )
-        val lookup = LookupBookUseCase(cappedRepo, fakeService)
+        val lookup = LookupBookUseCase(fakeService)
         val add = AddBookUseCase(cappedRepo, FakeEntitlementState())
         return AddBookViewModel(lookup, add, lookupByTitleUseCase)
     }
