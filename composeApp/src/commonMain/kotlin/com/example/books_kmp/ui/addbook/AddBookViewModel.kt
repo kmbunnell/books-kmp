@@ -10,6 +10,7 @@ import com.example.books_kmp.domain.library.LookupBookUseCase
 import com.example.books_kmp.domain.library.LookupByTitleError
 import com.example.books_kmp.domain.library.LookupByTitleUseCase
 import com.example.books_kmp.domain.model.BookLookupData
+import com.example.books_kmp.ui.util.launchIfIdle
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -156,13 +157,13 @@ class AddBookViewModel(
                             },
                     )
                 }
-            is AddBookIntent.LookupIsbn -> launchIfIdle { handleLookupIsbn(intent.isbn) }
-            is AddBookIntent.LookupByTitle -> launchIfIdle { handleLookupByTitle(intent.title) }
-            AddBookIntent.ConfirmBook -> launchIfIdle { handleConfirmBook() }
-            AddBookIntent.AddAndTag -> launchIfIdle { handleAddAndTag() }
-            AddBookIntent.AddAnyway -> launchIfIdle { handleAddAnyway() }
+            is AddBookIntent.LookupIsbn -> launchIfIdle({ _uiState.value.isLoading }) { handleLookupIsbn(intent.isbn) }
+            is AddBookIntent.LookupByTitle -> launchIfIdle({ _uiState.value.isLoading }) { handleLookupByTitle(intent.title) }
+            AddBookIntent.ConfirmBook -> launchIfIdle({ _uiState.value.isLoading }) { handleConfirmBook() }
+            AddBookIntent.AddAndTag -> launchIfIdle({ _uiState.value.isLoading }) { handleAddAndTag() }
+            AddBookIntent.AddAnyway -> launchIfIdle({ _uiState.value.isLoading }) { handleAddAnyway() }
             AddBookIntent.Retry ->
-                launchIfIdle {
+                launchIfIdle({ _uiState.value.isLoading }) {
                     val mode = _uiState.value.lookupMode
                     val query = if (mode == LookupMode.Title) _uiState.value.titleQuery else _uiState.value.isbn
                     if (query.isBlank()) return@launchIfIdle
@@ -171,7 +172,7 @@ class AddBookViewModel(
             AddBookIntent.EnterManually -> viewModelScope.launch { _effects.emit(AddBookEffect.NavigateToManualEntry) }
             is AddBookIntent.BarcodeScanned -> {
                 _uiState.update { it.copy(isScanning = false) }
-                launchIfIdle { handleLookupIsbn(intent.isbn) }
+                launchIfIdle({ _uiState.value.isLoading }) { handleLookupIsbn(intent.isbn) }
             }
         }
     }
@@ -189,11 +190,6 @@ class AddBookViewModel(
             AddBookError.Unauthenticated -> AddBookScreenError.Unauthenticated
             AddBookError.RateLimited -> AddBookScreenError.RateLimited
         }
-
-    private fun launchIfIdle(block: suspend () -> Unit) {
-        if (_uiState.value.isLoading) return
-        viewModelScope.launch { block() }
-    }
 
     private suspend fun handleLookupIsbn(isbn: String) {
         val trimmed = isbn.trim()

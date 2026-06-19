@@ -43,7 +43,7 @@ class ManualEntryViewModelTest {
     fun `SaveBook with blank title sets titleError and does not call use case`() =
         runTest {
             val viewModel = ManualEntryViewModel(useCase)
-            viewModel.onIntent(ManualEntryIntent.SaveBook("", "Homer"))
+            viewModel.onIntent(ManualEntryIntent.SaveBook("", "Homer", isbn = null))
             assertNotNull(viewModel.uiState.value.titleError)
             assertFalse(fakeRepo.addBookCalled)
         }
@@ -52,7 +52,7 @@ class ManualEntryViewModelTest {
     fun `SaveBook with blank author sets authorError and does not call use case`() =
         runTest {
             val viewModel = ManualEntryViewModel(useCase)
-            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", ""))
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "", isbn = null))
             assertNotNull(viewModel.uiState.value.authorError)
             assertFalse(fakeRepo.addBookCalled)
         }
@@ -61,7 +61,7 @@ class ManualEntryViewModelTest {
     fun `SaveBook with both blank sets both errors`() =
         runTest {
             val viewModel = ManualEntryViewModel(useCase)
-            viewModel.onIntent(ManualEntryIntent.SaveBook("", ""))
+            viewModel.onIntent(ManualEntryIntent.SaveBook("", "", isbn = null))
             assertNotNull(viewModel.uiState.value.titleError)
             assertNotNull(viewModel.uiState.value.authorError)
             assertFalse(fakeRepo.addBookCalled)
@@ -71,7 +71,7 @@ class ManualEntryViewModelTest {
     fun `SaveBook with valid inputs calls use case with correct title and author`() =
         runTest {
             val viewModel = ManualEntryViewModel(useCase)
-            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
             assertTrue(fakeRepo.addBookCalled)
             assertEquals("The Odyssey", fakeRepo.lastAddedBook?.title)
             assertEquals(listOf("Homer"), fakeRepo.lastAddedBook?.authors)
@@ -82,7 +82,7 @@ class ManualEntryViewModelTest {
         runTest {
             val viewModel = ManualEntryViewModel(useCase)
             viewModel.effects.test {
-                viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+                viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
                 assertIs<ManualEntryEffect.NavigateToLibrary>(awaitItem())
             }
         }
@@ -93,7 +93,7 @@ class ManualEntryViewModelTest {
             fakeRepo.addBookShouldFail = true
             val viewModel = ManualEntryViewModel(useCase)
             viewModel.effects.test {
-                viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+                viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
                 val effect = awaitItem() as ManualEntryEffect.ShowError
                 assertEquals(ManualEntryError.SaveFailed, effect.error)
             }
@@ -109,7 +109,7 @@ class ManualEntryViewModelTest {
 
             viewModel.uiState.test {
                 assertFalse(awaitItem().isLoading)
-                viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+                viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
                 assertTrue(awaitItem().isLoading)
                 gate.complete(Unit)
                 assertFalse(awaitItem().isLoading)
@@ -127,7 +127,7 @@ class ManualEntryViewModelTest {
 
             viewModel.uiState.test {
                 assertFalse(awaitItem().isLoading)
-                viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+                viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
                 assertTrue(awaitItem().isLoading)
                 gate.complete(Unit)
                 assertFalse(awaitItem().isLoading)
@@ -151,7 +151,7 @@ class ManualEntryViewModelTest {
                 Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
             )
             val viewModel = ManualEntryViewModel(useCase)
-            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
             assertTrue(viewModel.uiState.value.showDuplicateDialog)
             assertFalse(viewModel.uiState.value.isLoading)
         }
@@ -163,7 +163,7 @@ class ManualEntryViewModelTest {
                 Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
             )
             val viewModel = ManualEntryViewModel(useCase)
-            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
             viewModel.onIntent(ManualEntryIntent.DismissDuplicateDialog)
             assertFalse(viewModel.uiState.value.showDuplicateDialog)
         }
@@ -175,7 +175,7 @@ class ManualEntryViewModelTest {
                 Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
             )
             val viewModel = ManualEntryViewModel(useCase)
-            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
             fakeRepo.addBookShouldFail = true
             viewModel.effects.test {
                 viewModel.onIntent(ManualEntryIntent.AddAnyway)
@@ -191,10 +191,27 @@ class ManualEntryViewModelTest {
                 Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
             )
             val viewModel = ManualEntryViewModel(useCase)
-            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer"))
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
             viewModel.effects.test {
                 viewModel.onIntent(ManualEntryIntent.AddAnyway)
                 assertIs<ManualEntryEffect.NavigateToLibrary>(awaitItem())
             }
+        }
+
+    @Test
+    fun `SaveBook with valid isbn passes isbn to use case`() =
+        runTest {
+            val viewModel = ManualEntryViewModel(useCase)
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = "9781234567890"))
+            assertEquals("9781234567890", fakeRepo.lastAddedBook?.isbn)
+        }
+
+    @Test
+    fun `SaveBook with invalid isbn sets isbnError and does not navigate`() =
+        runTest {
+            val viewModel = ManualEntryViewModel(useCase)
+            viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = "123"))
+            assertEquals(ManualEntryError.IsbnInvalid, viewModel.uiState.value.isbnError)
+            assertFalse(fakeRepo.addBookCalled)
         }
 }

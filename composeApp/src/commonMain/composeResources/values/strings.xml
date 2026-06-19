@@ -30,6 +30,7 @@
     <string name="title_manual_entry">Add Book Manually</string>
     <string name="label_title">Title</string>
     <string name="label_author">Author</string>
+    <string name="label_isbn_optional">ISBN (optional)</string>
     <string name="button_save">Save</string>
     <string name="button_cancel">Cancel</string>
     <string name="error_title_required">Title is required</string>

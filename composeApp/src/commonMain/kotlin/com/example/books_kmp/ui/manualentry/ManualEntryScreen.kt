@@ -34,9 +34,11 @@ import bookskmp.composeapp.generated.resources.button_cancel
 import bookskmp.composeapp.generated.resources.button_save
 import bookskmp.composeapp.generated.resources.cd_navigate_up
 import bookskmp.composeapp.generated.resources.error_author_required
+import bookskmp.composeapp.generated.resources.error_isbn_format
 import bookskmp.composeapp.generated.resources.error_save_failed
 import bookskmp.composeapp.generated.resources.error_title_required
 import bookskmp.composeapp.generated.resources.label_author
+import bookskmp.composeapp.generated.resources.label_isbn_optional
 import bookskmp.composeapp.generated.resources.label_title
 import bookskmp.composeapp.generated.resources.title_manual_entry
 import com.example.books_kmp.ui.DuplicateBookDialog
@@ -74,10 +76,12 @@ fun ManualEntryScreenContent(
     val snackbarHostState = remember { SnackbarHostState() }
     var title by rememberSaveable { mutableStateOf("") }
     var author by rememberSaveable { mutableStateOf("") }
+    var isbn by rememberSaveable { mutableStateOf("") }
 
     val errorTitleRequired = stringResource(Res.string.error_title_required)
     val errorAuthorRequired = stringResource(Res.string.error_author_required)
     val errorSaveFailed = stringResource(Res.string.error_save_failed)
+    val errorIsbnFormat = stringResource(Res.string.error_isbn_format)
 
     LaunchedEffect(Unit) {
         effects.collect { effect ->
@@ -90,6 +94,7 @@ fun ManualEntryScreenContent(
                             ManualEntryError.SaveFailed -> errorSaveFailed
                             ManualEntryError.TitleRequired -> errorTitleRequired
                             ManualEntryError.AuthorRequired -> errorAuthorRequired
+                            ManualEntryError.IsbnInvalid -> errorIsbnFormat
                         }
                     snackbarHostState.showSnackbar(message)
                 }
@@ -157,13 +162,27 @@ fun ManualEntryScreenContent(
                         .fillMaxWidth()
                         .testTag(TestTags.ManualEntry.AuthorField),
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = isbn,
+                onValueChange = { isbn = it },
+                label = { Text(stringResource(Res.string.label_isbn_optional)) },
+                singleLine = true,
+                isError = uiState.isbnError != null,
+                supportingText = uiState.isbnError?.let { { Text(errorIsbnFormat) } },
+                enabled = !uiState.isLoading,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .testTag(TestTags.ManualEntry.IsbnField),
+            )
             Spacer(modifier = Modifier.height(16.dp))
             if (uiState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.testTag(TestTags.ManualEntry.LoadingIndicator))
                 Spacer(modifier = Modifier.height(16.dp))
             }
             Button(
-                onClick = { onIntent(ManualEntryIntent.SaveBook(title, author)) },
+                onClick = { onIntent(ManualEntryIntent.SaveBook(title, author, isbn.ifBlank { null })) },
                 enabled = !uiState.isLoading && title.isNotBlank() && author.isNotBlank(),
                 modifier =
                     Modifier
