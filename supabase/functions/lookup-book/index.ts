@@ -16,6 +16,11 @@
 // All requests require a valid Supabase JWT in the `Authorization: Bearer ...` header.
 
 import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import {
+  type IndustryIdentifier,
+  extractIsbn,
+  parseRequest,
+} from "./_lib.ts";
 
 // Deno's EdgeRuntime global is provided by the Supabase Edge Runtime; declare it
 // here so TypeScript doesn't complain when type-checking locally.
@@ -34,73 +39,11 @@ interface BookMetadata {
   cover_url: string | null;
 }
 
-interface ParsedIsbnRequest {
-  type: "isbn";
-  isbn: string;
-}
-
-interface ParsedTitleRequest {
-  type: "title";
-  query: string;
-}
-
-type ParsedRequest = ParsedIsbnRequest | ParsedTitleRequest;
-
-interface ParseSuccess {
-  ok: true;
-  value: ParsedRequest;
-}
-
-interface ParseFailure {
-  ok: false;
-  error: string;
-}
-
-type ParseResult = ParseSuccess | ParseFailure;
-
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "Content-Type": "application/json" },
   });
-}
-
-function parseRequest(bodyText: string): ParseResult {
-  let body: unknown;
-  try {
-    body = JSON.parse(bodyText);
-  } catch (_e) {
-    return { ok: false, error: "Invalid JSON body" };
-  }
-
-  if (typeof body !== "object" || body === null) {
-    return { ok: false, error: "Body must be a JSON object" };
-  }
-
-  const obj = body as Record<string, unknown>;
-  const type = obj["type"];
-
-  if (type === "isbn") {
-    const isbn = obj["isbn"];
-    if (typeof isbn !== "string" || isbn.trim() === "") {
-      return { ok: false, error: "Missing or invalid 'isbn'" };
-    }
-    const trimmed = isbn.trim();
-    if (!/^\d{9}[\dX]$|^\d{13}$/.test(trimmed)) {
-      return { ok: false, error: "Invalid ISBN format — expected 10 or 13 digits" };
-    }
-    return { ok: true, value: { type: "isbn", isbn: trimmed } };
-  }
-
-  if (type === "title") {
-    const query = obj["query"];
-    if (typeof query !== "string" || query.trim() === "") {
-      return { ok: false, error: "Missing or invalid 'query'" };
-    }
-    return { ok: true, value: { type: "title", query: query.trim() } };
-  }
-
-  return { ok: false, error: "Missing or invalid 'type' (expected 'isbn' or 'title')" };
 }
 
 type AuthResult =
@@ -158,6 +101,7 @@ interface GoogleBooksVolume {
     title?: string;
     authors?: string[];
     imageLinks?: { thumbnail?: string };
+    industryIdentifiers?: IndustryIdentifier[];
   };
 }
 
@@ -265,7 +209,9 @@ async function handleTitle(query: string): Promise<Response> {
     return jsonResponse({ error: "Upstream book provider failed" }, 502);
   }
   const items = Array.isArray(gb.items) ? gb.items : [];
-  const results = items.map((v) => mapVolume(v, null));
+  const results = items.map((v) =>
+    mapVolume(v, extractIsbn(v.volumeInfo?.industryIdentifiers))
+  );
   return jsonResponse(results, 200);
 }
 
