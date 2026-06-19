@@ -64,6 +64,28 @@ class GeminiRecommendationDataSourceTest {
         }
 
     @Test
+    fun `getRawRecommendations deserializes isbn when present`() =
+        runTest {
+            val innerJson =
+                """[{"title":"Dune","authors":["Frank Herbert"],"isbn":"9780441013593",""" +
+                    """"reason":"Epic world-building","description":"A sci-fi classic"}]"""
+            val engine =
+                MockEngine { _ ->
+                    respond(
+                        content = geminiEnvelope(innerJson),
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+
+            val collection = listOf(CollectionEntry(title = "1984", authors = listOf("George Orwell")))
+            val result = buildDataSource(engine).getRawRecommendations(collection)
+
+            assertIs<Result.Success<List<RawRecommendation>>>(result)
+            assertEquals("9780441013593", result.data[0].isbn)
+        }
+
+    @Test
     fun `getRawRecommendations returns NetworkError on HTTP 500`() =
         runTest {
             val engine =
