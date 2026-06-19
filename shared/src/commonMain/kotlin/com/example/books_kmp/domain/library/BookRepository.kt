@@ -16,9 +16,11 @@ interface BookRepository {
 
     suspend fun addBook(book: NewBook): Result<Book, BookRepositoryError>
 
-    suspend fun findDuplicateTitle(normalisedTitle: String): Result<Book?, BookRepositoryError>
-
-    suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError>
+    suspend fun findDuplicate(
+        isbn: String?,
+        normalisedTitle: String,
+        normalisedAuthors: List<String>,
+    ): Result<Book?, BookRepositoryError>
 
     suspend fun getBookCount(): Result<Int, BookRepositoryError>
 

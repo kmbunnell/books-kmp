@@ -83,7 +83,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `isbn is null, duplicate title exists — returns DuplicateTitle error`() =
+    fun `isbn is null, duplicate (title + author) exists — returns DuplicateBook error`() =
         runTest {
             repo.seedBooks(
                 Book(
@@ -98,7 +98,7 @@ class AddBookUseCaseTest {
                 BookLookupData(isbn = null, title = "The Iliad", authors = listOf("Homer"), coverImageUrl = null)
             val result = useCase(noIsbnData)
             assertIs<Result.Failure<AddBookError>>(result)
-            assertEquals(AddBookError.DuplicateTitle("The Iliad"), result.error)
+            assertEquals(AddBookError.DuplicateBook, result.error)
         }
 
     @Test
@@ -120,9 +120,9 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `isbn is null, title lookup fails — returns NetworkError`() =
+    fun `isbn is null, duplicate lookup fails — returns NetworkError`() =
         runTest {
-            repo.findDuplicateTitleShouldFail = true
+            repo.findDuplicateShouldFail = true
             val noIsbnData =
                 BookLookupData(isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
             val result = useCase(noIsbnData)
@@ -131,7 +131,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `isbn is non-null, duplicate title exists — proceeds normally (title check skipped)`() =
+    fun `isbn is non-null, stored isbn null but title and author match — returns DuplicateBook`() =
         runTest {
             repo.seedBooks(
                 Book(
@@ -143,7 +143,42 @@ class AddBookUseCaseTest {
                 ),
             )
             val result = useCase(lookupData)
-            assertIs<Result.Success<*>>(result)
+            assertIs<Result.Failure<AddBookError>>(result)
+            assertEquals(AddBookError.DuplicateBook, result.error)
+        }
+
+    @Test
+    fun `isbn is non-null, full match (isbn + title + author) — returns DuplicateBook`() =
+        runTest {
+            repo.seedBooks(
+                Book(
+                    id = "existing-id",
+                    isbn = "9780140449136",
+                    title = "The Iliad",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                ),
+            )
+            val result = useCase(lookupData)
+            assertIs<Result.Failure<AddBookError>>(result)
+            assertEquals(AddBookError.DuplicateBook, result.error)
+        }
+
+    @Test
+    fun `isbn is non-null, same isbn but author mismatch — still returns DuplicateBook`() =
+        runTest {
+            repo.seedBooks(
+                Book(
+                    id = "existing-id",
+                    isbn = "9780140449136",
+                    title = "The Iliad",
+                    authors = listOf("Virgil"),
+                    coverImageUrl = null,
+                ),
+            )
+            val result = useCase(lookupData)
+            assertIs<Result.Failure<AddBookError>>(result)
+            assertEquals(AddBookError.DuplicateBook, result.error)
         }
 
     @Test

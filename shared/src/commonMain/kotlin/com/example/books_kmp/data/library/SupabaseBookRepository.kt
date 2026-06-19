@@ -5,7 +5,7 @@ import com.example.books_kmp.domain.library.BookRepository
 import com.example.books_kmp.domain.library.BookRepositoryError
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.NewBook
-import com.example.books_kmp.util.normalise
+import com.example.books_kmp.domain.library.matchesDuplicate
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
@@ -72,13 +72,18 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
     override suspend fun getBookByIsbn(isbn: String): Result<Book?, BookRepositoryError> =
         selectSingleBook { eq("isbn", isbn) }
 
-    override suspend fun findDuplicateTitle(normalisedTitle: String): Result<Book?, BookRepositoryError> {
+    override suspend fun findDuplicate(
+        isbn: String?,
+        normalisedTitle: String,
+        normalisedAuthors: List<String>,
+    ): Result<Book?, BookRepositoryError> {
         val cache =
             booksCache.value ?: when (val loaded = getBooksByUser()) {
                 is Result.Failure -> return Result.Failure(loaded.error)
                 is Result.Success -> loaded.data
             }
-        return Result.Success(cache.find { normalise(it.title).lowercase() == normalisedTitle })
+               val match = cache.find { matchesDuplicate(it, isbn, normalisedTitle, normalisedAuthors) }
+        return Result.Success(match)
     }
 
     private suspend fun selectSingleBook(
@@ -96,25 +101,6 @@ class SupabaseBookRepository(private val supabase: SupabaseClient) : BookReposit
         } catch (e: Exception) {
             Result.Failure(BookRepositoryError.NetworkError)
         }
-
-    override suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError> {
-        if (isbn == null) return Result.Success(false)
-        return try {
-            val count =
-                supabase
-                    .from("books")
-                    .select {
-                        head = true
-                        count(Count.EXACT)
-                        filter { eq("isbn", isbn) }
-                    }.countOrNull() ?: 0
-            Result.Success(count > 0)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Result.Failure(BookRepositoryError.NetworkError)
-        }
-    }
 
     override suspend fun getBookCount(): Result<Int, BookRepositoryError> =
         try {

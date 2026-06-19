@@ -3,7 +3,6 @@ package com.example.books_kmp.domain.library
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.NewBook
-import com.example.books_kmp.util.normalise
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 class FakeBookRepository(
     var addBookShouldFail: Boolean = false,
     var addBookShouldReturnNotAuthenticated: Boolean = false,
-    var isbnExistsShouldFail: Boolean = false,
     var getBooksShouldFail: Boolean = false,
     var getBookByIdShouldFail: Boolean = false,
     var getBookCountShouldFail: Boolean = false,
@@ -21,7 +19,6 @@ class FakeBookRepository(
     private val _booksFlow = MutableStateFlow<List<Book>?>(null)
     override val booksFlow: StateFlow<List<Book>?> = _booksFlow.asStateFlow()
 
-    var isbnExistsOverride: Boolean? = null
     var lastAddedBook: NewBook? = null
     var addBookCalled = false
     var getBooksByUserCalled = 0
@@ -33,7 +30,7 @@ class FakeBookRepository(
     var deleteBookGate: CompletableDeferred<Unit>? = null
     var deleteBookShouldFail = false
     var deleteBookCalled = 0
-    var findDuplicateTitleShouldFail = false
+    var findDuplicateShouldFail = false
 
     fun seedBooks(vararg booksToSeed: Book) {
         books.addAll(booksToSeed)
@@ -108,18 +105,18 @@ class FakeBookRepository(
         return Result.Success(Unit)
     }
 
-    override suspend fun findDuplicateTitle(normalisedTitle: String): Result<Book?, BookRepositoryError> {
-        if (findDuplicateTitleShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
-        return Result.Success(books.find { normalise(it.title).lowercase() == normalisedTitle })
+    override suspend fun findDuplicate(
+        isbn: String?,
+        normalisedTitle: String,
+        normalisedAuthors: List<String>,
+    ): Result<Book?, BookRepositoryError> {
+        if (findDuplicateShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
+        val match = books.find { matchesDuplicate(it, isbn, normalisedTitle, normalisedAuthors) }
+        return Result.Success(match)
     }
 
     override suspend fun getBookCount(): Result<Int, BookRepositoryError> {
         if (getBookCountShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
         return Result.Success(books.size)
-    }
-
-    override suspend fun isbnExists(isbn: String?): Result<Boolean, BookRepositoryError> {
-        if (isbnExistsShouldFail) return Result.Failure(BookRepositoryError.NetworkError)
-        return Result.Success(isbnExistsOverride ?: books.any { it.isbn == isbn })
     }
 }
