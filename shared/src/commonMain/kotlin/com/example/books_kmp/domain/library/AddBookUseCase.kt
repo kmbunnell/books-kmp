@@ -25,15 +25,16 @@ class AddBookUseCase(
                     }
             }
         }
-        if (lookupData.isbn == null && !forceAdd) {
-            when (val check = bookRepository.findDuplicateTitle(normalise(lookupData.title).lowercase())) {
+        if (!forceAdd) {
+            val check =
+                bookRepository.findDuplicate(
+                    isbn = lookupData.isbn,
+                    normalisedTitle = normalise(lookupData.title).lowercase(),
+                    normalisedAuthors = lookupData.authors.map { normalise(it).lowercase() },
+                )
+            when (check) {
                 is Result.Failure -> return Result.Failure(AddBookError.NetworkError)
-                is Result.Success ->
-                    if (check.data != null) {
-                        return Result.Failure(
-                            AddBookError.DuplicateTitle(check.data.title)
-                        )
-                    }
+                is Result.Success -> if (check.data != null) return Result.Failure(AddBookError.DuplicateBook)
             }
         }
         val newBook =

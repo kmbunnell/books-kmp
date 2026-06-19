@@ -176,11 +176,10 @@ class AddBookViewModel(
         }
     }
 
-    // Null = handled through another presentation path: Duplicate/DuplicateTitle → showDuplicateDialog; LibraryLimitReached → ShowLibraryLimitReached effect
+    // Null = handled through another presentation path: DuplicateBook → showDuplicateDialog; LibraryLimitReached → ShowLibraryLimitReached effect
     private fun AddBookError.toScreenError(): AddBookScreenError? =
         when (this) {
-            is AddBookError.DuplicateTitle,
-            is AddBookError.Duplicate,
+            is AddBookError.DuplicateBook,
             AddBookError.LibraryLimitReached,
             -> null
             AddBookError.NotFound -> AddBookScreenError.NotFound
@@ -212,10 +211,8 @@ class AddBookViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        foundBook =
-                            if (error is AddBookError.Duplicate) error.lookupData else null,
-                        showDuplicateDialog =
-                            error is AddBookError.Duplicate || error is AddBookError.DuplicateTitle,
+                        foundBook = null,
+                        showDuplicateDialog = error is AddBookError.DuplicateBook,
                         error = error.toScreenError(),
                     )
                 }
@@ -261,7 +258,7 @@ class AddBookViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        showDuplicateDialog = error is AddBookError.DuplicateTitle,
+                        showDuplicateDialog = error is AddBookError.DuplicateBook,
                         error = error.toScreenError(),
                     )
                 }
@@ -284,8 +281,8 @@ class AddBookViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        showDuplicateDialog = error is AddBookError.DuplicateTitle,
-                        pendingAddAndTag = error is AddBookError.DuplicateTitle,
+                        showDuplicateDialog = error is AddBookError.DuplicateBook,
+                        pendingAddAndTag = error is AddBookError.DuplicateBook,
                         error = error.toScreenError(),
                     )
                 }

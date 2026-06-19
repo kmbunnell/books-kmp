@@ -99,7 +99,7 @@ class SaveManualBookUseCaseTest {
     @Test
     fun `invoke returns SaveFailed when title lookup fails`() =
         runTest {
-            repo.findDuplicateTitleShouldFail = true
+            repo.findDuplicateShouldFail = true
             val result = useCase("The Odyssey", "Homer")
             assertIs<Result.Failure<SaveManualBookError>>(result)
             assertEquals(SaveManualBookError.SaveFailed, result.error)

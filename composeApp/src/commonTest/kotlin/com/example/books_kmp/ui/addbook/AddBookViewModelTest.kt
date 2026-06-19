@@ -100,13 +100,25 @@ class AddBookViewModelTest {
             }
         }
 
+    private val matchingBook =
+        Book(
+            id = "existing-id",
+            isbn = "9780140449136",
+            title = "The Iliad",
+            authors = listOf("Homer"),
+            coverImageUrl = null,
+        )
+
     @Test
-    fun `LookupIsbn with Duplicate sets showDuplicateDialog and foundBook, clears isLoading`() =
+    fun `ConfirmBook with DuplicateBook sets showDuplicateDialog and clears isLoading`() =
         runTest {
-            fakeRepo.isbnExistsOverride = true
+            fakeRepo.seedBooks(matchingBook)
             fakeService.lookupResult = Result.Success(validLookupData)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            assertEquals(validLookupData, viewModel.uiState.value.foundBook)
+
+            viewModel.onIntent(AddBookIntent.ConfirmBook)
             val state = viewModel.uiState.value
             assertTrue(state.showDuplicateDialog)
             assertEquals(validLookupData, state.foundBook)
@@ -116,10 +128,11 @@ class AddBookViewModelTest {
     @Test
     fun `DismissDuplicateDialog clears showDuplicateDialog and foundBook`() =
         runTest {
-            fakeRepo.isbnExistsOverride = true
+            fakeRepo.seedBooks(matchingBook)
             fakeService.lookupResult = Result.Success(validLookupData)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            viewModel.onIntent(AddBookIntent.ConfirmBook)
             assertTrue(viewModel.uiState.value.showDuplicateDialog)
             viewModel.onIntent(AddBookIntent.DismissDuplicateDialog)
             val state = viewModel.uiState.value
@@ -162,10 +175,11 @@ class AddBookViewModelTest {
     @Test
     fun `DismissDuplicateDialog clears isbn in state`() =
         runTest {
-            fakeRepo.isbnExistsOverride = true
+            fakeRepo.seedBooks(matchingBook)
             fakeService.lookupResult = Result.Success(validLookupData)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            viewModel.onIntent(AddBookIntent.ConfirmBook)
             assertTrue(viewModel.uiState.value.showDuplicateDialog)
             viewModel.onIntent(AddBookIntent.DismissDuplicateDialog)
             assertEquals("", viewModel.uiState.value.isbn)
@@ -174,10 +188,11 @@ class AddBookViewModelTest {
     @Test
     fun `AddAnyway emits BookAdded and resets state, book inserted with original isbn`() =
         runTest {
-            fakeRepo.isbnExistsOverride = true
+            fakeRepo.seedBooks(matchingBook)
             fakeService.lookupResult = Result.Success(validLookupData)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            viewModel.onIntent(AddBookIntent.ConfirmBook)
             assertTrue(viewModel.uiState.value.showDuplicateDialog)
 
             viewModel.effects.test {
@@ -191,10 +206,12 @@ class AddBookViewModelTest {
     @Test
     fun `AddAnyway on repo failure sets NetworkError`() =
         runTest {
-            fakeRepo.isbnExistsOverride = true
+            fakeRepo.seedBooks(matchingBook)
             fakeService.lookupResult = Result.Success(validLookupData)
             viewModel.onIntent(AddBookIntent.IsbnChanged("9780140449136"))
             viewModel.onIntent(AddBookIntent.LookupIsbn("9780140449136"))
+            viewModel.onIntent(AddBookIntent.ConfirmBook)
+            assertTrue(viewModel.uiState.value.showDuplicateDialog)
             fakeRepo.addBookShouldFail = true
             viewModel.onIntent(AddBookIntent.AddAnyway)
             assertIs<AddBookScreenError.NetworkError>(viewModel.uiState.value.error)

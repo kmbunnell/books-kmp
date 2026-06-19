@@ -14,7 +14,13 @@ class SaveManualBookUseCase(
         forceAdd: Boolean = false,
     ): Result<Book, SaveManualBookError> {
         if (!forceAdd) {
-            when (val check = bookRepository.findDuplicateTitle(normalise(title).lowercase())) {
+            val check =
+                bookRepository.findDuplicate(
+                    isbn = null,
+                    normalisedTitle = normalise(title).lowercase(),
+                    normalisedAuthors = listOf(normalise(author).lowercase()),
+                )
+            when (check) {
                 is Result.Failure -> return Result.Failure(SaveManualBookError.SaveFailed)
                 is Result.Success -> if (check.data != null) return Result.Failure(SaveManualBookError.DuplicateTitle)
             }

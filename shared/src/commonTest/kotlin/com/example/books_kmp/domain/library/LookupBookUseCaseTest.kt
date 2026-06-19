@@ -1,18 +1,18 @@
 package com.example.books_kmp.domain.library
 
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.domain.model.BookLookupError
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
 class LookupBookUseCaseTest {
     private val repo = FakeBookRepository()
     private val lookup = FakeBookLookupService()
-    private val useCase = LookupBookUseCase(repo, lookup)
+    private val useCase = LookupBookUseCase( lookup)
 
     private val iliadLookupData =
         BookLookupData(
@@ -23,25 +23,21 @@ class LookupBookUseCaseTest {
         )
 
     @Test
-    fun `invoke returns Duplicate with lookup data and still calls API when isbn already exists`() =
+    fun `invoke returns Success even when isbn is already in library`() =
         runTest {
-            repo.isbnExistsOverride = true
+            repo.seedBooks(
+                Book(
+                    id = "existing-id",
+                    isbn = "9780140449136",
+                    title = "The Iliad",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                ),
+            )
             lookup.lookupResult = Result.Success(iliadLookupData)
             val result = useCase("9780140449136")
-            assertIs<Result.Failure<AddBookError>>(result)
-            val error = assertIs<AddBookError.Duplicate>(result.error)
-            assertEquals(iliadLookupData, error.lookupData)
-            assertTrue(lookup.lookupCalled)
-        }
-
-    @Test
-    fun `invoke returns API error when isbn already exists but API fails`() =
-        runTest {
-            repo.isbnExistsOverride = true
-            lookup.lookupResult = Result.Failure(BookLookupError.NotFound)
-            val result = useCase("9780140449136")
-            assertIs<Result.Failure<AddBookError>>(result)
-            assertEquals(AddBookError.NotFound, result.error)
+            assertIs<Result.Success<BookLookupData>>(result)
+            assertEquals(iliadLookupData, result.data)
         }
 
     @Test
@@ -96,14 +92,5 @@ class LookupBookUseCaseTest {
             val result = useCase("9780140449136")
             assertIs<Result.Failure<AddBookError>>(result)
             assertEquals(AddBookError.Unauthenticated, result.error)
-        }
-
-    @Test
-    fun `invoke returns NetworkError when isbnExists fails`() =
-        runTest {
-            repo.isbnExistsShouldFail = true
-            val result = useCase("9780140449136")
-            assertIs<Result.Failure<AddBookError>>(result)
-            assertIs<AddBookError.NetworkError>(result.error)
         }
 }

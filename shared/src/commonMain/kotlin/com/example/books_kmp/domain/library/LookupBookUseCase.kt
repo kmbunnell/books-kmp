@@ -4,26 +4,11 @@ import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.BookLookupData
 
 class LookupBookUseCase(
-    private val bookRepository: BookRepository,
     private val lookupService: BookLookupService,
 ) {
-    suspend operator fun invoke(isbn: String): Result<BookLookupData, AddBookError> {
-        val isbnAlreadyExists =
-            when (val result = bookRepository.isbnExists(isbn)) {
-                is Result.Failure -> return Result.Failure(AddBookError.NetworkError)
-                is Result.Success -> result.data
-            }
-
-        val lookupData =
-            when (val result = lookupService.lookupByIsbn(isbn)) {
-                is Result.Failure -> return Result.Failure(result.error.toAddBookError())
-                is Result.Success -> result.data
-            }
-
-        return if (isbnAlreadyExists) {
-            Result.Failure(AddBookError.Duplicate(lookupData))
-        } else {
-            Result.Success(lookupData)
+    suspend operator fun invoke(isbn: String): Result<BookLookupData, AddBookError> =
+        when (val result = lookupService.lookupByIsbn(isbn)) {
+            is Result.Failure -> Result.Failure(result.error.toAddBookError())
+            is Result.Success -> Result.Success(result.data)
         }
-    }
 }
