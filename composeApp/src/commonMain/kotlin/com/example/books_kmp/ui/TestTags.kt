@@ -145,6 +145,12 @@ object TestTags {
         const val FormSaveButton = "tag_form_save_button"
     }
 
+    object Recommendations {
+        const val LoadingIndicator = "recommendations_loading"
+        const val List = "recommendations_list"
+        const val ErrorMessage = "recommendations_error_message"
+    }
+
     object Paywall {
         const val TierLabel = "paywall_tier_label"
         const val GoPremiumButton = "paywall_go_premium_button"
