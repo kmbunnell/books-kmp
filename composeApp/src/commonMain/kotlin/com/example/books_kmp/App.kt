@@ -20,6 +20,7 @@ import com.example.books_kmp.ui.library.AdaptiveLibraryLayout
 import com.example.books_kmp.ui.library.LibraryScreen
 import com.example.books_kmp.ui.manualentry.ManualEntryScreen
 import com.example.books_kmp.ui.paywall.PaywallScreen
+import com.example.books_kmp.ui.recommendations.RecommendationsScreen
 import com.example.books_kmp.ui.tags.TagManagementScreen
 import com.example.books_kmp.ui.theme.AppTheme
 import org.koin.compose.viewmodel.koinViewModel
@@ -178,8 +179,12 @@ fun App() {
                     onNavigateUp = { navController.popBackStack() },
                 )
             }
-            composable<Route.Recommendations> {
-                // T6b registers the actual Recommendations screen here.
+            composable<Route.Recommendations> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.Recommendations>()
+                RecommendationsScreen(
+                    tagIds = route.tagIds,
+                    onNavigateUp = { navController.popBackStack() },
+                )
             }
             composable<Route.BookDetail> { backStackEntry ->
                 val route = backStackEntry.toRoute<Route.BookDetail>()

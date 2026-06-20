@@ -33,8 +33,7 @@ private const val RECOMMENDATION_PROMPT_TEMPLATE =
         "{\"title\":\"...\",\"authors\":[...],\"isbn\":\"...\",\"reason\":\"...\",\"description\":\"...\"}"
 
 private const val GEMINI_BASE_URL =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 @Serializable
 private data class GeminiPart(val text: String)
 
@@ -84,9 +83,13 @@ class GeminiRecommendationDataSource(
                 }
 
             if (response.status != HttpStatusCode.OK) {
+                val body = response.bodyAsText()
+                body.chunked(500).forEachIndexed { i, chunk ->
+                    println("GeminiDataSource[$i]: $chunk")
+                }
                 return Result.Failure(
                     RecommendationError.NetworkError(
-                        RuntimeException("HTTP ${response.status.value}")
+                        RuntimeException("HTTP ${response.status.value}: $body")
                     )
                 )
             }
@@ -105,6 +108,7 @@ class GeminiRecommendationDataSource(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            println("GeminiDataSource: exception — ${e::class.simpleName}: ${e.message}")
             Result.Failure(RecommendationError.NetworkError(e))
         }
     }
