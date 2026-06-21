@@ -4,7 +4,7 @@ A cross-platform mobile app for book collectors to build and manage a personal d
 
 Built with **Kotlin Multiplatform** and **Compose Multiplatform**, targeting both Android and iOS from a single shared codebase.
 
-> **Status:** Work in progress — core flows are functional end-to-end on Android and iOS. Shipped: email/password auth, library grid (tag filter, sort, search), barcode scanning (ML Kit / AVFoundation), Add Book by ISBN or title, Book Detail with tag toggling, Tag Management, Manual Entry, and tablet two-pane layout.
+> **Status:** Work in progress — core flows are functional end-to-end on Android and iOS. Shipped: email/password auth, library grid (tag filter, sort, search), barcode scanning (ML Kit / AVFoundation), Add Book by ISBN or title, Book Detail with tag toggling, Tag Management, Manual Entry, tablet two-pane layout, and AI-powered Book Recommendations (via Groq).
 
 ## Screenshots
 
@@ -19,6 +19,12 @@ Built with **Kotlin Multiplatform** and **Compose Multiplatform**, targeting bot
 | Library | Tags | Title Search | Add Book |
 |---------|------|--------------|----------|
 | ![Library](assets/andr_dark_lib.webp) | ![Tags](assets/andr_dark_tag.webp) | ![Title Search](assets/andr_dark_title_search.webp) | ![Add Book](assets/andr_dark_add.webp) |
+
+### Recommendations (AI-powered)
+
+| Android | iOS |
+|---------|-----|
+| ![Recommendations](assets/andr_recommends_fantasy.webp) | ![Recommendations](assets/ios_recommends_romance.webp) |
 
 ### Tablet (Two-Pane Layout)
 

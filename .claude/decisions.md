@@ -6,6 +6,9 @@ Non-obvious decisions — rejected alternatives, surprising constraints, gotchas
 
 ---
 
+## 2026-06-21 — Groq chosen over Gemini for AI recommendations; title lookup instead of ISBN (SHELVD-171)
+Groq's free tier needs no billing info, making it zero-friction to run. Result quality is lower than a paid model but acceptable for the feature. Recommended books are looked up by title (not ISBN) because Groq hallucinates ISBNs — the numbers it returns are plausible-looking but invalid, so ISBN lookup silently fails or surfaces wrong books. Title lookup through the existing Google Books path is the only reliable resolution strategy.
+
 ## 2026-06-19 — ConfirmationDialog used for advisory pre-flight gate, not destructive action (SHELVD-170)
 `ConfirmationDialog` is intentionally used to warn the user when fewer than 6 books match their filters before requesting recommendations. The alternative (inline advisory on the recommendations screen) forces a round-trip: navigate → see poor results → navigate back → re-filter → retry. Pre-flight is the right UX; the component is structurally correct even though the tier docs describe it as "destructive only."
 
