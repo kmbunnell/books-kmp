@@ -14,6 +14,8 @@ class FakeBookLookupService : BookLookupService {
 
     val lookupByTitleQueue: ArrayDeque<Result<List<BookLookupData>, BookLookupError>> = ArrayDeque()
     val lookupByTitleCalledWith: MutableList<String> = mutableListOf()
+    var lookupByTitleResult: Result<List<BookLookupData>, BookLookupError> =
+        Result.Failure(BookLookupError.NotFound)
 
     override suspend fun lookupByIsbn(isbn: String): Result<BookLookupData, BookLookupError> {
         lookupCalled = true
@@ -30,7 +32,7 @@ class FakeBookLookupService : BookLookupService {
         return if (lookupByTitleQueue.isNotEmpty()) {
             lookupByTitleQueue.removeFirst()
         } else {
-            Result.Failure(BookLookupError.NotFound)
+            lookupByTitleResult
         }
     }
 }
