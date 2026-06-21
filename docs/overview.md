@@ -13,6 +13,7 @@ For the schema itself read `supabase/migrations/`. For data models read `shared/
 - **Coil 3** for image loading — works in `commonMain`, no `expect`/`actual` needed.
 - **Koin** for DI — KMP-friendly and lightweight.
 - **Hand-rolled fakes over mocking libraries** in tests — most mock libraries don't support KMP cleanly.
+- **Groq for AI recommendations** over Gemini — Groq's free tier requires no billing info, making it easier to run without account setup overhead. Accepted tradeoff: result quality is noticeably lower than a paid model. Recommendations are looked up by title rather than ISBN: Groq hallucinates ISBNs (returns plausible-looking but invalid numbers), so ISBN-based lookup would silently fail or surface wrong books. Title lookup via the existing Google Books path is the only reliable match strategy for AI-generated results.
 
 ---
 
