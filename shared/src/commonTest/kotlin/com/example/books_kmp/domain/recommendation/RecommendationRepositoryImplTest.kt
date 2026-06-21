@@ -36,7 +36,6 @@ class RecommendationRepositoryImplTest {
                                     authors = listOf("Dan Simmons"),
                                     reason = "Epic sci-fi",
                                     description = "A space opera",
-                                    isbn = "9780553283686",
                                 ),
                             ),
                         ),
@@ -52,7 +51,7 @@ class RecommendationRepositoryImplTest {
             assertEquals(listOf("Dan Simmons"), recommendation.authors)
             assertEquals("Epic sci-fi", recommendation.reason)
             assertEquals("A space opera", recommendation.description)
-            assertEquals("9780553283686", recommendation.isbn)
+            assertNull(recommendation.isbn)
             assertNull(recommendation.coverUrl)
         }
 
