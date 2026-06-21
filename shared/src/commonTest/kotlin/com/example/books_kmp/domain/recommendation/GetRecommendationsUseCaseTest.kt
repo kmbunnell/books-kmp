@@ -253,7 +253,7 @@ class GetRecommendationsUseCaseTest {
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
 
-            assertEquals(Result.Success(listOf(rec1.copy(coverUrl = null))), result)
+            assertEquals(Result.Success(listOf(rec1.copy(isbn = null, coverUrl = null))), result)
             assertEquals(listOf("Rec 1"), lookup.lookupByTitleCalledWith)
         }
 
@@ -331,7 +331,8 @@ class GetRecommendationsUseCaseTest {
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
 
-            assertEquals(Result.Success(candidates), result)
+            val expected = candidates.map { it.copy(isbn = null) }
+            assertEquals(Result.Success(expected), result)
             assertEquals(3, lookup.lookupByTitleCalledWith.size)
         }
 
