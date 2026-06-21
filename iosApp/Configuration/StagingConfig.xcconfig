@@ -3,3 +3,4 @@
 
 PRODUCT_BUNDLE_IDENTIFIER = com.example.books_kmp.Bookskmp$(TEAM_ID).staging
 INFOPLIST_KEY_CFBundleDisplayName = Shelvd Staging
+KOTLIN_FRAMEWORK_BUILD_TYPE = debug
