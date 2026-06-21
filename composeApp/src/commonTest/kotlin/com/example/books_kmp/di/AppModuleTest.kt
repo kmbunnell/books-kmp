@@ -1,6 +1,6 @@
 package com.example.books_kmp.di
 
-import com.example.books_kmp.config.GeminiConfig
+import com.example.books_kmp.config.GroqConfig
 import com.example.books_kmp.config.SupabaseConfig
 import com.example.books_kmp.data.recommendation.RecommendationDataSource
 import com.example.books_kmp.domain.auth.AuthRepository
@@ -54,7 +54,7 @@ class AppModuleTest {
                                 supabaseUrl = "https://placeholder.supabase.co",
                                 supabaseAnonKey = "placeholder-key",
                             ),
-                        geminiConfig = GeminiConfig(""),
+                        groqConfig = GroqConfig(""),
                     ),
                     module { single { testClient } },
                 )

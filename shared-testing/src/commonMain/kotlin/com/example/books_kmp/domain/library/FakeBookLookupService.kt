@@ -8,11 +8,12 @@ class FakeBookLookupService : BookLookupService {
     var lookupResult: Result<BookLookupData, BookLookupError> =
         Result.Failure(BookLookupError.NotFound)
     var lookupCalled = false
-    var lookupByTitleResult: Result<List<BookLookupData>, BookLookupError> =
-        Result.Failure(BookLookupError.NotFound)
 
     val lookupByIsbnQueue: ArrayDeque<Result<BookLookupData, BookLookupError>> = ArrayDeque()
     val lookupByIsbnCalledWith: MutableList<String> = mutableListOf()
+
+    val lookupByTitleQueue: ArrayDeque<Result<List<BookLookupData>, BookLookupError>> = ArrayDeque()
+    val lookupByTitleCalledWith: MutableList<String> = mutableListOf()
 
     override suspend fun lookupByIsbn(isbn: String): Result<BookLookupData, BookLookupError> {
         lookupCalled = true
@@ -24,6 +25,12 @@ class FakeBookLookupService : BookLookupService {
         }
     }
 
-    override suspend fun lookupByTitle(title: String): Result<List<BookLookupData>, BookLookupError> =
-        lookupByTitleResult
+    override suspend fun lookupByTitle(title: String): Result<List<BookLookupData>, BookLookupError> {
+        lookupByTitleCalledWith.add(title)
+        return if (lookupByTitleQueue.isNotEmpty()) {
+            lookupByTitleQueue.removeFirst()
+        } else {
+            Result.Failure(BookLookupError.NotFound)
+        }
+    }
 }

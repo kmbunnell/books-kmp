@@ -1,6 +1,6 @@
 package com.example.books_kmp.data.recommendation
 
-import com.example.books_kmp.config.GeminiConfig
+import com.example.books_kmp.config.GroqConfig
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.recommendation.RecommendationError
 import io.ktor.client.HttpClient
@@ -15,22 +15,25 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlinx.coroutines.test.runTest
 
-class GeminiRecommendationDataSourceTest {
+class GroqRecommendationDataSourceTest {
     private val clients = mutableListOf<HttpClient>()
 
-    private fun buildDataSource(engine: MockEngine): GeminiRecommendationDataSource =
-        GeminiRecommendationDataSource(
+    private fun buildDataSource(engine: MockEngine): GroqRecommendationDataSource =
+        GroqRecommendationDataSource(
             httpClient = HttpClient(engine).also(clients::add),
-            config = GeminiConfig(apiKey = "test-api-key"),
+            config = GroqConfig(apiKey = "test-api-key"),
         )
 
-    // Wraps an inner JSON string as the Gemini response envelope.
-    // The inner JSON is placed verbatim inside a JSON string value, so it must be
-    // escaped — we do that with basic replace rather than a serialization import.
-    private fun geminiEnvelope(innerJson: String): String {
+    // Wraps a recommendations JSON object as a Groq chat completion response.
+    // innerJson must be a valid JSON object string, e.g. {"recommendations":[...]}.
+    // Quotes in innerJson are escaped so it can be embedded as a JSON string value.
+    private fun groqEnvelope(innerJson: String): String {
         val escaped = innerJson.replace("\\", "\\\\").replace("\"", "\\\"")
-        return """{"candidates":[{"content":{"parts":[{"text":"$escaped"}]}}]}"""
+        return """{"choices":[{"message":{"role":"assistant","content":"$escaped"}}]}"""
     }
+
+    private fun recommendationsJson(vararg items: String): String =
+        """{"recommendations":[${items.joinToString(",")}]}"""
 
     @AfterTest
     fun tearDown() {
@@ -38,15 +41,15 @@ class GeminiRecommendationDataSourceTest {
     }
 
     @Test
-    fun `getRawRecommendations returns Success with mapped data on 200 with valid array`() =
+    fun `getRawRecommendations returns Success with mapped data on 200 with valid object`() =
         runTest {
-            val innerJson =
-                """[{"title":"Dune","authors":["Frank Herbert"],""" +
-                    """"reason":"Epic world-building","description":"A sci-fi classic"}]"""
+            val innerJson = recommendationsJson(
+                """{"title":"Dune","authors":["Frank Herbert"],"reason":"Epic world-building","description":"A sci-fi classic"}"""
+            )
             val engine =
                 MockEngine { _ ->
                     respond(
-                        content = geminiEnvelope(innerJson),
+                        content = groqEnvelope(innerJson),
                         status = HttpStatusCode.OK,
                         headers = headersOf(HttpHeaders.ContentType, "application/json"),
                     )
@@ -66,13 +69,13 @@ class GeminiRecommendationDataSourceTest {
     @Test
     fun `getRawRecommendations deserializes isbn when present`() =
         runTest {
-            val innerJson =
-                """[{"title":"Dune","authors":["Frank Herbert"],"isbn":"9780441013593",""" +
-                    """"reason":"Epic world-building","description":"A sci-fi classic"}]"""
+            val innerJson = recommendationsJson(
+                """{"title":"Dune","authors":["Frank Herbert"],"isbn":"9780441013593","reason":"Epic world-building","description":"A sci-fi classic"}"""
+            )
             val engine =
                 MockEngine { _ ->
                     respond(
-                        content = geminiEnvelope(innerJson),
+                        content = groqEnvelope(innerJson),
                         status = HttpStatusCode.OK,
                         headers = headersOf(HttpHeaders.ContentType, "application/json"),
                     )
@@ -83,6 +86,27 @@ class GeminiRecommendationDataSourceTest {
 
             assertIs<Result.Success<List<RawRecommendation>>>(result)
             assertEquals("9780441013593", result.data[0].isbn)
+        }
+
+    @Test
+    fun `getRawRecommendations returns NoResults when recommendations array is empty`() =
+        runTest {
+            val engine =
+                MockEngine { _ ->
+                    respond(
+                        content = groqEnvelope("""{"recommendations":[]}"""),
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+
+            val result =
+                buildDataSource(engine).getRawRecommendations(
+                    listOf(CollectionEntry("1984", listOf("George Orwell"))),
+                )
+
+            assertIs<Result.Failure<RecommendationError>>(result)
+            assertEquals(RecommendationError.NoResults, result.error)
         }
 
     @Test
@@ -106,33 +130,12 @@ class GeminiRecommendationDataSourceTest {
         }
 
     @Test
-    fun `getRawRecommendations returns NoResults when Gemini returns empty array`() =
-        runTest {
-            val engine =
-                MockEngine { _ ->
-                    respond(
-                        content = geminiEnvelope("[]"),
-                        status = HttpStatusCode.OK,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                    )
-                }
-
-            val result =
-                buildDataSource(engine).getRawRecommendations(
-                    listOf(CollectionEntry("1984", listOf("George Orwell"))),
-                )
-
-            assertIs<Result.Failure<RecommendationError>>(result)
-            assertEquals(RecommendationError.NoResults, result.error)
-        }
-
-    @Test
     fun `getRawRecommendations returns NetworkError on malformed JSON`() =
         runTest {
             val engine =
                 MockEngine { _ ->
                     respond(
-                        content = geminiEnvelope("not-valid-json"),
+                        content = groqEnvelope("not-valid-json"),
                         status = HttpStatusCode.OK,
                         headers = headersOf(HttpHeaders.ContentType, "application/json"),
                     )

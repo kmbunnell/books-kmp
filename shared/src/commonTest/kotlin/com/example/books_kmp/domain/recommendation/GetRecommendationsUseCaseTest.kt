@@ -114,7 +114,7 @@ class GetRecommendationsUseCaseTest {
             val recRepo = FakeRecommendationRepository().apply { nextResult = Result.Success(listOf(rec1)) }
             val lookup =
                 FakeBookLookupService().apply {
-                    lookupByIsbnQueue.add(Result.Success(lookupFor(rec1)))
+                    lookupByTitleQueue.add(Result.Success(listOf(lookupFor(rec1))))
                 }
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
@@ -141,7 +141,7 @@ class GetRecommendationsUseCaseTest {
             val recRepo = FakeRecommendationRepository().apply { nextResult = Result.Success(listOf(rec1)) }
             val lookup =
                 FakeBookLookupService().apply {
-                    lookupByIsbnQueue.add(Result.Success(lookupFor(rec1)))
+                    lookupByTitleQueue.add(Result.Success(listOf(lookupFor(rec1))))
                 }
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(listOf("sci-fi"))
@@ -159,7 +159,7 @@ class GetRecommendationsUseCaseTest {
             val recRepo = FakeRecommendationRepository().apply { nextResult = Result.Success(listOf(rec1)) }
             val lookup =
                 FakeBookLookupService().apply {
-                    lookupByIsbnQueue.add(Result.Success(lookupFor(rec1)))
+                    lookupByTitleQueue.add(Result.Success(listOf(lookupFor(rec1))))
                 }
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(listOf("sci-fi"))
@@ -178,8 +178,8 @@ class GetRecommendationsUseCaseTest {
                 FakeRecommendationRepository().apply { nextResult = Result.Success(listOf(rec1, rec2)) }
             val lookup =
                 FakeBookLookupService().apply {
-                    lookupByIsbnQueue.add(Result.Success(lookupFor(rec1)))
-                    lookupByIsbnQueue.add(Result.Success(lookupFor(rec2)))
+                    lookupByTitleQueue.add(Result.Success(listOf(lookupFor(rec1))))
+                    lookupByTitleQueue.add(Result.Success(listOf(lookupFor(rec2))))
                 }
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
@@ -189,20 +189,21 @@ class GetRecommendationsUseCaseTest {
         }
 
     @Test
-    fun `candidate with null isbn is skipped — no lookup called`() =
+    fun `title lookup always attempted — failure includes candidate without cover`() =
         runTest {
             val entitlement = FakeEntitlementState().apply { setIsPremium(true) }
             val bookRepo = FakeBookRepository().apply { setBooksFlow(listOf(book("1"))) }
+            val noIsbnRec = rec1.copy(isbn = null, coverUrl = null)
             val recRepo =
                 FakeRecommendationRepository().apply {
-                    nextResult = Result.Success(listOf(rec1.copy(isbn = null)))
+                    nextResult = Result.Success(listOf(noIsbnRec))
                 }
             val lookup = FakeBookLookupService()
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
 
-            assertEquals(Result.Success(emptyList()), result)
-            assertTrue(lookup.lookupByIsbnCalledWith.isEmpty())
+            assertEquals(Result.Success(listOf(noIsbnRec)), result)
+            assertEquals(listOf("Rec 1"), lookup.lookupByTitleCalledWith)
         }
 
     @Test
@@ -219,7 +220,7 @@ class GetRecommendationsUseCaseTest {
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
 
             assertEquals(Result.Success(emptyList()), result)
-            assertTrue(lookup.lookupByIsbnCalledWith.isEmpty())
+            assertTrue(lookup.lookupByTitleCalledWith.isEmpty())
         }
 
     @Test
@@ -236,43 +237,41 @@ class GetRecommendationsUseCaseTest {
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
 
             assertEquals(Result.Success(emptyList()), result)
-            assertTrue(lookup.lookupByIsbnCalledWith.isEmpty())
+            assertTrue(lookup.lookupByTitleCalledWith.isEmpty())
         }
 
     @Test
-    fun `isbn lookup Failure skips candidate`() =
+    fun `title lookup Failure includes candidate without cover`() =
         runTest {
             val entitlement = FakeEntitlementState().apply { setIsPremium(true) }
             val bookRepo = FakeBookRepository().apply { setBooksFlow(listOf(book("1"))) }
             val recRepo = FakeRecommendationRepository().apply { nextResult = Result.Success(listOf(rec1)) }
             val lookup =
                 FakeBookLookupService().apply {
-                    lookupByIsbnQueue.add(Result.Failure(BookLookupError.NotFound))
+                    lookupByTitleQueue.add(Result.Failure(BookLookupError.NotFound))
                 }
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
 
-            assertEquals(Result.Success(emptyList()), result)
-            assertEquals(listOf("isbn-rec1"), lookup.lookupByIsbnCalledWith)
+            assertEquals(Result.Success(listOf(rec1.copy(coverUrl = null))), result)
+            assertEquals(listOf("Rec 1"), lookup.lookupByTitleCalledWith)
         }
 
     @Test
-    fun `title mismatch after isbn lookup skips candidate`() =
+    fun `title lookup cover replaces candidate cover`() =
         runTest {
             val entitlement = FakeEntitlementState().apply { setIsPremium(true) }
             val bookRepo = FakeBookRepository().apply { setBooksFlow(listOf(book("1"))) }
             val recRepo = FakeRecommendationRepository().apply { nextResult = Result.Success(listOf(rec1)) }
+            val lookupData = lookupFor(rec1).copy(coverImageUrl = "url-from-google")
             val lookup =
                 FakeBookLookupService().apply {
-                    lookupByIsbnQueue.add(
-                        Result.Success(lookupFor(rec1).copy(title = "Different Book")),
-                    )
+                    lookupByTitleQueue.add(Result.Success(listOf(lookupData)))
                 }
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
 
-            assertEquals(Result.Success(emptyList()), result)
-            assertEquals(listOf("isbn-rec1"), lookup.lookupByIsbnCalledWith)
+            assertEquals(Result.Success(listOf(rec1.copy(coverUrl = "url-from-google"))), result)
         }
 
     @Test
@@ -287,14 +286,14 @@ class GetRecommendationsUseCaseTest {
             val recRepo = FakeRecommendationRepository().apply { nextResult = Result.Success(candidates) }
             val lookup =
                 FakeBookLookupService().apply {
-                    candidates.forEach { lookupByIsbnQueue.add(Result.Success(lookupFor(it))) }
+                    candidates.forEach { lookupByTitleQueue.add(Result.Success(listOf(lookupFor(it)))) }
                 }
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
 
             assertTrue(result is Result.Success)
             assertEquals(3, result.data.size)
-            assertEquals(3, lookup.lookupByIsbnCalledWith.size)
+            assertEquals(3, lookup.lookupByTitleCalledWith.size)
         }
 
     @Test
@@ -309,7 +308,7 @@ class GetRecommendationsUseCaseTest {
             val recRepo = FakeRecommendationRepository().apply { nextResult = Result.Success(candidates) }
             val lookup =
                 FakeBookLookupService().apply {
-                    candidates.forEach { lookupByIsbnQueue.add(Result.Success(lookupFor(it))) }
+                    candidates.forEach { lookupByTitleQueue.add(Result.Success(listOf(lookupFor(it)))) }
                 }
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
@@ -318,22 +317,22 @@ class GetRecommendationsUseCaseTest {
         }
 
     @Test
-    fun `all candidates fail lookup — returns Success emptyList`() =
+    fun `all candidates fail lookup — returns Success with candidates without covers`() =
         runTest {
             val entitlement = FakeEntitlementState().apply { setIsPremium(true) }
             val bookRepo = FakeBookRepository().apply { setBooksFlow(listOf(book("1"))) }
             val candidates =
-                (1..3).map { i -> rec1.copy(title = "Cand $i", isbn = "isbn-cand$i") }
+                (1..3).map { i -> rec1.copy(title = "Cand $i", isbn = "isbn-cand$i", coverUrl = null) }
             val recRepo = FakeRecommendationRepository().apply { nextResult = Result.Success(candidates) }
             val lookup =
                 FakeBookLookupService().apply {
-                    repeat(3) { lookupByIsbnQueue.add(Result.Failure(BookLookupError.NotFound)) }
+                    repeat(3) { lookupByTitleQueue.add(Result.Failure(BookLookupError.NotFound)) }
                 }
 
             val result = useCase(entitlement, bookRepo, recRepo, lookup).invoke(emptyList())
 
-            assertEquals(Result.Success(emptyList()), result)
-            assertEquals(3, lookup.lookupByIsbnCalledWith.size)
+            assertEquals(Result.Success(candidates), result)
+            assertEquals(3, lookup.lookupByTitleCalledWith.size)
         }
 
     @Test

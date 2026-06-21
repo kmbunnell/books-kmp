@@ -1,5 +1,6 @@
 package com.example.books_kmp.ui.recommendations
 
+import app.cash.turbine.test
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.entitlement.FakeEntitlementState
 import com.example.books_kmp.domain.library.FakeBookLookupService
@@ -20,7 +21,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -72,7 +72,7 @@ class RecommendationsViewModelTest {
         GetRecommendationsUseCase(entitlementState, bookRepository, repository, lookupService)
 
     @Test
-    fun `Load emits Loading state while in-flight`() =
+    fun `Load emits Loading then transitions to Success`() =
         runTest {
             val gate = CompletableDeferred<Result<List<BookRecommendation>, RecommendationError>>()
             val suspendingRepo =
@@ -82,12 +82,16 @@ class RecommendationsViewModelTest {
                     ): Result<List<BookRecommendation>, RecommendationError> = gate.await()
                 }
             val vm = RecommendationsViewModel(listOf("t1"), useCase(suspendingRepo))
-            assertIs<RecommendationsUiState.Loading>(vm.uiState.value)
-            gate.complete(Result.Success(emptyList()))
+            vm.uiState.test {
+                assertIs<RecommendationsUiState.Loading>(awaitItem())
+                gate.complete(Result.Success(emptyList()))
+                assertIs<RecommendationsUiState.Success>(awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
 
     @Test
-    fun `Load success sets Success state`() =
+    fun `Load success sets Success state with recommendations`() =
         runTest {
             lookupService.lookupResult =
                 Result.Success(
@@ -100,10 +104,12 @@ class RecommendationsViewModelTest {
                 )
             recommendationRepository.nextResult = Result.Success(listOf(recommendation))
             val vm = RecommendationsViewModel(listOf("t1"), useCase())
-            advanceUntilIdle()
-            val state = vm.uiState.value
-            assertIs<RecommendationsUiState.Success>(state)
-            assertEquals(1, state.recommendations.size)
+            vm.uiState.test {
+                val state = awaitItem()
+                assertIs<RecommendationsUiState.Success>(state)
+                assertEquals(1, state.recommendations.size)
+                cancelAndIgnoreRemainingEvents()
+            }
         }
 
     @Test
@@ -112,9 +118,11 @@ class RecommendationsViewModelTest {
             recommendationRepository.nextResult =
                 Result.Failure(RecommendationError.NetworkError(RuntimeException("x")))
             val vm = RecommendationsViewModel(listOf("t1"), useCase())
-            advanceUntilIdle()
-            val state = vm.uiState.value
-            assertIs<RecommendationsUiState.Error>(state)
-            assertIs<RecommendationError.NetworkError>(state.error)
+            vm.uiState.test {
+                val state = awaitItem()
+                assertIs<RecommendationsUiState.Error>(state)
+                assertIs<RecommendationError.NetworkError>(state.error)
+                cancelAndIgnoreRemainingEvents()
+            }
         }
 }
