@@ -144,7 +144,7 @@
     <string name="dialog_recommendations_quality_dismiss">Cancel</string>
     <string name="recommendations_title">Recommendations</string>
     <string name="recommendations_error_no_results">No new recommendations found for these books.</string>
-    <string name="recommendations_error_network">Couldn\'t load recommendations. Check your connection.</string>
+    <string name="recommendations_error_network">Couldn't load recommendations. Check your connection.</string>
     <string name="recommendations_error_not_premium">Recommendations require a premium subscription.</string>
     <string name="recommendations_error_unauthenticated">Please sign in to view recommendations.</string>
 </resources>

@@ -6,6 +6,10 @@ import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.entitlement.EntitlementState
 import com.example.books_kmp.domain.library.BookLookupService
 import com.example.books_kmp.domain.library.BookRepository
+import com.example.books_kmp.domain.model.BookLookupData
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 class GetRecommendationsUseCase(
     private val entitlementState: EntitlementState,
@@ -47,33 +51,38 @@ class GetRecommendationsUseCase(
         val libraryIsbnSet = library.mapNotNull { it.isbn }.toHashSet()
         val libraryTitleSet = library.map { it.title.trim().lowercase() }.toHashSet()
 
-        val results = mutableListOf<BookRecommendation>()
-        for (candidate in candidates) {
-            if (results.size >= MAX_DISPLAYED_RECOMMENDATIONS) break
+        // Filter out books already in the library, then cap at display limit.
+        val toEnrich = candidates
+            .filter { candidate ->
+                val isbn = candidate.isbn
+                candidate.title.trim().lowercase() !in libraryTitleSet &&
+                    (isbn == null || isbn !in libraryIsbnSet)
+            }
+            .take(MAX_DISPLAYED_RECOMMENDATIONS)
 
-            val isbn = candidate.isbn ?: continue
-            if (isbn in libraryIsbnSet) continue
-
-            val normalizedTitle = candidate.title.trim().lowercase()
-            if (normalizedTitle in libraryTitleSet) continue
-
-            val lookupData =
-                when (val lookup = bookLookupService.lookupByIsbn(isbn)) {
-                    is Result.Success -> lookup.data
-                    is Result.Failure -> continue
+        // Look up cover images for all candidates in parallel.
+        // Try ISBN first; fall back to title search if the ISBN is missing or not found.
+        // If both fail, include the recommendation without a cover rather than dropping it.
+        val results = coroutineScope {
+            toEnrich.map { candidate ->
+                async {
+                    val lookupData = lookupMetadata(candidate)
+                    candidate.copy(
+                        isbn = lookupData?.isbn ?: candidate.isbn,
+                        coverUrl = lookupData?.coverImageUrl,
+                        authors = lookupData?.authors ?: candidate.authors,
+                    )
                 }
-
-            if (lookupData.title.trim().lowercase() != normalizedTitle) continue
-
-            results.add(
-                candidate.copy(
-                    isbn = lookupData.isbn ?: candidate.isbn,
-                    coverUrl = lookupData.coverImageUrl,
-                    authors = lookupData.authors,
-                ),
-            )
+            }.awaitAll()
         }
 
         return Result.Success(results)
+    }
+
+    private suspend fun lookupMetadata(candidate: BookRecommendation): BookLookupData? {
+        return when (val result = bookLookupService.lookupByTitle(candidate.title)) {
+            is Result.Success -> result.data.firstOrNull()
+            is Result.Failure -> null
+        }
     }
 }

@@ -1,6 +1,7 @@
+
 package com.example.books_kmp.data.recommendation
 
-import com.example.books_kmp.config.GeminiConfig
+import com.example.books_kmp.config.GroqConfig
 import com.example.books_kmp.domain.MAX_RECOMMENDED_BOOKS
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.recommendation.RecommendationError
@@ -23,70 +24,67 @@ private const val RECOMMENDATION_PROMPT_TEMPLATE =
     "You are a book recommendation engine. Analyze this reading list and infer the reader's " +
         "preferred genres, themes, and writing styles:\n" +
         "{BOOK_LIST}\n\n" +
-        "Recommend exactly {COUNT} books that align with the reader's demonstrated tastes. Requirements:\n" +
+        "Recommend exactly {COUNT} books that align with the /. Requirements:\n" +
         "- Do not recommend books already in the list\n" +
         "- If a book is part of a series, only recommend the first book in that series\n" +
         "- Vary the {COUNT} recommendations across the inferred genres and themes where possible\n" +
         "- In the \"reason\" field, reference at least one specific book from the reading list " +
         "to explain why this recommendation fits\n\n" +
-        "Return a JSON array with objects:\n" +
-        "{\"title\":\"...\",\"authors\":[...],\"isbn\":\"...\",\"reason\":\"...\",\"description\":\"...\"}"
+        "Return a JSON object with a single key \"recommendations\" containing an array of objects:\n" +
+        "{\"recommendations\":[{\"title\":\"...\",\"authors\":[...],\"reason\":\"...\",\"description\":\"...\"}]}"
 
-private const val GEMINI_BASE_URL =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
-@Serializable
-private data class GeminiPart(val text: String)
+private const val GROQ_BASE_URL = "https://api.groq.com/openai/v1/chat/completions"
+private const val GROQ_MODEL = "llama-3.3-70b-versatile"
 
 @Serializable
-private data class GeminiContent(val parts: List<GeminiPart>)
+private data class GroqMessage(val role: String, val content: String)
 
 @Serializable
-private data class GeminiCandidate(val content: GeminiContent)
+private data class GroqResponseFormat(@SerialName("type") val type: String)
 
 @Serializable
-private data class GeminiResponse(val candidates: List<GeminiCandidate> = emptyList())
-
-@Serializable
-private data class GeminiRequestContent(val parts: List<GeminiPart>)
-
-@Serializable
-private data class GeminiGenerationConfig(
-    @SerialName("response_mime_type") val responseMimeType: String,
+private data class GroqRequest(
+    val model: String,
+    val messages: List<GroqMessage>,
+    @SerialName("response_format") val responseFormat: GroqResponseFormat,
 )
 
 @Serializable
-private data class GeminiRequest(
-    val contents: List<GeminiRequestContent>,
-    val generationConfig: GeminiGenerationConfig,
+private data class GroqChoice(val message: GroqMessage)
+
+@Serializable
+private data class GroqResponse(val choices: List<GroqChoice> = emptyList())
+
+@Serializable
+private data class RecommendationsWrapper(
+    val recommendations: List<RawRecommendation> = emptyList(),
 )
 
-class GeminiRecommendationDataSource(
+class GroqRecommendationDataSource(
     private val httpClient: HttpClient,
-    private val config: GeminiConfig,
+    private val config: GroqConfig,
 ) : RecommendationDataSource {
     override suspend fun getRawRecommendations(
         collection: List<CollectionEntry>,
     ): Result<List<RawRecommendation>, RecommendationError> {
         val prompt = buildPrompt(collection)
         val requestBody =
-            GeminiRequest(
-                contents = listOf(GeminiRequestContent(parts = listOf(GeminiPart(text = prompt)))),
-                generationConfig = GeminiGenerationConfig(responseMimeType = "application/json"),
+            GroqRequest(
+                model = GROQ_MODEL,
+                messages = listOf(GroqMessage(role = "user", content = prompt)),
+                responseFormat = GroqResponseFormat(type = "json_object"),
             )
 
         return try {
             val response =
-                httpClient.post(GEMINI_BASE_URL) {
-                    header("x-goog-api-key", config.apiKey)
+                httpClient.post(GROQ_BASE_URL) {
+                    header("Authorization", "Bearer ${config.apiKey}")
                     contentType(ContentType.Application.Json)
-                    setBody(json.encodeToString(GeminiRequest.serializer(), requestBody))
+                    setBody(json.encodeToString(GroqRequest.serializer(), requestBody))
                 }
 
             if (response.status != HttpStatusCode.OK) {
                 val body = response.bodyAsText()
-                body.chunked(500).forEachIndexed { i, chunk ->
-                    println("GeminiDataSource[$i]: $chunk")
-                }
                 return Result.Failure(
                     RecommendationError.NetworkError(
                         RuntimeException("HTTP ${response.status.value}: $body")
@@ -94,12 +92,12 @@ class GeminiRecommendationDataSource(
                 )
             }
 
-            val geminiResponse: GeminiResponse = json.decodeFromString(response.bodyAsText())
+            val groqResponse: GroqResponse = json.decodeFromString(response.bodyAsText())
             val text =
-                geminiResponse.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
+                groqResponse.choices.firstOrNull()?.message?.content
                     ?: return Result.Failure(RecommendationError.NoResults)
 
-            val recommendations: List<RawRecommendation> = json.decodeFromString(text)
+            val recommendations = json.decodeFromString<RecommendationsWrapper>(text).recommendations
             if (recommendations.isEmpty()) {
                 Result.Failure(RecommendationError.NoResults)
             } else {
@@ -108,7 +106,6 @@ class GeminiRecommendationDataSource(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            println("GeminiDataSource: exception — ${e::class.simpleName}: ${e.message}")
             Result.Failure(RecommendationError.NetworkError(e))
         }
     }
@@ -122,4 +119,5 @@ class GeminiRecommendationDataSource(
             .replace("{BOOK_LIST}", bookList)
             .replace("{COUNT}", MAX_RECOMMENDED_BOOKS.toString())
     }
+
 }
