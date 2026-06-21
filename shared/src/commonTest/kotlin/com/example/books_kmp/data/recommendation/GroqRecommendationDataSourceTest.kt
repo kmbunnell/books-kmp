@@ -45,7 +45,8 @@ class GroqRecommendationDataSourceTest {
         runTest {
             val innerJson =
                 recommendationsJson(
-                    """{"title":"Dune","authors":["Frank Herbert"],"reason":"Epic world-building","description":"A sci-fi classic"}"""
+                    """{"title":"Dune","authors":["Frank Herbert"],"reason":"Epic world-building",""" +
+                        """"description":"A sci-fi classic"}"""
                 )
             val engine =
                 MockEngine { _ ->
