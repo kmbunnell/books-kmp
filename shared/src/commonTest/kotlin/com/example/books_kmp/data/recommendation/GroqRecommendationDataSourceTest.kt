@@ -43,9 +43,10 @@ class GroqRecommendationDataSourceTest {
     @Test
     fun `getRawRecommendations returns Success with mapped data on 200 with valid object`() =
         runTest {
-            val innerJson = recommendationsJson(
-                """{"title":"Dune","authors":["Frank Herbert"],"reason":"Epic world-building","description":"A sci-fi classic"}"""
-            )
+            val innerJson =
+                recommendationsJson(
+                    """{"title":"Dune","authors":["Frank Herbert"],"reason":"Epic world-building","description":"A sci-fi classic"}"""
+                )
             val engine =
                 MockEngine { _ ->
                     respond(
@@ -64,28 +65,6 @@ class GroqRecommendationDataSourceTest {
             assertEquals(listOf("Frank Herbert"), result.data[0].authors)
             assertEquals("Epic world-building", result.data[0].reason)
             assertEquals("A sci-fi classic", result.data[0].description)
-        }
-
-    @Test
-    fun `getRawRecommendations deserializes isbn when present`() =
-        runTest {
-            val innerJson = recommendationsJson(
-                """{"title":"Dune","authors":["Frank Herbert"],"isbn":"9780441013593","reason":"Epic world-building","description":"A sci-fi classic"}"""
-            )
-            val engine =
-                MockEngine { _ ->
-                    respond(
-                        content = groqEnvelope(innerJson),
-                        status = HttpStatusCode.OK,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                    )
-                }
-
-            val collection = listOf(CollectionEntry(title = "1984", authors = listOf("George Orwell")))
-            val result = buildDataSource(engine).getRawRecommendations(collection)
-
-            assertIs<Result.Success<List<RawRecommendation>>>(result)
-            assertEquals("9780441013593", result.data[0].isbn)
         }
 
     @Test

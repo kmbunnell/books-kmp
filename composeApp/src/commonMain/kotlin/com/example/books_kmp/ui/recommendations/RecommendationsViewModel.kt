@@ -21,6 +21,7 @@ sealed interface RecommendationsUiState {
 
 sealed interface RecommendationsIntent {
     data object Load : RecommendationsIntent
+
     data object Retry : RecommendationsIntent
 }
 

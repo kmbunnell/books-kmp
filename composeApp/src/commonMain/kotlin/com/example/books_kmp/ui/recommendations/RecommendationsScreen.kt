@@ -31,9 +31,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bookskmp.composeapp.generated.resources.Res
+import bookskmp.composeapp.generated.resources.action_retry
 import bookskmp.composeapp.generated.resources.cd_book_cover
 import bookskmp.composeapp.generated.resources.cd_navigate_up
-import bookskmp.composeapp.generated.resources.action_retry
 import bookskmp.composeapp.generated.resources.recommendations_error_network
 import bookskmp.composeapp.generated.resources.recommendations_error_no_results
 import bookskmp.composeapp.generated.resources.recommendations_error_not_premium

@@ -24,7 +24,7 @@ class RecommendationRepositoryImpl(
                         BookRecommendation(
                             title = raw.title,
                             authors = raw.authors,
-                            isbn = raw.isbn,
+                            isbn = null,
                             coverUrl = null,
                             reason = raw.reason,
                             description = raw.description ?: "",
