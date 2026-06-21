@@ -52,29 +52,31 @@ class GetRecommendationsUseCase(
         val libraryTitleSet = library.map { it.title.trim().lowercase() }.toHashSet()
 
         // Filter out books already in the library, then cap at display limit.
-        val toEnrich = candidates
-            .filter { candidate ->
-                val isbn = candidate.isbn
-                candidate.title.trim().lowercase() !in libraryTitleSet &&
-                    (isbn == null || isbn !in libraryIsbnSet)
-            }
-            .take(MAX_DISPLAYED_RECOMMENDATIONS)
+        val toEnrich =
+            candidates
+                .filter { candidate ->
+                    val isbn = candidate.isbn
+                    candidate.title.trim().lowercase() !in libraryTitleSet &&
+                        (isbn == null || isbn !in libraryIsbnSet)
+                }
+                .take(MAX_DISPLAYED_RECOMMENDATIONS)
 
         // Look up cover images for all candidates in parallel.
         // Try ISBN first; fall back to title search if the ISBN is missing or not found.
         // If both fail, include the recommendation without a cover rather than dropping it.
-        val results = coroutineScope {
-            toEnrich.map { candidate ->
-                async {
-                    val lookupData = lookupMetadata(candidate)
-                    candidate.copy(
-                        isbn = lookupData?.isbn ?: candidate.isbn,
-                        coverUrl = lookupData?.coverImageUrl,
-                        authors = lookupData?.authors ?: candidate.authors,
-                    )
-                }
-            }.awaitAll()
-        }
+        val results =
+            coroutineScope {
+                toEnrich.map { candidate ->
+                    async {
+                        val lookupData = lookupMetadata(candidate)
+                        candidate.copy(
+                            isbn = lookupData?.isbn,
+                            coverUrl = lookupData?.coverImageUrl,
+                            authors = lookupData?.authors ?: candidate.authors,
+                        )
+                    }
+                }.awaitAll()
+            }
 
         return Result.Success(results)
     }

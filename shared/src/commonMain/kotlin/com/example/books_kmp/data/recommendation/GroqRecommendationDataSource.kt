@@ -40,7 +40,9 @@ private const val GROQ_MODEL = "llama-3.3-70b-versatile"
 private data class GroqMessage(val role: String, val content: String)
 
 @Serializable
-private data class GroqResponseFormat(@SerialName("type") val type: String)
+private data class GroqResponseFormat(
+    @SerialName("type") val type: String
+)
 
 @Serializable
 private data class GroqRequest(
@@ -119,5 +121,4 @@ class GroqRecommendationDataSource(
             .replace("{BOOK_LIST}", bookList)
             .replace("{COUNT}", MAX_RECOMMENDED_BOOKS.toString())
     }
-
 }

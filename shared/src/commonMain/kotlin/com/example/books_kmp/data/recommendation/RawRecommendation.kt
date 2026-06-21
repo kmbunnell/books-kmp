@@ -8,5 +8,4 @@ data class RawRecommendation(
     val authors: List<String>,
     val reason: String,
     val description: String? = null,
-    val isbn: String? = null,
 )
