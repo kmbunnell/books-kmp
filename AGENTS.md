@@ -10,6 +10,8 @@ See `docs/overview.md` for tech-choice rationale, schema notes, and planned feat
 
 When planning a feature or starting implementation, read `.claude/decisions.md` first to account for past decisions that may affect the approach. When a notable decision is made during a session — a spec that evolved, a code approach chosen over an alternative, or a trade-off accepted — log it in `.claude/decisions.md` using the format defined there.
 
+**Best-practice conflicts:** If a current KMP/Android/iOS platform best practice would conflict with a rule in this document, do not silently follow either side. Surface the conflict — during planning via `AskUserQuestion` or a flagged item in the plan, during implementation by stopping and asking — so the user can decide the trade-off and, if needed, update this document.
+
 ---
 
 ## Core Principles
