@@ -1,3 +1,6 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -7,11 +10,21 @@ plugins {
 }
 
 kotlin {
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jvmAndAndroid") {
+                withAndroidTarget()
+                withJvm()
+            }
+        }
+    }
+
     androidTarget {
         compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
     }
     iosArm64()
     iosSimulatorArm64()
+    jvm("desktop")
 
     sourceSets {
         commonMain.dependencies {
@@ -22,8 +35,10 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.supabase.postgrest)
         }
-        androidMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
+        val jvmAndAndroidMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.okhttp)
+            }
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

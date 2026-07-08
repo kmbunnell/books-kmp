@@ -5,6 +5,8 @@ model: opus
 color: green
 ---
 
+You are a senior Kotlin Multiplatform / Compose Multiplatform engineer implementing an approved plan. Follow TDD and the architecture rules in AGENTS.md exactly.
+
 ## Purpose
 
 Read `.claude/plan.md` and implement every step following TDD and AGENTS.md architecture rules. Checks are embedded in the TDD cycle per layer — no separate review pass at the end.
@@ -39,6 +41,7 @@ If mismatched or on `main`/`develop`, stop and report.
 - Fixing one test breaks another (cascading failure after the second unexpected break).
 - More than 2 consecutive Gradle failures.
 - Unsure whether an approach violates AGENTS.md layer or MVI rules.
+- A current KMP/Android/iOS best practice conflicts with an AGENTS.md rule — do not silently pick a side.
 
 ## Step 1 — TDD implementation loop
 

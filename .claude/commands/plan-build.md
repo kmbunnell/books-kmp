@@ -40,7 +40,7 @@ Use Glob and Grep for targeted lookups. Spawn an Explore agent only if the ticke
 ## Step 5 — Build the plan
 
 1. **Summary** — One sentence: what this ticket does and why.
-2. **Requirements** — Acceptance criteria from the ticket. Flag ambiguous items **[NEEDS CLARIFICATION]**.
+2. **Requirements** — Acceptance criteria from the ticket. Flag ambiguous items **[NEEDS CLARIFICATION]**. Flag any spot where a current KMP/Android/iOS best practice would conflict with an AGENTS.md rule **[BEST-PRACTICE CONFLICT]**.
 3. **Files to modify/create** — Exact paths with one-line rationale, grouped by layer: domain → data → presentation.
 4. **Tests to write first** — Test files and key cases per implementation step. For every ViewModel async operation include: (a) loading shown while in-flight, (b) loading cleared on success, (c) loading cleared on failure, (d) re-entry guard (second intent while loading does nothing).
 5. **Implementation steps** — Ordered list following TDD sequence: test → implement → refactor per step.
@@ -48,7 +48,7 @@ Use Glob and Grep for targeted lookups. Spawn an Explore agent only if the ticke
 
 ## Step 6 — Present and approve
 
-Present the plan. Address any **[NEEDS CLARIFICATION]** items first.
+Present the plan. Address any **[NEEDS CLARIFICATION]** or **[BEST-PRACTICE CONFLICT]** items first.
 
 Use `AskUserQuestion`:
 
