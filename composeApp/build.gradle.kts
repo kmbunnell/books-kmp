@@ -79,6 +79,9 @@ val generateDesktopConfig by tasks.registering {
     inputs.property("supabaseKey", key)
     inputs.property("groqApiKey", groqKey)
     outputs.dir(outputDir)
+    val escapedUrl = escapeKotlinStringLiteral(url)
+    val escapedKey = escapeKotlinStringLiteral(key)
+    val escapedGroqKey = escapeKotlinStringLiteral(groqKey)
     doLast {
         val dir = outputDir.get().asFile
         dir.mkdirs()
@@ -86,9 +89,9 @@ val generateDesktopConfig by tasks.registering {
             """
             |// Auto-generated from local.properties — do not edit manually or commit.
             |object Config {
-            |    const val SUPABASE_URL: String = "${escapeKotlinStringLiteral(url)}"
-            |    const val SUPABASE_ANON_KEY: String = "${escapeKotlinStringLiteral(key)}"
-            |    const val GROQ_API_KEY: String = "${escapeKotlinStringLiteral(groqKey)}"
+            |    const val SUPABASE_URL: String = "$escapedUrl"
+            |    const val SUPABASE_ANON_KEY: String = "$escapedKey"
+            |    const val GROQ_API_KEY: String = "$escapedGroqKey"
             |}
             """.trimMargin() + "\n",
         )
