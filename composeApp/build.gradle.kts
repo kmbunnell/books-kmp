@@ -18,6 +18,9 @@ fun envOrLocalProp(key: String): String =
 
 fun envOrLocalPropOrEmpty(key: String): String = System.getenv(key) ?: localProps.getProperty(key) ?: ""
 
+fun escapeKotlinStringLiteral(value: String): String =
+    value.replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\${'$'}")
+
 val generateSecretsXcconfig by tasks.registering {
     description = "Generate iosApp/Configuration/Secrets.xcconfig from local.properties"
     val outputFile = rootProject.file("iosApp/Configuration/Secrets.xcconfig")
@@ -66,6 +69,32 @@ val generateStagingSecretsXcconfig by tasks.registering {
     }
 }
 
+val generateDesktopConfig by tasks.registering {
+    description = "Generate desktop Config.kt from local.properties (output under build/, never committed)"
+    val outputDir = layout.buildDirectory.dir("generated/source/desktopConfig/kotlin")
+    val url = envOrLocalProp("SUPABASE_URL")
+    val key = envOrLocalProp("SUPABASE_ANON_KEY")
+    val groqKey = envOrLocalPropOrEmpty("GROQ_API_KEY")
+    inputs.property("supabaseUrl", url)
+    inputs.property("supabaseKey", key)
+    inputs.property("groqApiKey", groqKey)
+    outputs.dir(outputDir)
+    doLast {
+        val dir = outputDir.get().asFile
+        dir.mkdirs()
+        dir.resolve("Config.kt").writeText(
+            """
+            |// Auto-generated from local.properties — do not edit manually or commit.
+            |object Config {
+            |    const val SUPABASE_URL: String = "${escapeKotlinStringLiteral(url)}"
+            |    const val SUPABASE_ANON_KEY: String = "${escapeKotlinStringLiteral(key)}"
+            |    const val GROQ_API_KEY: String = "${escapeKotlinStringLiteral(groqKey)}"
+            |}
+            """.trimMargin() + "\n",
+        )
+    }
+}
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
@@ -90,6 +119,8 @@ kotlin {
             isStatic = true
         }
     }
+
+    jvm("desktop")
 
     tasks.matching { it.name.startsWith("compileKotlinIos") }.configureEach {
         dependsOn(generateSecretsXcconfig)
@@ -141,6 +172,13 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+        }
+        val desktopMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.okhttp)
+                implementation(compose.desktop.currentOs)
+            }
+            kotlin.srcDir(generateDesktopConfig)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -215,4 +253,10 @@ android {
 dependencies {
     debugImplementation(libs.compose.uiTooling)
     debugImplementation(libs.compose.ui.test.manifest)
+}
+
+compose.desktop {
+    application {
+        mainClass = "MainKt"
+    }
 }
