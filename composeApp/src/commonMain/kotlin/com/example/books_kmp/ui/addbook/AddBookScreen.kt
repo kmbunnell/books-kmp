@@ -86,8 +86,8 @@ import bookskmp.composeapp.generated.resources.snackbar_book_added
 import bookskmp.composeapp.generated.resources.title_add_book
 import bookskmp.composeapp.generated.resources.title_results_enter_manually
 import com.example.books_kmp.domain.Result
-import com.example.books_kmp.getPlatform
 import com.example.books_kmp.domain.model.BookLookupData
+import com.example.books_kmp.getPlatform
 import com.example.books_kmp.ui.BookCoverImage
 import com.example.books_kmp.ui.DuplicateBookDialog
 import com.example.books_kmp.ui.TestTags
