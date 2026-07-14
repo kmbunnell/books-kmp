@@ -86,6 +86,7 @@ import bookskmp.composeapp.generated.resources.snackbar_book_added
 import bookskmp.composeapp.generated.resources.title_add_book
 import bookskmp.composeapp.generated.resources.title_results_enter_manually
 import com.example.books_kmp.domain.Result
+import com.example.books_kmp.getPlatform
 import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.ui.BookCoverImage
 import com.example.books_kmp.ui.DuplicateBookDialog
@@ -109,6 +110,7 @@ fun AddBookScreen(
 ) {
     val viewModel: AddBookViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isCameraScanSupported = remember { getPlatform().isCameraScanSupported }
     AddBookScreenContent(
         uiState = uiState,
         effects = viewModel.effects,
@@ -119,6 +121,7 @@ fun AddBookScreen(
         onNavigateToBookDetail = onNavigateToBookDetail,
         onNavigateToPaywall = onNavigateToPaywall,
         isWideScreen = isWideScreen,
+        isCameraScanSupported = isCameraScanSupported,
     )
 }
 
@@ -134,6 +137,7 @@ fun AddBookScreenContent(
     onNavigateToBookDetail: (String) -> Unit,
     onNavigateToPaywall: () -> Unit,
     isWideScreen: Boolean = false,
+    isCameraScanSupported: Boolean = true,
 ) {
     val focusRequester = remember { FocusRequester() }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -196,6 +200,7 @@ fun AddBookScreenContent(
                     focusRequester = focusRequester,
                     onIntent = onIntent,
                     onNavigateToSignIn = onNavigateToSignIn,
+                    isCameraScanSupported = isCameraScanSupported,
                     modifier = Modifier.padding(innerPadding).fillMaxSize(),
                 )
             } else {
@@ -204,6 +209,7 @@ fun AddBookScreenContent(
                     focusRequester = focusRequester,
                     onIntent = onIntent,
                     onNavigateToSignIn = onNavigateToSignIn,
+                    isCameraScanSupported = isCameraScanSupported,
                     modifier = Modifier.padding(innerPadding).padding(horizontal = 16.dp),
                 )
             }
@@ -260,6 +266,7 @@ private fun WideScreenLayout(
     focusRequester: FocusRequester,
     onIntent: (AddBookIntent) -> Unit,
     onNavigateToSignIn: () -> Unit,
+    isCameraScanSupported: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Row(modifier = modifier) {
@@ -271,7 +278,12 @@ private fun WideScreenLayout(
                     .padding(horizontal = 16.dp),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            LookupSearchPanel(uiState = uiState, focusRequester = focusRequester, onIntent = onIntent)
+            LookupSearchPanel(
+                uiState = uiState,
+                focusRequester = focusRequester,
+                onIntent = onIntent,
+                isCameraScanSupported = isCameraScanSupported,
+            )
         }
 
         VerticalDivider()
@@ -319,13 +331,19 @@ private fun NarrowScreenLayout(
     focusRequester: FocusRequester,
     onIntent: (AddBookIntent) -> Unit,
     onNavigateToSignIn: () -> Unit,
+    isCameraScanSupported: Boolean,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier) {
         if (uiState.foundBook == null) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                LookupSearchPanel(uiState = uiState, focusRequester = focusRequester, onIntent = onIntent)
+                LookupSearchPanel(
+                    uiState = uiState,
+                    focusRequester = focusRequester,
+                    onIntent = onIntent,
+                    isCameraScanSupported = isCameraScanSupported,
+                )
             }
         }
         resultsItems(
@@ -342,6 +360,7 @@ private fun LookupSearchPanel(
     uiState: AddBookUiState,
     focusRequester: FocusRequester,
     onIntent: (AddBookIntent) -> Unit,
+    isCameraScanSupported: Boolean,
 ) {
     val isbnLabel = stringResource(Res.string.label_isbn_search)
     val titleLabel = stringResource(Res.string.label_title_search)
@@ -374,6 +393,7 @@ private fun LookupSearchPanel(
         isbnFormatError = uiState.isbnFormatError,
         focusRequester = focusRequester,
         onIntent = onIntent,
+        isCameraScanSupported = isCameraScanSupported,
     )
 }
 
@@ -432,6 +452,7 @@ private fun LookupModeSection(
     isbnFormatError: Boolean,
     focusRequester: FocusRequester,
     onIntent: (AddBookIntent) -> Unit,
+    isCameraScanSupported: Boolean,
 ) {
     if (lookupMode == LookupMode.ISBN) {
         OutlinedTextField(
@@ -441,17 +462,22 @@ private fun LookupModeSection(
             singleLine = true,
             enabled = !isLoading,
             isError = isbnFormatError,
-            trailingIcon = {
-                IconButton(
-                    onClick = { onIntent(AddBookIntent.StartScan) },
-                    modifier = Modifier.testTag(TestTags.AddBook.ScanButton),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.CameraAlt,
-                        contentDescription = stringResource(Res.string.cd_scan_barcode),
-                    )
-                }
-            },
+            trailingIcon =
+                if (isCameraScanSupported) {
+                    {
+                        IconButton(
+                            onClick = { onIntent(AddBookIntent.StartScan) },
+                            modifier = Modifier.testTag(TestTags.AddBook.ScanButton),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.CameraAlt,
+                                contentDescription = stringResource(Res.string.cd_scan_barcode),
+                            )
+                        }
+                    }
+                } else {
+                    null
+                },
             modifier =
                 Modifier
                     .fillMaxWidth()

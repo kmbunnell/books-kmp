@@ -48,6 +48,9 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew :composeApp:assembleProductionDebug :composeApp:assembleStagingDebug
 
+      - name: Compile desktop target
+        run: ./gradlew :composeApp:compileKotlinDesktop
+
       - name: Upload test reports on failure
         if: failure()
         uses: actions/upload-artifact@v4

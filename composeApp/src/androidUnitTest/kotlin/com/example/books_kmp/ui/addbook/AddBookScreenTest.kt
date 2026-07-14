@@ -879,6 +879,42 @@ class AddBookScreenTest {
     }
 
     @Test
+    fun `scan button is displayed when camera scan is supported`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+                onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
+                isCameraScanSupported = true,
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.ScanButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun `scan button is not present when camera scan is not supported`() {
+        composeTestRule.setContent {
+            AddBookScreenContent(
+                uiState = AddBookUiState(),
+                effects = emptyEffects,
+                onIntent = {},
+                onNavigateUp = {},
+                onNavigateToManualEntry = {},
+                onNavigateToSignIn = {},
+                onNavigateToBookDetail = {},
+                onNavigateToPaywall = {},
+                isCameraScanSupported = false,
+            )
+        }
+        composeTestRule.onNodeWithTag(TestTags.AddBook.ScanButton).assertDoesNotExist()
+    }
+
+    @Test
     fun `lookup form reappears when foundBook is cleared`() {
         val book = BookLookupData("isbn", "The Iliad", listOf("Homer"), null)
         var uiState by mutableStateOf(AddBookUiState(foundBook = book))
