@@ -19,8 +19,9 @@ fun main() {
             ),
         )
     }
+    val title = if (Config.IS_STAGING) "Books (staging)" else "Books"
     application {
-        Window(onCloseRequest = ::exitApplication) {
+        Window(onCloseRequest = ::exitApplication, title = title) {
             App()
         }
     }

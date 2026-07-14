@@ -69,12 +69,17 @@ val generateStagingSecretsXcconfig by tasks.registering {
     }
 }
 
+// "staging" or "production" (default). Set via `-PdesktopEnv=staging` or `DESKTOP_ENV=staging` env var.
+val desktopEnv = (project.findProperty("desktopEnv") as String?) ?: System.getenv("DESKTOP_ENV") ?: "production"
+
 val generateDesktopConfig by tasks.registering {
     description = "Generate desktop Config.kt from local.properties (output under build/, never committed)"
     val outputDir = layout.buildDirectory.dir("generated/source/desktopConfig/kotlin")
-    val url = envOrLocalProp("SUPABASE_URL")
-    val key = envOrLocalProp("SUPABASE_ANON_KEY")
+    val isStaging = desktopEnv == "staging"
+    val url = if (isStaging) envOrLocalProp("STAGING_SUPABASE_URL") else envOrLocalProp("SUPABASE_URL")
+    val key = if (isStaging) envOrLocalProp("STAGING_SUPABASE_ANON_KEY") else envOrLocalProp("SUPABASE_ANON_KEY")
     val groqKey = envOrLocalPropOrEmpty("GROQ_API_KEY")
+    inputs.property("desktopEnv", desktopEnv)
     inputs.property("supabaseUrl", url)
     inputs.property("supabaseKey", key)
     inputs.property("groqApiKey", groqKey)
@@ -82,6 +87,7 @@ val generateDesktopConfig by tasks.registering {
     val escapedUrl = escapeKotlinStringLiteral(url)
     val escapedKey = escapeKotlinStringLiteral(key)
     val escapedGroqKey = escapeKotlinStringLiteral(groqKey)
+    val escapedEnv = escapeKotlinStringLiteral(desktopEnv)
     doLast {
         val dir = outputDir.get().asFile
         dir.mkdirs()
@@ -92,6 +98,8 @@ val generateDesktopConfig by tasks.registering {
             |    const val SUPABASE_URL: String = "$escapedUrl"
             |    const val SUPABASE_ANON_KEY: String = "$escapedKey"
             |    const val GROQ_API_KEY: String = "$escapedGroqKey"
+            |    const val ENVIRONMENT: String = "$escapedEnv"
+            |    const val IS_STAGING: Boolean = $isStaging
             |}
             """.trimMargin() + "\n",
         )
@@ -179,6 +187,7 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(libs.ktor.client.okhttp)
+                implementation(libs.kotlinx.coroutines.swing)
                 implementation(compose.desktop.currentOs)
             }
             kotlin.srcDir(generateDesktopConfig)

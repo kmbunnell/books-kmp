@@ -6,6 +6,12 @@ Non-obvious decisions — rejected alternatives, surprising constraints, gotchas
 
 ---
 
+## 2026-07-14 — Desktop target needs `kotlinx-coroutines-swing` for `Dispatchers.Main`
+Android provides `Dispatchers.Main` via `kotlinx-coroutines-android`; desktop/JVM has no equivalent bundled with `kotlinx-coroutines-core`. Any ViewModel using `stateIn`/`viewModelScope` (main-dispatcher-confined) crashed `:composeApp:run` at Koin instance creation with "Module with the Main dispatcher is missing." Fix: add `kotlinx-coroutines-swing` to `desktopMain` dependencies — it installs the AWT/Swing event-loop-backed Main dispatcher.
+
+## 2026-07-14 — Desktop staging picked via Gradle property, not a build variant
+The JVM target has no product-flavor equivalent, so unlike Android's `staging`/`production` flavors, desktop selects environment via `-PdesktopEnv=staging` (or `DESKTOP_ENV=staging` env var) read at `generateDesktopConfig` configuration time, defaulting to production. Also baked `Config.ENVIRONMENT` into desktop `Config.kt` and used it to label the window title ("Books (staging)") so a running instance is visually distinguishable. CI only got a `compileKotlinDesktop` check (no run/package step, since desktop launches a GUI) — full desktop packaging left out of CI for now per user decision.
+
 ## 2026-06-21 — Groq chosen over Gemini for AI recommendations; title lookup instead of ISBN (SHELVD-171)
 Groq's free tier needs no billing info, making it zero-friction to run. Result quality is lower than a paid model but acceptable for the feature. Recommended books are looked up by title (not ISBN) because Groq hallucinates ISBNs — the numbers it returns are plausible-looking but invalid, so ISBN lookup silently fails or surfaces wrong books. Title lookup through the existing Google Books path is the only reliable resolution strategy.
 
