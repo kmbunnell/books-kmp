@@ -1,54 +1,32 @@
 ---
-description: Build an implementation plan for the current feature ticket and write it to plan.md
+description: Build a full TDD-ready implementation plan from a freeform description (no ticket required) and write it to plan.md
 allowed-tools: Bash, Read, Glob, Grep, Agent, AskUserQuestion
 ---
 
 You are acting as a senior KMP/CMP engineer who knows this codebase's Clean Architecture + MVI conventions cold. Use that judgment when placing changes in the right layer, naming things consistently with the rest of the app, and flagging best-practice conflicts — don't just mechanically fill in section headers.
 
 ## Context
- 
-`$ARGUMENTS` may contain a ticket key. If empty, derive it from the current branch:
 
-```bash
-git branch --show-current
-```
+`$ARGUMENTS` is a freeform description of what to plan — no ticket required. If empty, stop and ask the user to describe what they want planned.
 
-Extract key from `feature/SHELVD-XX` pattern. If not on a feature branch, stop: "Cannot determine ticket key. Pass the key as an argument or check out the feature branch first."
+## Step 1 — Check for existing plan
 
-## Step 1 — Read the ticket
+Read `.claude/plan.md`. If non-empty, show its title/summary line and use `AskUserQuestion`: "Existing plan for [TITLE]. Overwrite with the new plan?" Stop if no.
 
-```bash
-acli jira workitem view <KEY> --fields "*all"
-```
+## Step 2 — Scan the codebase
 
-Parse: summary, description, acceptance criteria.
+Use Glob and Grep for targeted lookups. Spawn an Explore agent only if the request touches 3+ layers and two targeted searches fail to locate the relevant code.
 
-## Step 2 — Check blockers
+## Step 3 — Build the plan
 
-```bash
-acli jira workitem search --jql "issue in linkedIssues(<KEY>, 'blocks') AND status != 'Done'" --limit 10
-```
-
-List any open blockers in the plan.
-
-## Step 3 — Check for existing plan
-
-Read `.claude/plan.md`. If non-empty and for a different ticket, use `AskUserQuestion`: "Existing plan for [TICKET]. Overwrite with [KEY]?" Stop if no.
-
-## Step 4 — Scan the codebase
-
-Use Glob and Grep for targeted lookups. Spawn an Explore agent only if the ticket touches 3+ layers and two targeted searches fail to locate the relevant code.
-
-## Step 5 — Build the plan
-
-1. **Summary** — One sentence: what this ticket does and why.
-2. **Requirements** — Acceptance criteria from the ticket. Flag ambiguous items **[NEEDS CLARIFICATION]**. Flag any spot where a current KMP/Android/iOS best practice would conflict with an AGENTS.md rule **[BEST-PRACTICE CONFLICT]**.
+1. **Summary** — One sentence: what this plan does and why.
+2. **Requirements** — Distilled from the freeform description. Flag ambiguous items **[NEEDS CLARIFICATION]**. Flag any spot where a current KMP/Android/iOS best practice would conflict with an AGENTS.md rule **[BEST-PRACTICE CONFLICT]**.
 3. **Files to modify/create** — Exact paths with one-line rationale, grouped by layer: domain → data → presentation.
 4. **Tests to write first** — Test files and key cases per implementation step. For every ViewModel async operation include: (a) loading shown while in-flight, (b) loading cleared on success, (c) loading cleared on failure, (d) re-entry guard (second intent while loading does nothing).
 5. **Implementation steps** — Ordered list following TDD sequence: test → implement → refactor per step.
 6. **Risks and regressions** — Edge cases or breakage risk. "None identified" if clean.
 
-## Step 6 — Present and approve
+## Step 4 — Present and approve
 
 Present the plan. Address any **[NEEDS CLARIFICATION]** or **[BEST-PRACTICE CONFLICT]** items first.
 
@@ -61,13 +39,17 @@ Use `AskUserQuestion`:
 
 If changes are requested, revise and re-present. Repeat until approved or cancelled.
 
-## Step 7 — Write the plan
+## Step 5 — Write the plan
+
+```bash
+git branch --show-current
+```
 
 ```
-# Implementation Plan for <KEY>: <Summary>
+# Implementation Plan: <Summary>
 
-**Ticket:** <KEY>
-**Branch:** feature/<KEY>
+**Source:** Freeform request
+**Branch:** <current branch>
 **Status:** Approved
 
 <plan content>

@@ -43,3 +43,4 @@ iosApp/Configuration/StagingSecrets.xcconfig
 # Claude local files
 .claude/plan.md
 .claude/.last-reviewed-plan-hash
+.claude/feature-plan.md
