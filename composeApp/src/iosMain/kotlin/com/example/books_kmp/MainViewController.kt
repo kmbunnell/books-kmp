@@ -5,6 +5,8 @@ package com.example.books_kmp
 import androidx.compose.ui.window.ComposeUIViewController
 import com.example.books_kmp.config.GroqConfig
 import com.example.books_kmp.config.SupabaseConfig
+import com.example.books_kmp.data.local.database.databaseModule
+import com.example.books_kmp.data.local.database.platformDriverModule
 import com.example.books_kmp.di.appModule
 import org.koin.core.context.startKoin
 import platform.UIKit.UIViewController
@@ -19,7 +21,13 @@ fun initKoin(
             supabaseUrl = supabaseUrl,
             supabaseAnonKey = supabaseKey,
         )
-    startKoin { modules(appModule(config, GroqConfig(groqApiKey))) }
+    startKoin {
+        modules(
+            appModule(config, GroqConfig(groqApiKey)),
+            databaseModule,
+            platformDriverModule(),
+        )
+    }
 }
 
 fun MainViewController(): UIViewController = ComposeUIViewController { App() }

@@ -1,0 +1,25 @@
+-- Local mirror of the Supabase `tags` table.
+--
+-- `user_id` is kept for the same reason as in Books.sq: no sign-out wipe exists yet, so
+-- `UNIQUE(user_id, name)` matches Postgres exactly rather than collapsing to `UNIQUE(name)`.
+--
+-- `is_default` is a plain INTEGER (0/1) rather than an adapted Boolean; typed mapping is
+-- deferred to the data-layer mapper, which is the first real consumer of this schema.
+-- `created_at` / `updated_at` are epoch MILLISECONDS (see Books.sq).
+CREATE TABLE tags (
+    id TEXT NOT NULL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    is_default INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    UNIQUE(user_id, name)
+);
+
+selectAll:
+SELECT *
+FROM tags;
+
+insert:
+INSERT INTO tags(id, user_id, name, is_default, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?);

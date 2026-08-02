@@ -1,0 +1,30 @@
+-- Local mirror of the Supabase `book_tags` join table.
+--
+-- No `created_at` / `updated_at` columns, matching Postgres: membership changes on a pure
+-- junction table are replayed through explicit `pending_operations` entries rather than
+-- reconstructed from row-level timestamp diffing.
+--
+-- Both foreign keys cascade on delete, so removing a book or a tag cleans up its memberships.
+-- NOTE: SQLite defaults `PRAGMA foreign_keys` to OFF. Each platform driver in DatabaseModule
+-- enables it pool-wide at connection-configuration time (not via a post-construction PRAGMA,
+-- which only reaches the connecting thread/connection) -- see DatabaseModule.*.kt and
+-- .claude/decisions.md. Without this, the ON DELETE CASCADE rules above are inert.
+CREATE TABLE book_tags (
+    book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+    tag_id TEXT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+    PRIMARY KEY (book_id, tag_id)
+);
+
+-- PRIMARY KEY (book_id, tag_id) only indexes the leading column, so "books with tag X" lookups
+-- and the tags -> book_tags cascade delete would otherwise scan the whole table. Postgres has
+-- the equivalent index (`idx_book_tags_tag_id`, see supabase/migrations/20260323150707_initial_schema.sql);
+-- this mirrors it locally.
+CREATE INDEX book_tags_tag_id_idx ON book_tags(tag_id);
+
+selectAll:
+SELECT *
+FROM book_tags;
+
+insert:
+INSERT INTO book_tags(book_id, tag_id)
+VALUES (?, ?);

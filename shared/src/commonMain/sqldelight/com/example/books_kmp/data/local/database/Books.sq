@@ -1,0 +1,32 @@
+-- Local mirror of the Supabase `books` table.
+--
+-- `user_id` mirrors Postgres directly (kept, not collapsed): the local DB has no sign-out wipe,
+-- so a shared device signing in as a second user must not see or collide with the first user's
+-- cached rows. `UNIQUE(user_id, isbn)` matches the Postgres constraint exactly.
+--
+-- `authors` is a JSON array stored as TEXT.
+-- `created_at` / `updated_at` are epoch MILLISECONDS (see .claude/decisions.md, 2026-07-31).
+-- Any future ColumnAdapter must use the matched Instant.toEpochMilliseconds() /
+-- Instant.fromEpochMilliseconds() pair -- never epochSeconds, which silently truncates.
+CREATE TABLE books (
+    id TEXT NOT NULL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    isbn TEXT,
+    title TEXT NOT NULL,
+    authors TEXT NOT NULL,
+    cover_image_url TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- Partial index: many books legitimately have no ISBN, and SQLite treats NULLs as distinct,
+-- but the predicate makes the intent explicit.
+CREATE UNIQUE INDEX books_user_isbn_unique ON books(user_id, isbn) WHERE isbn IS NOT NULL;
+
+selectAll:
+SELECT *
+FROM books;
+
+insert:
+INSERT INTO books(id, user_id, isbn, title, authors, cover_image_url, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);

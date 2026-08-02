@@ -7,6 +7,15 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.sqldelight)
+}
+
+sqldelight {
+    databases {
+        create("BooksDatabase") {
+            packageName.set("com.example.books_kmp.data.local.database")
+        }
+    }
 }
 
 kotlin {
@@ -35,14 +44,29 @@ kotlin {
             implementation(libs.ktor.serialization.json)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.supabase.postgrest)
+            // `api`: platformDriverModule()/databaseModule expose Koin's Module in shared's
+            // public API, so consumers need koin-core on their compile classpath.
+            api(libs.koin.core)
+            implementation(libs.sqldelight.runtime)
         }
         val jvmAndAndroidMain by getting {
             dependencies {
                 implementation(libs.ktor.client.okhttp)
             }
         }
+        androidMain.dependencies {
+            implementation(libs.koin.android)
+            implementation(libs.sqldelight.android.driver)
+        }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.sqldelight.native.driver)
+        }
+        val desktopMain by getting {
+            dependencies {
+                implementation(libs.sqldelight.sqlite.driver)
+                implementation(libs.sqlite.jdbc)
+            }
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
