@@ -1,0 +1,22 @@
+-- Outbox of local mutations awaiting replay against Supabase.
+--
+-- `operation_type` is a discriminator string and `payload` a serialized JSON body; both stay
+-- untyped TEXT until the sync engine defines its operation model.
+-- `created_at` is epoch MILLISECONDS (see Books.sq) and doubles as the replay ordering key.
+-- `retry_count` tracks failed replay attempts for backoff.
+CREATE TABLE pending_operations (
+    id TEXT NOT NULL PRIMARY KEY,
+    operation_type TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    retry_count INTEGER NOT NULL DEFAULT 0
+);
+
+selectAll:
+SELECT *
+FROM pending_operations
+ORDER BY created_at ASC;
+
+insert:
+INSERT INTO pending_operations(id, operation_type, payload, created_at, retry_count)
+VALUES (?, ?, ?, ?, ?);
