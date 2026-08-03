@@ -47,7 +47,7 @@ class SupabaseTagRepositoryDuplicateNameTest {
         }
 
     @Test
-    fun `getTags returns default tags before custom tags, each group sorted alphabetically`() =
+    fun `getTags returns default tags before custom tags and each group sorted alphabetically`() =
         runTest {
             val result =
                 repoWith(

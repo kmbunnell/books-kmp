@@ -13,7 +13,7 @@ class FindDuplicateTest {
     ) = Book(id = "1", isbn = isbn, title = title, authors = authors, coverImageUrl = null)
 
     @Test
-    fun `both isbn null, matching title and overlapping author returns true`() {
+    fun `both isbn null — matching title and overlapping author returns true`() {
         assertTrue(
             matchesDuplicate(
                 book(isbn = null, title = "The Iliad", authors = listOf("Homer")),
@@ -50,7 +50,7 @@ class FindDuplicateTest {
     }
 
     @Test
-    fun `incoming isbn non-null, stored isbn null, title and author match returns true`() {
+    fun `incoming isbn non-null but stored isbn null — matching title and author returns true`() {
         assertTrue(
             matchesDuplicate(
                 book(isbn = null, title = "The Iliad", authors = listOf("Homer")),
@@ -62,7 +62,7 @@ class FindDuplicateTest {
     }
 
     @Test
-    fun `incoming isbn null, stored isbn non-null, title and author match returns true`() {
+    fun `incoming isbn null but stored isbn non-null — matching title and author returns true`() {
         assertTrue(
             matchesDuplicate(
                 book(isbn = "111", title = "The Iliad", authors = listOf("Homer")),
@@ -74,7 +74,7 @@ class FindDuplicateTest {
     }
 
     @Test
-    fun `both isbn null, matching title, no author overlap returns false`() {
+    fun `both isbn null and matching title — no author overlap returns false`() {
         assertFalse(
             matchesDuplicate(
                 book(isbn = null, title = "The Iliad", authors = listOf("Homer")),
@@ -86,7 +86,7 @@ class FindDuplicateTest {
     }
 
     @Test
-    fun `both isbn null, author overlap, title mismatch returns false`() {
+    fun `both isbn null and author overlap — title mismatch returns false`() {
         assertFalse(
             matchesDuplicate(
                 book(isbn = null, title = "The Iliad", authors = listOf("Homer")),
