@@ -15,8 +15,9 @@ import org.koin.dsl.onClose
  * Doesn't call [platformDriverModule] directly: it resolves the [SqlDriver] against the real
  * OS-conventional app-data directory with no way to redirect it, which would make this test touch
  * the same database file the installed app uses. Binding [createDesktopDriver] against a temp path
- * still exercises the same `databaseModule` + driver-module resolution wiring the split
- * registration (in `BooksApplication.kt`/`Main.kt`/`MainViewController.kt`) depends on.
+ * still exercises the same `databaseModule` + driver-module resolution wiring that
+ * [sharedDataModules] -- registered by `BooksApplication.kt`/`Main.kt`/`MainViewController.kt` --
+ * depends on.
  */
 class DatabaseModuleTest {
     private lateinit var koin: Koin
@@ -31,7 +32,7 @@ class DatabaseModuleTest {
                     createDesktopDriver("jdbc:sqlite:${dbFile.absolutePath}")
                 } onClose { it?.close() }
             }
-        koin = koinApplication { modules(databaseModule, driverModule) }.koin
+        koin = koinApplication { modules(databaseModule(), driverModule) }.koin
     }
 
     @AfterTest
