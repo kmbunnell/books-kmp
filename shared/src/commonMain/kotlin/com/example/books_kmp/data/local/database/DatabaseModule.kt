@@ -20,10 +20,28 @@ internal const val DATABASE_NAME = "books.db"
 expect fun platformDriverModule(): Module
 
 /**
- * Platform-agnostic database wiring. Must be registered alongside [platformDriverModule], which
- * supplies the `SqlDriver` this resolves.
+ * Platform-agnostic database wiring. Resolves the `SqlDriver` supplied by [platformDriverModule],
+ * so it is only usable when that module is registered too. Prefer registering [sharedDataModules]
+ * over either of these individually -- it keeps the pairing intact by construction.
+ *
+ * A function rather than a top-level `val`: a `val` would build the `Module` -- and cache the
+ * `single { }` instance slot inside it -- exactly once for the process, so every Koin container
+ * that loaded it would share the same `BooksDatabase` and could close one another's connection.
  */
-val databaseModule: Module =
+fun databaseModule(): Module =
     module {
         single { BooksDatabase(get()) }
     }
+
+/**
+ * Every Koin module the `shared` module contributes, in registration order.
+ *
+ * Application entry points (`BooksApplication.kt`, `MainViewController.kt`, `Main.kt`) call this
+ * single function, so adding a module here reaches all three platforms at once instead of needing
+ * the same edit repeated per entry point.
+ *
+ * A function rather than a top-level `val`, for the same reason as [databaseModule]: it must
+ * build fresh `Module` instances (with fresh `single { }` cache slots) on every call so that
+ * separate Koin containers -- e.g. the production app and a test -- never share a driver.
+ */
+fun sharedDataModules(): List<Module> = listOf(databaseModule(), platformDriverModule())
