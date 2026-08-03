@@ -74,7 +74,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `isbn is null, no duplicate title — inserts successfully`() =
+    fun `isbn is null and no duplicate title — inserts successfully`() =
         runTest {
             val noIsbnData =
                 BookLookupData(isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
@@ -83,7 +83,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `isbn is null, duplicate (title + author) exists — returns DuplicateBook error`() =
+    fun `isbn is null and duplicate title plus author exists — returns DuplicateBook error`() =
         runTest {
             repo.seedBooks(
                 Book(
@@ -102,7 +102,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `isbn is null, duplicate title exists, forceAdd true — inserts successfully`() =
+    fun `isbn is null and duplicate title exists and forceAdd true — inserts successfully`() =
         runTest {
             repo.seedBooks(
                 Book(
@@ -120,7 +120,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `isbn is null, duplicate lookup fails — returns NetworkError`() =
+    fun `isbn is null and duplicate lookup fails — returns NetworkError`() =
         runTest {
             repo.findDuplicateShouldFail = true
             val noIsbnData =
@@ -131,7 +131,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `isbn is non-null, stored isbn null but title and author match — returns DuplicateBook`() =
+    fun `isbn is non-null and stored isbn null but title and author match — returns DuplicateBook`() =
         runTest {
             repo.seedBooks(
                 Book(
@@ -148,7 +148,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `isbn is non-null, full match (isbn + title + author) — returns DuplicateBook`() =
+    fun `isbn is non-null and full match on isbn plus title plus author — returns DuplicateBook`() =
         runTest {
             repo.seedBooks(
                 Book(
@@ -165,7 +165,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `isbn is non-null, same isbn but author mismatch — still returns DuplicateBook`() =
+    fun `isbn is non-null and same isbn but author mismatch — still returns DuplicateBook`() =
         runTest {
             repo.seedBooks(
                 Book(
@@ -182,7 +182,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `free user at cap (25 books) — returns LibraryLimitReached`() =
+    fun `free user at cap of 25 books — returns LibraryLimitReached`() =
         runTest {
             seedBooks(25)
             val result = useCase(lookupData)
@@ -191,7 +191,7 @@ class AddBookUseCaseTest {
         }
 
     @Test
-    fun `free user under cap (24 books) — proceeds normally`() =
+    fun `free user under cap of 24 books — proceeds normally`() =
         runTest {
             seedBooks(24)
             val result = useCase(lookupData)

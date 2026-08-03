@@ -223,7 +223,7 @@ class TagManagementViewModelTest {
         }
 
     @Test
-    fun `ConfirmDeleteTag deletes tag, clears pendingDelete state, and refreshes lists`() =
+    fun `ConfirmDeleteTag deletes tag and clears pendingDelete state and refreshes lists`() =
         runTest {
             vm.onIntent(TagManagementIntent.RequestDeleteTag(customTag1))
             vm.onIntent(TagManagementIntent.ConfirmDeleteTag)

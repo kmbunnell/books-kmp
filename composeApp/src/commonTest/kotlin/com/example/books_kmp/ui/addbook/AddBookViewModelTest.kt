@@ -63,7 +63,7 @@ class AddBookViewModelTest {
     }
 
     @Test
-    fun `initial state has isLoading false, no error, no dialog, no foundBook`() =
+    fun `initial state has isLoading false — no error and no dialog and no foundBook`() =
         runTest {
             val state = viewModel.uiState.value
             assertFalse(state.isLoading)
@@ -198,7 +198,7 @@ class AddBookViewModelTest {
         }
 
     @Test
-    fun `AddAnyway emits BookAdded and resets state, book inserted with original isbn`() =
+    fun `AddAnyway emits BookAdded and resets state and inserts book with original isbn`() =
         runTest {
             fakeRepo.seedBooks(matchingBook)
             fakeService.lookupResult = Result.Success(validLookupData)

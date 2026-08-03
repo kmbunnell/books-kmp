@@ -121,7 +121,7 @@ class BookDetailViewModelTest {
         }
 
     @Test
-    fun `init sets loadFailed true when book not found (getBookById returns null)`() =
+    fun `init sets loadFailed true when book not found — getBookById returns null`() =
         runTest {
             val emptyBookRepo = FakeBookRepository()
             val nullVm =

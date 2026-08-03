@@ -118,7 +118,7 @@ class LibraryViewModelTest {
         }
 
     @Test
-    fun `loadLibrary book failure sets error and isLoading false, leaves books empty`() =
+    fun `loadLibrary book failure sets error and isLoading false and leaves books empty`() =
         runTest {
             bookRepo = FakeBookRepository(getBooksShouldFail = true)
             val failVm = LibraryViewModel(bookRepo, repo, FakeAuthRepository(), FakeEntitlementState())
@@ -129,7 +129,7 @@ class LibraryViewModelTest {
         }
 
     @Test
-    fun `loadLibrary tag failure sets error and isLoading false, leaves lists empty`() =
+    fun `loadLibrary tag failure sets error and isLoading false and leaves lists empty`() =
         runTest {
             val freshBookRepo = FakeBookRepository()
             freshBookRepo.seedBooks(book1, book2)
