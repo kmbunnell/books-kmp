@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.example.books_kmp.domain.model.Tag
+import com.example.books_kmp.testing.TEST_INSTANT
 import com.example.books_kmp.ui.TestTags
 import kotlin.test.assertEquals
 import org.junit.Rule
@@ -24,8 +25,8 @@ class TagManagementScreenTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    private val defaultTag = Tag(id = "d1", name = "Fiction", isDefault = true)
-    private val customTag = Tag(id = "c1", name = "Favorites", isDefault = false)
+    private val defaultTag = Tag(id = "d1", name = "Fiction", isDefault = true, updatedAt = TEST_INSTANT)
+    private val customTag = Tag(id = "c1", name = "Favorites", isDefault = false, updatedAt = TEST_INSTANT)
 
     @Test
     fun `default section shows tag names with no options button`() {

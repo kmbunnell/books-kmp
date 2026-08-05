@@ -3,6 +3,7 @@ package com.example.books_kmp.domain.library
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.NewBook
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -91,6 +92,7 @@ class FakeBookRepository(
                 title = book.title,
                 authors = book.authors,
                 coverImageUrl = book.coverImageUrl,
+                updatedAt = TEST_INSTANT,
             )
         books.add(saved)
         return Result.Success(saved)

@@ -4,6 +4,7 @@ import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.domain.model.BookLookupError
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -32,6 +33,7 @@ class LookupBookUseCaseTest {
                     title = "The Iliad",
                     authors = listOf("Homer"),
                     coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
                 ),
             )
             lookup.lookupResult = Result.Success(iliadLookupData)

@@ -3,6 +3,7 @@ package com.example.books_kmp.domain.tags
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.library.FakeBookRepository
 import com.example.books_kmp.domain.model.Book
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -18,6 +19,7 @@ class DefaultToggleBookTagUseCaseTest {
             authors = listOf("Author"),
             coverImageUrl = null,
             tags = listOf("t1", "t2"),
+            updatedAt = TEST_INSTANT,
         )
 
     @Test

@@ -12,6 +12,7 @@ import com.example.books_kmp.domain.recommendation.FakeRecommendationRepository
 import com.example.books_kmp.domain.recommendation.GetRecommendationsUseCase
 import com.example.books_kmp.domain.recommendation.RecommendationError
 import com.example.books_kmp.domain.recommendation.RecommendationRepository
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -37,6 +38,7 @@ class RecommendationsViewModelTest {
             authors = listOf("Author"),
             coverImageUrl = null,
             tags = listOf("t1"),
+            updatedAt = TEST_INSTANT,
         )
 
     private val recommendation =

@@ -4,6 +4,7 @@ import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.entitlement.FakeEntitlementState
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.BookLookupData
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -24,6 +25,7 @@ class AddBookUseCaseTest {
                     title = "Seed $index",
                     authors = listOf("Author"),
                     coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
                 ),
             )
         }
@@ -92,6 +94,7 @@ class AddBookUseCaseTest {
                     title = "The Iliad",
                     authors = listOf("Homer"),
                     coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
                 ),
             )
             val noIsbnData =
@@ -111,6 +114,7 @@ class AddBookUseCaseTest {
                     title = "The Iliad",
                     authors = listOf("Homer"),
                     coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
                 ),
             )
             val noIsbnData =
@@ -140,6 +144,7 @@ class AddBookUseCaseTest {
                     title = "The Iliad",
                     authors = listOf("Homer"),
                     coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
                 ),
             )
             val result = useCase(lookupData)
@@ -157,6 +162,7 @@ class AddBookUseCaseTest {
                     title = "The Iliad",
                     authors = listOf("Homer"),
                     coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
                 ),
             )
             val result = useCase(lookupData)
@@ -174,6 +180,7 @@ class AddBookUseCaseTest {
                     title = "The Iliad",
                     authors = listOf("Virgil"),
                     coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
                 ),
             )
             val result = useCase(lookupData)

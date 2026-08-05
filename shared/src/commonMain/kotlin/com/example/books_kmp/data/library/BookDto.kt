@@ -2,6 +2,7 @@ package com.example.books_kmp.data.library
 
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.NewBook
+import kotlin.time.Instant
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -20,6 +21,13 @@ data class BookDto(
     val authors: List<String> = emptyList(),
     @SerialName("cover_image_url")
     val coverImageUrl: String? = null,
+    // Server-maintained, like `id`/`userId`: omitted on write only while left at its default
+    // (null) — a decode-then-encode round trip would resend it. See PostgrestInstantEncodingTest.
+    // Null only when absent from the response; the `books` table always populates it via trigger,
+    // so `toBook()` below treats a null as a data-integrity error rather than a real timestamp.
+    @SerialName("updated_at")
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val updatedAt: Instant? = null,
     @SerialName("book_tags")
     val bookTags: List<BookTagIdDto> = emptyList(),
 )
@@ -37,6 +45,7 @@ fun BookDto.toBook(): Book =
         title = title,
         authors = authors,
         coverImageUrl = coverImageUrl,
+        updatedAt = updatedAt ?: error("BookDto($id) is missing server-maintained updated_at"),
         tags = bookTags.map { it.tagId },
     )
 

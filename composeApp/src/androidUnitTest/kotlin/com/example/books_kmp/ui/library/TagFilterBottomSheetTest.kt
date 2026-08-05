@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.example.books_kmp.domain.model.Tag
+import com.example.books_kmp.testing.TEST_INSTANT
 import com.example.books_kmp.ui.TestTags
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -23,8 +24,8 @@ class TagFilterBottomSheetTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    private val tag1 = Tag(id = "t1", name = "Fiction", isDefault = false)
-    private val tag2 = Tag(id = "t2", name = "Sci-Fi", isDefault = false)
+    private val tag1 = Tag(id = "t1", name = "Fiction", isDefault = false, updatedAt = TEST_INSTANT)
+    private val tag2 = Tag(id = "t2", name = "Sci-Fi", isDefault = false, updatedAt = TEST_INSTANT)
 
     @Test
     fun `all tags render as chips in sheet`() {
