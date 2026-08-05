@@ -43,10 +43,14 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
                     "weak_password" -> AuthRepositoryError.WeakPassword
                     "over_email_send_rate_limit" -> AuthRepositoryError.EmailRateLimitExceeded
                     "validation_failed" -> AuthRepositoryError.InvalidEmail
-                    else -> AuthRepositoryError.Unknown
+                    else -> {
+                        println("SupabaseAuthRepository.signUp unknown RestException: error=${e.error}, message=${e.message}")
+                        AuthRepositoryError.Unknown
+                    }
                 },
             )
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            println("SupabaseAuthRepository.signUp failed: ${e::class.simpleName}: ${e.message}")
             Result.Failure(AuthRepositoryError.NetworkError)
         }
     }
@@ -68,10 +72,14 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
                 when (e.error) {
                     "invalid_credentials" -> AuthRepositoryError.InvalidCredentials
                     "email_not_confirmed" -> AuthRepositoryError.EmailNotVerified
-                    else -> AuthRepositoryError.Unknown
+                    else -> {
+                        println("SupabaseAuthRepository.signIn unknown RestException: error=${e.error}, message=${e.message}")
+                        AuthRepositoryError.Unknown
+                    }
                 },
             )
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            println("SupabaseAuthRepository.signIn failed: ${e::class.simpleName}: ${e.message}")
             Result.Failure(AuthRepositoryError.NetworkError)
         }
     }
@@ -82,7 +90,8 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
             Result.Success(Unit)
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            println("SupabaseAuthRepository.signOut failed: ${e::class.simpleName}: ${e.message}")
             Result.Failure(AuthRepositoryError.NetworkError)
         }
     }
