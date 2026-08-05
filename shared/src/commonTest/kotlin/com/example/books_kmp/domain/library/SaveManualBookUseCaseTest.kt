@@ -2,6 +2,7 @@ package com.example.books_kmp.domain.library
 
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Book
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -108,7 +109,14 @@ class SaveManualBookUseCaseTest {
     fun `invoke returns DuplicateTitle when a book with the same title already exists`() =
         runTest {
             repo.seedBooks(
-                Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+                Book(
+                    id = "1",
+                    isbn = null,
+                    title = "The Odyssey",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
+                )
             )
             val result = useCase("The Odyssey", "Homer")
             assertIs<Result.Failure<SaveManualBookError>>(result)
@@ -120,7 +128,14 @@ class SaveManualBookUseCaseTest {
     fun `invoke with forceAdd skips duplicate check and saves the book`() =
         runTest {
             repo.seedBooks(
-                Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+                Book(
+                    id = "1",
+                    isbn = null,
+                    title = "The Odyssey",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
+                )
             )
             val result = useCase("The Odyssey", "Homer", forceAdd = true)
             assertIs<Result.Success<Book>>(result)
@@ -131,7 +146,14 @@ class SaveManualBookUseCaseTest {
     fun `invoke returns DuplicateTitle for case-insensitive title match`() =
         runTest {
             repo.seedBooks(
-                Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+                Book(
+                    id = "1",
+                    isbn = null,
+                    title = "The Odyssey",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
+                )
             )
             val result = useCase("the odyssey", "Homer")
             assertIs<Result.Failure<SaveManualBookError>>(result)
@@ -143,7 +165,14 @@ class SaveManualBookUseCaseTest {
     fun `invoke returns DuplicateTitle for title that matches after diacritic normalisation`() =
         runTest {
             repo.seedBooks(
-                Book(id = "1", isbn = null, title = "Resume", authors = listOf("Author"), coverImageUrl = null)
+                Book(
+                    id = "1",
+                    isbn = null,
+                    title = "Resume",
+                    authors = listOf("Author"),
+                    coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
+                )
             )
             val result = useCase("Résumé", "Author")
             assertIs<Result.Failure<SaveManualBookError>>(result)
@@ -165,7 +194,14 @@ class SaveManualBookUseCaseTest {
     fun `invoke returns DuplicateTitle when entry matches stored title after punctuation stripping`() =
         runTest {
             repo.seedBooks(
-                Book(id = "1", isbn = null, title = "So B. It", authors = listOf("Sarah Weeks"), coverImageUrl = null)
+                Book(
+                    id = "1",
+                    isbn = null,
+                    title = "So B. It",
+                    authors = listOf("Sarah Weeks"),
+                    coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
+                )
             )
             val result = useCase("so b it", "Sarah Weeks")
             assertIs<Result.Failure<SaveManualBookError>>(result)

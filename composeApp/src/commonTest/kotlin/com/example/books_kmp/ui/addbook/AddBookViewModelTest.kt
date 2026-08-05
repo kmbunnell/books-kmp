@@ -12,6 +12,7 @@ import com.example.books_kmp.domain.library.LookupByTitleUseCase
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.domain.model.BookLookupError
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -107,6 +108,7 @@ class AddBookViewModelTest {
             title = "The Iliad",
             authors = listOf("Homer"),
             coverImageUrl = null,
+            updatedAt = TEST_INSTANT,
         )
 
     @Test
@@ -647,6 +649,7 @@ class AddBookViewModelTest {
                     title = "The Iliad",
                     authors = listOf("Homer"),
                     coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
                 ),
             )
             viewModel.onIntent(AddBookIntent.SelectTitleResult(noIsbnBook))
@@ -689,7 +692,8 @@ class AddBookViewModelTest {
                     isbn = null,
                     title = "The Iliad",
                     authors = listOf("Homer"),
-                    coverImageUrl = null
+                    coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
                 ),
             )
 
@@ -726,6 +730,7 @@ class AddBookViewModelTest {
                     title = "Cap $index",
                     authors = listOf("Author"),
                     coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
                 )
             },
         )

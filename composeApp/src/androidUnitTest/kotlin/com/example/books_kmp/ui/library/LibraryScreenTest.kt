@@ -9,6 +9,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.Tag
+import com.example.books_kmp.testing.TEST_INSTANT
 import com.example.books_kmp.ui.TestTags
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -24,13 +25,27 @@ class LibraryScreenTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    private val tag1 = Tag(id = "t1", name = "Fiction", isDefault = false)
-    private val tag2 = Tag(id = "t2", name = "Sci-Fi", isDefault = false)
+    private val tag1 = Tag(id = "t1", name = "Fiction", isDefault = false, updatedAt = TEST_INSTANT)
+    private val tag2 = Tag(id = "t2", name = "Sci-Fi", isDefault = false, updatedAt = TEST_INSTANT)
 
     private val book1 =
-        Book(id = "b1", isbn = null, title = "Dune", authors = listOf("Frank Herbert"), coverImageUrl = null)
+        Book(
+            id = "b1",
+            isbn = null,
+            title = "Dune",
+            authors = listOf("Frank Herbert"),
+            coverImageUrl = null,
+            updatedAt = TEST_INSTANT,
+        )
     private val book2 =
-        Book(id = "b2", isbn = null, title = "Foundation", authors = listOf("Isaac Asimov"), coverImageUrl = null)
+        Book(
+            id = "b2",
+            isbn = null,
+            title = "Foundation",
+            authors = listOf("Isaac Asimov"),
+            coverImageUrl = null,
+            updatedAt = TEST_INSTANT,
+        )
 
     @Test
     fun `profile button is displayed`() {

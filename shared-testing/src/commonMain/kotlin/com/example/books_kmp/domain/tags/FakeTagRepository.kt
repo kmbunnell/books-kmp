@@ -3,6 +3,7 @@ package com.example.books_kmp.domain.tags
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.TAG_SORT_ORDER
 import com.example.books_kmp.domain.model.Tag
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,7 +42,7 @@ class FakeTagRepository : TagRepository {
         if (tags.any { it.name.trim().lowercase() == lowerTrimmed }) {
             return Result.Failure(TagError.DuplicateName)
         }
-        val tag = Tag(id = "fake-${tags.size}", name = trimmed, isDefault = false)
+        val tag = Tag(id = "fake-${tags.size}", name = trimmed, isDefault = false, updatedAt = TEST_INSTANT)
         tags.add(tag)
         _tagsFlow.update { it?.plus(tag)?.sortedWith(TAG_SORT_ORDER) }
         return Result.Success(tag)

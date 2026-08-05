@@ -7,6 +7,7 @@ import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.FakeTagRepository
 import com.example.books_kmp.domain.tags.TagError
 import com.example.books_kmp.domain.tags.TagRepository
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -31,9 +32,9 @@ class TagManagementViewModelTest {
     private lateinit var vm: TagManagementViewModel
     private val entitlementState = FakeEntitlementState()
 
-    private val defaultTag = Tag(id = "d1", name = "Read", isDefault = true)
-    private val customTag1 = Tag(id = "c1", name = "Favorites", isDefault = false)
-    private val customTag2 = Tag(id = "c2", name = "To Read", isDefault = false)
+    private val defaultTag = Tag(id = "d1", name = "Read", isDefault = true, updatedAt = TEST_INSTANT)
+    private val customTag1 = Tag(id = "c1", name = "Favorites", isDefault = false, updatedAt = TEST_INSTANT)
+    private val customTag2 = Tag(id = "c2", name = "To Read", isDefault = false, updatedAt = TEST_INSTANT)
 
     @BeforeTest
     fun setUp() {
@@ -250,7 +251,9 @@ class TagManagementViewModelTest {
             val capRepo = FakeTagRepository()
             capRepo.seedTags(
                 defaultTag,
-                *(1..10).map { Tag(id = "cap$it", name = "Cap $it", isDefault = false) }.toTypedArray(),
+                *(1..10).map {
+                    Tag(id = "cap$it", name = "Cap $it", isDefault = false, updatedAt = TEST_INSTANT)
+                }.toTypedArray(),
             )
             val capVm = TagManagementViewModel(capRepo, FakeEntitlementState())
             capVm.effects.test {
@@ -268,7 +271,9 @@ class TagManagementViewModelTest {
         runTest {
             val capRepo = FakeTagRepository()
             capRepo.seedTags(
-                *(1..9).map { Tag(id = "cap$it", name = "Cap $it", isDefault = false) }.toTypedArray(),
+                *(1..9).map {
+                    Tag(id = "cap$it", name = "Cap $it", isDefault = false, updatedAt = TEST_INSTANT)
+                }.toTypedArray(),
             )
             val capVm = TagManagementViewModel(capRepo, FakeEntitlementState())
             capVm.onIntent(TagManagementIntent.OpenCreateForm)
@@ -282,7 +287,9 @@ class TagManagementViewModelTest {
         runTest {
             val capRepo = FakeTagRepository()
             capRepo.seedTags(
-                *(1..10).map { Tag(id = "cap$it", name = "Cap $it", isDefault = false) }.toTypedArray(),
+                *(1..10).map {
+                    Tag(id = "cap$it", name = "Cap $it", isDefault = false, updatedAt = TEST_INSTANT)
+                }.toTypedArray(),
             )
             val premiumEntitlement = FakeEntitlementState().also { it.setIsPremium(true) }
             val capVm = TagManagementViewModel(capRepo, premiumEntitlement)
@@ -295,7 +302,9 @@ class TagManagementViewModelTest {
         runTest {
             val capRepo = FakeTagRepository()
             capRepo.seedTags(
-                *(1..10).map { Tag(id = "def$it", name = "Default $it", isDefault = true) }.toTypedArray(),
+                *(1..10).map {
+                    Tag(id = "def$it", name = "Default $it", isDefault = true, updatedAt = TEST_INSTANT)
+                }.toTypedArray(),
             )
             val capVm = TagManagementViewModel(capRepo, FakeEntitlementState())
             capVm.onIntent(TagManagementIntent.OpenCreateForm)
@@ -310,12 +319,12 @@ class TagManagementViewModelTest {
 
             override suspend fun getTags() = Result.Failure<TagError>(TagError.NetworkError(RuntimeException("fail")))
 
-            override suspend fun createTag(name: String) = Result.Success(Tag("", name, false))
+            override suspend fun createTag(name: String) = Result.Success(Tag("", name, false, TEST_INSTANT))
 
             override suspend fun renameTag(
                 id: String,
                 newName: String
-            ) = Result.Success(Tag(id, newName, false))
+            ) = Result.Success(Tag(id, newName, false, updatedAt = TEST_INSTANT))
 
             override suspend fun deleteTag(id: String) = Result.Success(Unit)
 

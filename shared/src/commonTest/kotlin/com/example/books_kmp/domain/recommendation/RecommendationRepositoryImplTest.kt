@@ -5,6 +5,7 @@ import com.example.books_kmp.data.recommendation.RawRecommendation
 import com.example.books_kmp.data.recommendation.RecommendationRepositoryImpl
 import com.example.books_kmp.domain.Result
 import com.example.books_kmp.domain.model.Book
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -20,6 +21,7 @@ class RecommendationRepositoryImplTest {
                 title = "Dune",
                 authors = listOf("Frank Herbert"),
                 coverImageUrl = "url",
+                updatedAt = TEST_INSTANT,
             ),
         )
 

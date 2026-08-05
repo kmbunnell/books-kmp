@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.example.books_kmp.domain.library.FakeBookRepository
 import com.example.books_kmp.domain.library.SaveManualBookUseCase
 import com.example.books_kmp.domain.model.Book
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -148,7 +149,14 @@ class ManualEntryViewModelTest {
     fun `SaveBook with duplicate title sets showDuplicateDialog and does not emit ShowError`() =
         runTest {
             fakeRepo.seedBooks(
-                Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+                Book(
+                    id = "1",
+                    isbn = null,
+                    title = "The Odyssey",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
+                )
             )
             val viewModel = ManualEntryViewModel(useCase)
             viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
@@ -160,7 +168,14 @@ class ManualEntryViewModelTest {
     fun `DismissDuplicateDialog clears showDuplicateDialog`() =
         runTest {
             fakeRepo.seedBooks(
-                Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+                Book(
+                    id = "1",
+                    isbn = null,
+                    title = "The Odyssey",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
+                )
             )
             val viewModel = ManualEntryViewModel(useCase)
             viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
@@ -172,7 +187,14 @@ class ManualEntryViewModelTest {
     fun `AddAnyway failure emits ShowError effect with SaveFailed error`() =
         runTest {
             fakeRepo.seedBooks(
-                Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+                Book(
+                    id = "1",
+                    isbn = null,
+                    title = "The Odyssey",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
+                )
             )
             val viewModel = ManualEntryViewModel(useCase)
             viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))
@@ -188,7 +210,14 @@ class ManualEntryViewModelTest {
     fun `AddAnyway saves book and emits NavigateToLibrary`() =
         runTest {
             fakeRepo.seedBooks(
-                Book(id = "1", isbn = null, title = "The Odyssey", authors = listOf("Homer"), coverImageUrl = null)
+                Book(
+                    id = "1",
+                    isbn = null,
+                    title = "The Odyssey",
+                    authors = listOf("Homer"),
+                    coverImageUrl = null,
+                    updatedAt = TEST_INSTANT,
+                )
             )
             val viewModel = ManualEntryViewModel(useCase)
             viewModel.onIntent(ManualEntryIntent.SaveBook("The Odyssey", "Homer", isbn = null))

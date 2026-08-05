@@ -6,6 +6,9 @@ Non-obvious decisions — rejected alternatives, surprising constraints, gotchas
 
 ---
 
+## 2026-08-02 — Local SQLite `created_at`/`updated_at` stored as epoch milliseconds, not epoch seconds or ISO-8601 text
+`Books.sq`/`Tags.sq` store these columns as `INTEGER` epoch-millisecond values so any future `ColumnAdapter` converting to/from the domain `Instant` must use `toEpochMilliseconds()`/`fromEpochMilliseconds()` — `epochSeconds` would silently truncate sub-second precision. Logged here because the `Books.sq` header comment pointed at this file with no matching entry ever added when the schema landed (SQLDelight plumbing reset, see [[project_sqldelight_plumbing_reset]]).
+
 ## 2026-07-14 — Desktop target needs `kotlinx-coroutines-swing` for `Dispatchers.Main`
 Android provides `Dispatchers.Main` via `kotlinx-coroutines-android`; desktop/JVM has no equivalent bundled with `kotlinx-coroutines-core`. Any ViewModel using `stateIn`/`viewModelScope` (main-dispatcher-confined) crashed `:composeApp:run` at Koin instance creation with "Module with the Main dispatcher is missing." Fix: add `kotlinx-coroutines-swing` to `desktopMain` dependencies — it installs the AWT/Swing event-loop-backed Main dispatcher.
 

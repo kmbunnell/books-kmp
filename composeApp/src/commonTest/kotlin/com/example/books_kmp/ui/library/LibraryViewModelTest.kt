@@ -10,6 +10,7 @@ import com.example.books_kmp.domain.model.Tag
 import com.example.books_kmp.domain.tags.FakeTagRepository
 import com.example.books_kmp.domain.tags.TagError
 import com.example.books_kmp.domain.tags.TagRepository
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -36,12 +37,26 @@ class LibraryViewModelTest {
     private lateinit var entitlementState: FakeEntitlementState
     private lateinit var vm: LibraryViewModel
 
-    private val tag1 = Tag(id = "t1", name = "Read", isDefault = true)
-    private val tag2 = Tag(id = "t2", name = "Favorites", isDefault = false)
+    private val tag1 = Tag(id = "t1", name = "Read", isDefault = true, updatedAt = TEST_INSTANT)
+    private val tag2 = Tag(id = "t2", name = "Favorites", isDefault = false, updatedAt = TEST_INSTANT)
     private val book1 =
-        Book(id = "b1", isbn = "111", title = "Book One", authors = listOf("Author A"), coverImageUrl = null)
+        Book(
+            id = "b1",
+            isbn = "111",
+            title = "Book One",
+            authors = listOf("Author A"),
+            coverImageUrl = null,
+            updatedAt = TEST_INSTANT,
+        )
     private val book2 =
-        Book(id = "b2", isbn = "222", title = "Book Two", authors = listOf("Author B"), coverImageUrl = null)
+        Book(
+            id = "b2",
+            isbn = "222",
+            title = "Book Two",
+            authors = listOf("Author B"),
+            coverImageUrl = null,
+            updatedAt = TEST_INSTANT,
+        )
 
     @BeforeTest
     fun setUp() {
@@ -387,7 +402,8 @@ class LibraryViewModelTest {
                     title = "Harry Houdini",
                     authors = listOf("Bio"),
                     coverImageUrl = null,
-                    tags = listOf("t2")
+                    tags = listOf("t2"),
+                    updatedAt = TEST_INSTANT,
                 )
             val localRepo = FakeBookRepository()
             localRepo.seedBooks(taggedHarry, taggedOther, untaggedHarry)
@@ -713,12 +729,12 @@ class LibraryViewModelTest {
 
             override suspend fun getTags() = Result.Failure<TagError>(TagError.NetworkError(RuntimeException("fail")))
 
-            override suspend fun createTag(name: String) = Result.Success(Tag("", name, false))
+            override suspend fun createTag(name: String) = Result.Success(Tag("", name, false, TEST_INSTANT))
 
             override suspend fun renameTag(
                 id: String,
                 newName: String,
-            ) = Result.Success(Tag(id, newName, false))
+            ) = Result.Success(Tag(id, newName, false, updatedAt = TEST_INSTANT))
 
             override suspend fun deleteTag(id: String) = Result.Success(Unit)
 

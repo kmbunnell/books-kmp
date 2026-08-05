@@ -7,6 +7,7 @@ import com.example.books_kmp.domain.library.FakeBookRepository
 import com.example.books_kmp.domain.model.Book
 import com.example.books_kmp.domain.model.BookLookupData
 import com.example.books_kmp.domain.model.BookLookupError
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -24,6 +25,7 @@ class GetRecommendationsUseCaseTest {
             authors = listOf("Author $id"),
             coverImageUrl = null,
             tags = tags,
+            updatedAt = TEST_INSTANT,
         )
 
     private val rec1 =

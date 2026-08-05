@@ -1,6 +1,7 @@
 package com.example.books_kmp.domain.library
 
 import com.example.books_kmp.domain.model.Book
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -10,7 +11,14 @@ class FindDuplicateTest {
         isbn: String? = null,
         title: String = "The Iliad",
         authors: List<String> = listOf("Homer"),
-    ) = Book(id = "1", isbn = isbn, title = title, authors = authors, coverImageUrl = null)
+    ) = Book(
+        id = "1",
+        isbn = isbn,
+        title = title,
+        authors = authors,
+        coverImageUrl = null,
+        updatedAt = TEST_INSTANT,
+    )
 
     @Test
     fun `both isbn null — matching title and overlapping author returns true`() {

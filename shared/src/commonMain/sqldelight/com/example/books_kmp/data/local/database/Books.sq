@@ -5,7 +5,7 @@
 -- cached rows. `UNIQUE(user_id, isbn)` matches the Postgres constraint exactly.
 --
 -- `authors` is a JSON array stored as TEXT.
--- `created_at` / `updated_at` are epoch MILLISECONDS (see .claude/decisions.md, 2026-07-31).
+-- `created_at` / `updated_at` are epoch MILLISECONDS
 -- Any future ColumnAdapter must use the matched Instant.toEpochMilliseconds() /
 -- Instant.fromEpochMilliseconds() pair -- never epochSeconds, which silently truncates.
 CREATE TABLE books (

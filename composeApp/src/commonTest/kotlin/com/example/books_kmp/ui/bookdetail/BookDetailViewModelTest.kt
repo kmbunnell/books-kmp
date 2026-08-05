@@ -13,6 +13,7 @@ import com.example.books_kmp.domain.tags.TagError
 import com.example.books_kmp.domain.tags.TagRepository
 import com.example.books_kmp.domain.tags.ToggleBookTagError
 import com.example.books_kmp.domain.tags.ToggleBookTagUseCase
+import com.example.books_kmp.testing.TEST_INSTANT
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -44,11 +45,12 @@ class BookDetailViewModelTest {
             title = "Test Book",
             authors = listOf("Author"),
             coverImageUrl = null,
-            tags = listOf("t1", "t2")
+            tags = listOf("t1", "t2"),
+            updatedAt = TEST_INSTANT,
         )
-    private val tag1 = Tag(id = "t1", name = "Fiction", isDefault = false)
-    private val tag2 = Tag(id = "t2", name = "Read", isDefault = true)
-    private val tag3 = Tag(id = "t3", name = "Favorites", isDefault = false)
+    private val tag1 = Tag(id = "t1", name = "Fiction", isDefault = false, updatedAt = TEST_INSTANT)
+    private val tag2 = Tag(id = "t2", name = "Read", isDefault = true, updatedAt = TEST_INSTANT)
+    private val tag3 = Tag(id = "t3", name = "Favorites", isDefault = false, updatedAt = TEST_INSTANT)
 
     @BeforeTest
     fun setUp() {
