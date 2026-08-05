@@ -44,7 +44,10 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
                     "over_email_send_rate_limit" -> AuthRepositoryError.EmailRateLimitExceeded
                     "validation_failed" -> AuthRepositoryError.InvalidEmail
                     else -> {
-                        println("SupabaseAuthRepository.signUp unknown RestException: error=${e.error}, message=${e.message}")
+                        println(
+                            "SupabaseAuthRepository.signUp unknown RestException: " +
+                                "error=${e.error}, message=${e.message}",
+                        )
                         AuthRepositoryError.Unknown
                     }
                 },
@@ -73,7 +76,10 @@ class SupabaseAuthRepository(private val supabase: SupabaseClient) : AuthReposit
                     "invalid_credentials" -> AuthRepositoryError.InvalidCredentials
                     "email_not_confirmed" -> AuthRepositoryError.EmailNotVerified
                     else -> {
-                        println("SupabaseAuthRepository.signIn unknown RestException: error=${e.error}, message=${e.message}")
+                        println(
+                            "SupabaseAuthRepository.signIn unknown RestException: " +
+                                "error=${e.error}, message=${e.message}",
+                        )
                         AuthRepositoryError.Unknown
                     }
                 },
